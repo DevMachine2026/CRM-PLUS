@@ -1,0 +1,16 @@
+{
+  "buildCommand": "npm run build",
+  "installCommand": "npm install --include=dev",
+  "framework": "nextjs",
+  "regions": ["gru1"],
+  "crons": [
+    {
+      "path": "/api/ai/follow-up",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/ai/stalled",
+      "schedule": "0 8 * * *"
+    }
+  ]
+}
