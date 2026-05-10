@@ -10,7 +10,7 @@ command -v npx   >/dev/null 2>&1 || { echo "❌  Node.js/npm não encontrado."; 
 # Supabase CLI
 if ! command -v supabase >/dev/null 2>&1; then
   echo "→ Instalando Supabase CLI..."
-  npm install -g supabase
+  npm install -g supabase@2
 fi
 
 # .env.local
