@@ -32,18 +32,23 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Token expirado. Solicite um novo link." }, { status: 400 });
   }
 
-  const passwordHash = await bcrypt.hash(password, 12);
+  try {
+    const passwordHash = await bcrypt.hash(password, 12);
 
-  await prisma.$transaction([
-    prisma.user.update({
-      where: { id: resetToken.userId },
-      data:  { passwordHash },
-    }),
-    prisma.passwordResetToken.update({
-      where: { id: resetToken.id },
-      data:  { usedAt: new Date() },
-    }),
-  ]);
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: resetToken.userId },
+        data:  { passwordHash },
+      }),
+      prisma.passwordResetToken.update({
+        where: { id: resetToken.id },
+        data:  { usedAt: new Date() },
+      }),
+    ]);
 
-  return NextResponse.json({ message: "Senha redefinida com sucesso." }, { status: 200 });
+    return NextResponse.json({ message: "Senha redefinida com sucesso." }, { status: 200 });
+  } catch (err) {
+    console.error("[reset-password] error:", err);
+    return NextResponse.json({ error: "Erro ao redefinir senha. Tente novamente." }, { status: 500 });
+  }
 }
