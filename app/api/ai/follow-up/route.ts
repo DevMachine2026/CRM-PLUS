@@ -3,9 +3,9 @@ import { NextResponse } from "next/server";
 import { generateFollowUps } from "@/lib/ai/actions/follow-up";
 import { prisma } from "@/lib/db/client";
 
-// POST /api/ai/follow-up — chamado pelo Vercel Cron Job (hourly)
+// GET /api/ai/follow-up — chamado pelo Vercel Cron Job (hourly)
 // Protegido por Authorization: Bearer <CRON_SECRET>
-export async function POST(req: NextRequest) {
+export async function GET(req: NextRequest) {
   const authHeader = req.headers.get("authorization") ?? "";
   const cronSecret = process.env.CRON_SECRET;
 

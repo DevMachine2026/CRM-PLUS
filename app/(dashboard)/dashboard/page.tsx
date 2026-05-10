@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db/client";
 import { redirect } from "next/navigation";
 import { can } from "@/lib/auth/permissions";
 import { detectStalledLeads } from "@/lib/ai/actions/detect-stalled-leads";
+import { unstable_cache } from "next/cache";
 import {
   TrendingUp, CheckSquare, DollarSign,
   Bot, ArrowRight, Clock, AlertTriangle,
@@ -168,7 +169,12 @@ export default async function DashboardPage() {
   const isDemoTenant = await prisma.tenant.findUnique({ where: { id: tenantId }, select: { slug: true } })
     .then((t) => t?.slug === "demo-crmplus");
 
-  const stalledLeads = await detectStalledLeads(tenantId).catch(() => []);
+  const getCachedStalledLeads = unstable_cache(
+    (tenantId: string) => detectStalledLeads(tenantId).catch(() => []),
+    ["stalled-leads"],
+    { revalidate: 300, tags: ["stalled-leads"] }
+  );
+  const stalledLeads = await getCachedStalledLeads(tenantId);
 
   // ── KPI cards ─────────────────────────────────────────────────────────────────
   const kpisTop = [
