@@ -54,6 +54,9 @@ function resolveProvider(): ActiveProvider {
   if (p === "mock")                                     return "mock";
   if (p === "gemini" && process.env.GOOGLE_AI_API_KEY)  return "gemini";
   if (p === "claude" && process.env.ANTHROPIC_API_KEY)  return "anthropic";
+  if (p === "gemini" || p === "claude") {
+    console.warn(`[ai] AI_PROVIDER="${p}" set but matching API key missing — falling back to mock`);
+  }
   // Auto-detect: prefere gemini se disponível, depois claude
   if (process.env.GOOGLE_AI_API_KEY)                    return "gemini";
   if (process.env.ANTHROPIC_API_KEY)                    return "anthropic";
@@ -161,7 +164,7 @@ export async function aiComplete(
  */
 export function parseAIJson<T>(text: string): T {
   const cleaned = text
-    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/^\s*```(?:json)?\s*/i, "")
     .replace(/\s*```\s*$/i, "")
     .trim();
   return JSON.parse(cleaned) as T;
