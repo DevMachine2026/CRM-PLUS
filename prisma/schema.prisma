@@ -44,6 +44,15 @@ enum TaskPriority {
   high
 }
 
+enum ActivityType {
+  call
+  meeting
+  email
+  note
+  whatsapp
+  instagram
+}
+
 enum ConversationChannel {
   manual
   whatsapp
@@ -118,6 +127,7 @@ model Tenant {
   tasks                Task[]
   conversations        Conversation[]
   messages             Message[]
+  activities           Activity[]
 
   @@map("tenants")
 }
@@ -147,6 +157,7 @@ model User {
   opportunities        Opportunity[]
   assignedTasks        Task[]               @relation("TaskAssignee")
   assignedConversations Conversation[]      @relation("ConversationAssignee")
+  activities           Activity[]
 
   @@unique([tenantId, email])
   @@map("users")
@@ -249,6 +260,7 @@ model Contact {
   revenues      Revenue[]
   tasks         Task[]
   conversations Conversation[]
+  activities    Activity[]
 
   @@index([tenantId])
   @@index([companyId])
@@ -376,6 +388,7 @@ model Opportunity {
   products     OpportunityProduct[]
   revenues     Revenue[]
   tasks        Task[]
+  activities   Activity[]
 
   @@index([tenantId])
   @@index([pipelineId])
@@ -514,4 +527,31 @@ model Message {
   @@index([tenantId])
   @@index([sentAt])
   @@map("messages")
+}
+
+// ─── Activity (linha do tempo do contato) ─────────────────────────────────────
+
+model Activity {
+  id            String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId      String       @map("tenant_id") @db.Uuid
+  contactId     String?      @map("contact_id") @db.Uuid
+  opportunityId String?      @map("opportunity_id") @db.Uuid
+  userId        String?      @map("user_id") @db.Uuid
+  type          ActivityType
+  title         String
+  description   String?
+  scheduledAt   DateTime?    @map("scheduled_at")
+  completedAt   DateTime?    @map("completed_at")
+  durationMin   Int?         @map("duration_min")
+  createdAt     DateTime     @default(now()) @map("created_at")
+
+  tenant      Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  contact     Contact?     @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  opportunity Opportunity? @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
+  user        User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([contactId])
+  @@index([opportunityId])
+  @@map("activities")
 }

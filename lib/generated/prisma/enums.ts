@@ -62,6 +62,18 @@ export const TaskPriority = {
 export type TaskPriority = (typeof TaskPriority)[keyof typeof TaskPriority]
 
 
+export const ActivityType = {
+  call: 'call',
+  meeting: 'meeting',
+  email: 'email',
+  note: 'note',
+  whatsapp: 'whatsapp',
+  instagram: 'instagram'
+} as const
+
+export type ActivityType = (typeof ActivityType)[keyof typeof ActivityType]
+
+
 export const ConversationChannel = {
   manual: 'manual',
   whatsapp: 'whatsapp',

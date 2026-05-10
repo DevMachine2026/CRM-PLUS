@@ -68,7 +68,8 @@ export const ModelName = {
   Revenue: 'Revenue',
   Task: 'Task',
   Conversation: 'Conversation',
-  Message: 'Message'
+  Message: 'Message',
+  Activity: 'Activity'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -364,6 +365,24 @@ export const MessageScalarFieldEnum = {
 } as const
 
 export type MessageScalarFieldEnum = (typeof MessageScalarFieldEnum)[keyof typeof MessageScalarFieldEnum]
+
+
+export const ActivityScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  contactId: 'contactId',
+  opportunityId: 'opportunityId',
+  userId: 'userId',
+  type: 'type',
+  title: 'title',
+  description: 'description',
+  scheduledAt: 'scheduledAt',
+  completedAt: 'completedAt',
+  durationMin: 'durationMin',
+  createdAt: 'createdAt'
+} as const
+
+export type ActivityScalarFieldEnum = (typeof ActivityScalarFieldEnum)[keyof typeof ActivityScalarFieldEnum]
 
 
 export const SortOrder = {
