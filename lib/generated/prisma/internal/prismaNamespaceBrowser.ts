@@ -69,6 +69,10 @@ export const ModelName = {
   Task: 'Task',
   Conversation: 'Conversation',
   Message: 'Message',
+  Invoice: 'Invoice',
+  InvoiceItem: 'InvoiceItem',
+  Automation: 'Automation',
+  AutomationLog: 'AutomationLog',
   Activity: 'Activity'
 } as const
 
@@ -357,6 +361,8 @@ export const MessageScalarFieldEnum = {
   senderId: 'senderId',
   content: 'content',
   direction: 'direction',
+  type: 'type',
+  isInternal: 'isInternal',
   externalId: 'externalId',
   externalStatus: 'externalStatus',
   deliveryError: 'deliveryError',
@@ -365,6 +371,73 @@ export const MessageScalarFieldEnum = {
 } as const
 
 export type MessageScalarFieldEnum = (typeof MessageScalarFieldEnum)[keyof typeof MessageScalarFieldEnum]
+
+
+export const InvoiceScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  number: 'number',
+  contactId: 'contactId',
+  companyId: 'companyId',
+  revenueId: 'revenueId',
+  status: 'status',
+  totalAmount: 'totalAmount',
+  notes: 'notes',
+  issuedAt: 'issuedAt',
+  dueAt: 'dueAt',
+  paidAt: 'paidAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type InvoiceScalarFieldEnum = (typeof InvoiceScalarFieldEnum)[keyof typeof InvoiceScalarFieldEnum]
+
+
+export const InvoiceItemScalarFieldEnum = {
+  id: 'id',
+  invoiceId: 'invoiceId',
+  tenantId: 'tenantId',
+  description: 'description',
+  quantity: 'quantity',
+  unitPrice: 'unitPrice',
+  totalPrice: 'totalPrice',
+  createdAt: 'createdAt'
+} as const
+
+export type InvoiceItemScalarFieldEnum = (typeof InvoiceItemScalarFieldEnum)[keyof typeof InvoiceItemScalarFieldEnum]
+
+
+export const AutomationScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  name: 'name',
+  description: 'description',
+  isActive: 'isActive',
+  trigger: 'trigger',
+  conditions: 'conditions',
+  actions: 'actions',
+  runCount: 'runCount',
+  lastRunAt: 'lastRunAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AutomationScalarFieldEnum = (typeof AutomationScalarFieldEnum)[keyof typeof AutomationScalarFieldEnum]
+
+
+export const AutomationLogScalarFieldEnum = {
+  id: 'id',
+  automationId: 'automationId',
+  tenantId: 'tenantId',
+  entityType: 'entityType',
+  entityId: 'entityId',
+  status: 'status',
+  error: 'error',
+  actionsRun: 'actionsRun',
+  createdAt: 'createdAt'
+} as const
+
+export type AutomationLogScalarFieldEnum = (typeof AutomationLogScalarFieldEnum)[keyof typeof AutomationLogScalarFieldEnum]
 
 
 export const ActivityScalarFieldEnum = {

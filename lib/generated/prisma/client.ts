@@ -132,6 +132,26 @@ export type Conversation = Prisma.ConversationModel
  */
 export type Message = Prisma.MessageModel
 /**
+ * Model Invoice
+ * 
+ */
+export type Invoice = Prisma.InvoiceModel
+/**
+ * Model InvoiceItem
+ * 
+ */
+export type InvoiceItem = Prisma.InvoiceItemModel
+/**
+ * Model Automation
+ * 
+ */
+export type Automation = Prisma.AutomationModel
+/**
+ * Model AutomationLog
+ * 
+ */
+export type AutomationLog = Prisma.AutomationLogModel
+/**
  * Model Activity
  * 
  */

@@ -276,6 +276,7 @@ export type RevenueWhereInput = {
   opportunity?: Prisma.XOR<Prisma.OpportunityScalarRelationFilter, Prisma.OpportunityWhereInput>
   contact?: Prisma.XOR<Prisma.ContactNullableScalarRelationFilter, Prisma.ContactWhereInput> | null
   company?: Prisma.XOR<Prisma.CompanyNullableScalarRelationFilter, Prisma.CompanyWhereInput> | null
+  invoice?: Prisma.XOR<Prisma.InvoiceNullableScalarRelationFilter, Prisma.InvoiceWhereInput> | null
 }
 
 export type RevenueOrderByWithRelationInput = {
@@ -295,6 +296,7 @@ export type RevenueOrderByWithRelationInput = {
   opportunity?: Prisma.OpportunityOrderByWithRelationInput
   contact?: Prisma.ContactOrderByWithRelationInput
   company?: Prisma.CompanyOrderByWithRelationInput
+  invoice?: Prisma.InvoiceOrderByWithRelationInput
 }
 
 export type RevenueWhereUniqueInput = Prisma.AtLeast<{
@@ -317,6 +319,7 @@ export type RevenueWhereUniqueInput = Prisma.AtLeast<{
   opportunity?: Prisma.XOR<Prisma.OpportunityScalarRelationFilter, Prisma.OpportunityWhereInput>
   contact?: Prisma.XOR<Prisma.ContactNullableScalarRelationFilter, Prisma.ContactWhereInput> | null
   company?: Prisma.XOR<Prisma.CompanyNullableScalarRelationFilter, Prisma.CompanyWhereInput> | null
+  invoice?: Prisma.XOR<Prisma.InvoiceNullableScalarRelationFilter, Prisma.InvoiceWhereInput> | null
 }, "id" | "opportunityId">
 
 export type RevenueOrderByWithAggregationInput = {
@@ -370,6 +373,7 @@ export type RevenueCreateInput = {
   opportunity: Prisma.OpportunityCreateNestedOneWithoutRevenuesInput
   contact?: Prisma.ContactCreateNestedOneWithoutRevenuesInput
   company?: Prisma.CompanyCreateNestedOneWithoutRevenuesInput
+  invoice?: Prisma.InvoiceCreateNestedOneWithoutRevenueInput
 }
 
 export type RevenueUncheckedCreateInput = {
@@ -385,6 +389,7 @@ export type RevenueUncheckedCreateInput = {
   dueAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  invoice?: Prisma.InvoiceUncheckedCreateNestedOneWithoutRevenueInput
 }
 
 export type RevenueUpdateInput = {
@@ -400,6 +405,7 @@ export type RevenueUpdateInput = {
   opportunity?: Prisma.OpportunityUpdateOneRequiredWithoutRevenuesNestedInput
   contact?: Prisma.ContactUpdateOneWithoutRevenuesNestedInput
   company?: Prisma.CompanyUpdateOneWithoutRevenuesNestedInput
+  invoice?: Prisma.InvoiceUpdateOneWithoutRevenueNestedInput
 }
 
 export type RevenueUncheckedUpdateInput = {
@@ -415,6 +421,7 @@ export type RevenueUncheckedUpdateInput = {
   dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  invoice?: Prisma.InvoiceUncheckedUpdateOneWithoutRevenueNestedInput
 }
 
 export type RevenueCreateManyInput = {
@@ -519,6 +526,11 @@ export type RevenueMinOrderByAggregateInput = {
 
 export type RevenueSumOrderByAggregateInput = {
   amount?: Prisma.SortOrder
+}
+
+export type RevenueNullableScalarRelationFilter = {
+  is?: Prisma.RevenueWhereInput | null
+  isNot?: Prisma.RevenueWhereInput | null
 }
 
 export type RevenueCreateNestedManyWithoutTenantInput = {
@@ -693,6 +705,22 @@ export type EnumRevenueStatusFieldUpdateOperationsInput = {
   set?: $Enums.RevenueStatus
 }
 
+export type RevenueCreateNestedOneWithoutInvoiceInput = {
+  create?: Prisma.XOR<Prisma.RevenueCreateWithoutInvoiceInput, Prisma.RevenueUncheckedCreateWithoutInvoiceInput>
+  connectOrCreate?: Prisma.RevenueCreateOrConnectWithoutInvoiceInput
+  connect?: Prisma.RevenueWhereUniqueInput
+}
+
+export type RevenueUpdateOneWithoutInvoiceNestedInput = {
+  create?: Prisma.XOR<Prisma.RevenueCreateWithoutInvoiceInput, Prisma.RevenueUncheckedCreateWithoutInvoiceInput>
+  connectOrCreate?: Prisma.RevenueCreateOrConnectWithoutInvoiceInput
+  upsert?: Prisma.RevenueUpsertWithoutInvoiceInput
+  disconnect?: Prisma.RevenueWhereInput | boolean
+  delete?: Prisma.RevenueWhereInput | boolean
+  connect?: Prisma.RevenueWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.RevenueUpdateToOneWithWhereWithoutInvoiceInput, Prisma.RevenueUpdateWithoutInvoiceInput>, Prisma.RevenueUncheckedUpdateWithoutInvoiceInput>
+}
+
 export type RevenueCreateWithoutTenantInput = {
   id?: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -705,6 +733,7 @@ export type RevenueCreateWithoutTenantInput = {
   opportunity: Prisma.OpportunityCreateNestedOneWithoutRevenuesInput
   contact?: Prisma.ContactCreateNestedOneWithoutRevenuesInput
   company?: Prisma.CompanyCreateNestedOneWithoutRevenuesInput
+  invoice?: Prisma.InvoiceCreateNestedOneWithoutRevenueInput
 }
 
 export type RevenueUncheckedCreateWithoutTenantInput = {
@@ -719,6 +748,7 @@ export type RevenueUncheckedCreateWithoutTenantInput = {
   dueAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  invoice?: Prisma.InvoiceUncheckedCreateNestedOneWithoutRevenueInput
 }
 
 export type RevenueCreateOrConnectWithoutTenantInput = {
@@ -777,6 +807,7 @@ export type RevenueCreateWithoutCompanyInput = {
   tenant: Prisma.TenantCreateNestedOneWithoutRevenuesInput
   opportunity: Prisma.OpportunityCreateNestedOneWithoutRevenuesInput
   contact?: Prisma.ContactCreateNestedOneWithoutRevenuesInput
+  invoice?: Prisma.InvoiceCreateNestedOneWithoutRevenueInput
 }
 
 export type RevenueUncheckedCreateWithoutCompanyInput = {
@@ -791,6 +822,7 @@ export type RevenueUncheckedCreateWithoutCompanyInput = {
   dueAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  invoice?: Prisma.InvoiceUncheckedCreateNestedOneWithoutRevenueInput
 }
 
 export type RevenueCreateOrConnectWithoutCompanyInput = {
@@ -831,6 +863,7 @@ export type RevenueCreateWithoutContactInput = {
   tenant: Prisma.TenantCreateNestedOneWithoutRevenuesInput
   opportunity: Prisma.OpportunityCreateNestedOneWithoutRevenuesInput
   company?: Prisma.CompanyCreateNestedOneWithoutRevenuesInput
+  invoice?: Prisma.InvoiceCreateNestedOneWithoutRevenueInput
 }
 
 export type RevenueUncheckedCreateWithoutContactInput = {
@@ -845,6 +878,7 @@ export type RevenueUncheckedCreateWithoutContactInput = {
   dueAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  invoice?: Prisma.InvoiceUncheckedCreateNestedOneWithoutRevenueInput
 }
 
 export type RevenueCreateOrConnectWithoutContactInput = {
@@ -885,6 +919,7 @@ export type RevenueCreateWithoutOpportunityInput = {
   tenant: Prisma.TenantCreateNestedOneWithoutRevenuesInput
   contact?: Prisma.ContactCreateNestedOneWithoutRevenuesInput
   company?: Prisma.CompanyCreateNestedOneWithoutRevenuesInput
+  invoice?: Prisma.InvoiceCreateNestedOneWithoutRevenueInput
 }
 
 export type RevenueUncheckedCreateWithoutOpportunityInput = {
@@ -899,6 +934,7 @@ export type RevenueUncheckedCreateWithoutOpportunityInput = {
   dueAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  invoice?: Prisma.InvoiceUncheckedCreateNestedOneWithoutRevenueInput
 }
 
 export type RevenueCreateOrConnectWithoutOpportunityInput = {
@@ -927,6 +963,82 @@ export type RevenueUpdateManyWithWhereWithoutOpportunityInput = {
   data: Prisma.XOR<Prisma.RevenueUpdateManyMutationInput, Prisma.RevenueUncheckedUpdateManyWithoutOpportunityInput>
 }
 
+export type RevenueCreateWithoutInvoiceInput = {
+  id?: string
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: $Enums.RevenueStatus
+  description?: string | null
+  paidAt?: Date | string | null
+  dueAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  tenant: Prisma.TenantCreateNestedOneWithoutRevenuesInput
+  opportunity: Prisma.OpportunityCreateNestedOneWithoutRevenuesInput
+  contact?: Prisma.ContactCreateNestedOneWithoutRevenuesInput
+  company?: Prisma.CompanyCreateNestedOneWithoutRevenuesInput
+}
+
+export type RevenueUncheckedCreateWithoutInvoiceInput = {
+  id?: string
+  tenantId: string
+  opportunityId: string
+  contactId?: string | null
+  companyId?: string | null
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: $Enums.RevenueStatus
+  description?: string | null
+  paidAt?: Date | string | null
+  dueAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type RevenueCreateOrConnectWithoutInvoiceInput = {
+  where: Prisma.RevenueWhereUniqueInput
+  create: Prisma.XOR<Prisma.RevenueCreateWithoutInvoiceInput, Prisma.RevenueUncheckedCreateWithoutInvoiceInput>
+}
+
+export type RevenueUpsertWithoutInvoiceInput = {
+  update: Prisma.XOR<Prisma.RevenueUpdateWithoutInvoiceInput, Prisma.RevenueUncheckedUpdateWithoutInvoiceInput>
+  create: Prisma.XOR<Prisma.RevenueCreateWithoutInvoiceInput, Prisma.RevenueUncheckedCreateWithoutInvoiceInput>
+  where?: Prisma.RevenueWhereInput
+}
+
+export type RevenueUpdateToOneWithWhereWithoutInvoiceInput = {
+  where?: Prisma.RevenueWhereInput
+  data: Prisma.XOR<Prisma.RevenueUpdateWithoutInvoiceInput, Prisma.RevenueUncheckedUpdateWithoutInvoiceInput>
+}
+
+export type RevenueUpdateWithoutInvoiceInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: Prisma.EnumRevenueStatusFieldUpdateOperationsInput | $Enums.RevenueStatus
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutRevenuesNestedInput
+  opportunity?: Prisma.OpportunityUpdateOneRequiredWithoutRevenuesNestedInput
+  contact?: Prisma.ContactUpdateOneWithoutRevenuesNestedInput
+  company?: Prisma.CompanyUpdateOneWithoutRevenuesNestedInput
+}
+
+export type RevenueUncheckedUpdateWithoutInvoiceInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  opportunityId?: Prisma.StringFieldUpdateOperationsInput | string
+  contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: Prisma.EnumRevenueStatusFieldUpdateOperationsInput | $Enums.RevenueStatus
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
 export type RevenueCreateManyTenantInput = {
   id?: string
   opportunityId: string
@@ -953,6 +1065,7 @@ export type RevenueUpdateWithoutTenantInput = {
   opportunity?: Prisma.OpportunityUpdateOneRequiredWithoutRevenuesNestedInput
   contact?: Prisma.ContactUpdateOneWithoutRevenuesNestedInput
   company?: Prisma.CompanyUpdateOneWithoutRevenuesNestedInput
+  invoice?: Prisma.InvoiceUpdateOneWithoutRevenueNestedInput
 }
 
 export type RevenueUncheckedUpdateWithoutTenantInput = {
@@ -967,6 +1080,7 @@ export type RevenueUncheckedUpdateWithoutTenantInput = {
   dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  invoice?: Prisma.InvoiceUncheckedUpdateOneWithoutRevenueNestedInput
 }
 
 export type RevenueUncheckedUpdateManyWithoutTenantInput = {
@@ -1009,6 +1123,7 @@ export type RevenueUpdateWithoutCompanyInput = {
   tenant?: Prisma.TenantUpdateOneRequiredWithoutRevenuesNestedInput
   opportunity?: Prisma.OpportunityUpdateOneRequiredWithoutRevenuesNestedInput
   contact?: Prisma.ContactUpdateOneWithoutRevenuesNestedInput
+  invoice?: Prisma.InvoiceUpdateOneWithoutRevenueNestedInput
 }
 
 export type RevenueUncheckedUpdateWithoutCompanyInput = {
@@ -1023,6 +1138,7 @@ export type RevenueUncheckedUpdateWithoutCompanyInput = {
   dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  invoice?: Prisma.InvoiceUncheckedUpdateOneWithoutRevenueNestedInput
 }
 
 export type RevenueUncheckedUpdateManyWithoutCompanyInput = {
@@ -1065,6 +1181,7 @@ export type RevenueUpdateWithoutContactInput = {
   tenant?: Prisma.TenantUpdateOneRequiredWithoutRevenuesNestedInput
   opportunity?: Prisma.OpportunityUpdateOneRequiredWithoutRevenuesNestedInput
   company?: Prisma.CompanyUpdateOneWithoutRevenuesNestedInput
+  invoice?: Prisma.InvoiceUpdateOneWithoutRevenueNestedInput
 }
 
 export type RevenueUncheckedUpdateWithoutContactInput = {
@@ -1079,6 +1196,7 @@ export type RevenueUncheckedUpdateWithoutContactInput = {
   dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  invoice?: Prisma.InvoiceUncheckedUpdateOneWithoutRevenueNestedInput
 }
 
 export type RevenueUncheckedUpdateManyWithoutContactInput = {
@@ -1121,6 +1239,7 @@ export type RevenueUpdateWithoutOpportunityInput = {
   tenant?: Prisma.TenantUpdateOneRequiredWithoutRevenuesNestedInput
   contact?: Prisma.ContactUpdateOneWithoutRevenuesNestedInput
   company?: Prisma.CompanyUpdateOneWithoutRevenuesNestedInput
+  invoice?: Prisma.InvoiceUpdateOneWithoutRevenueNestedInput
 }
 
 export type RevenueUncheckedUpdateWithoutOpportunityInput = {
@@ -1135,6 +1254,7 @@ export type RevenueUncheckedUpdateWithoutOpportunityInput = {
   dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  invoice?: Prisma.InvoiceUncheckedUpdateOneWithoutRevenueNestedInput
 }
 
 export type RevenueUncheckedUpdateManyWithoutOpportunityInput = {
@@ -1170,6 +1290,7 @@ export type RevenueSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   opportunity?: boolean | Prisma.OpportunityDefaultArgs<ExtArgs>
   contact?: boolean | Prisma.Revenue$contactArgs<ExtArgs>
   company?: boolean | Prisma.Revenue$companyArgs<ExtArgs>
+  invoice?: boolean | Prisma.Revenue$invoiceArgs<ExtArgs>
 }, ExtArgs["result"]["revenue"]>
 
 export type RevenueSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1231,6 +1352,7 @@ export type RevenueInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs
   opportunity?: boolean | Prisma.OpportunityDefaultArgs<ExtArgs>
   contact?: boolean | Prisma.Revenue$contactArgs<ExtArgs>
   company?: boolean | Prisma.Revenue$companyArgs<ExtArgs>
+  invoice?: boolean | Prisma.Revenue$invoiceArgs<ExtArgs>
 }
 export type RevenueIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>
@@ -1252,6 +1374,7 @@ export type $RevenuePayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     opportunity: Prisma.$OpportunityPayload<ExtArgs>
     contact: Prisma.$ContactPayload<ExtArgs> | null
     company: Prisma.$CompanyPayload<ExtArgs> | null
+    invoice: Prisma.$InvoicePayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1664,6 +1787,7 @@ export interface Prisma__RevenueClient<T, Null = never, ExtArgs extends runtime.
   opportunity<T extends Prisma.OpportunityDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.OpportunityDefaultArgs<ExtArgs>>): Prisma.Prisma__OpportunityClient<runtime.Types.Result.GetResult<Prisma.$OpportunityPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   contact<T extends Prisma.Revenue$contactArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Revenue$contactArgs<ExtArgs>>): Prisma.Prisma__ContactClient<runtime.Types.Result.GetResult<Prisma.$ContactPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   company<T extends Prisma.Revenue$companyArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Revenue$companyArgs<ExtArgs>>): Prisma.Prisma__CompanyClient<runtime.Types.Result.GetResult<Prisma.$CompanyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  invoice<T extends Prisma.Revenue$invoiceArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Revenue$invoiceArgs<ExtArgs>>): Prisma.Prisma__InvoiceClient<runtime.Types.Result.GetResult<Prisma.$InvoicePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2141,6 +2265,25 @@ export type Revenue$companyArgs<ExtArgs extends runtime.Types.Extensions.Interna
    */
   include?: Prisma.CompanyInclude<ExtArgs> | null
   where?: Prisma.CompanyWhereInput
+}
+
+/**
+ * Revenue.invoice
+ */
+export type Revenue$invoiceArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Invoice
+   */
+  select?: Prisma.InvoiceSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Invoice
+   */
+  omit?: Prisma.InvoiceOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InvoiceInclude<ExtArgs> | null
+  where?: Prisma.InvoiceWhereInput
 }
 
 /**

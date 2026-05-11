@@ -100,6 +100,14 @@ enum TenantStatus {
   cancelled
 }
 
+enum InvoiceStatus {
+  draft
+  sent
+  paid
+  cancelled
+  overdue
+}
+
 // ─── Tenant (empresa/conta) ───────────────────────────────────────────────────
 
 model Tenant {
@@ -128,6 +136,10 @@ model Tenant {
   conversations        Conversation[]
   messages             Message[]
   activities           Activity[]
+  automations          Automation[]
+  automationLogs       AutomationLog[]
+  invoices             Invoice[]
+  invoiceItems         InvoiceItem[]
 
   @@map("tenants")
 }
@@ -233,6 +245,7 @@ model Company {
   contacts      Contact[]
   opportunities Opportunity[]
   revenues      Revenue[]
+  invoices      Invoice[]
 
   @@index([tenantId])
   @@map("companies")
@@ -261,6 +274,7 @@ model Contact {
   tasks         Task[]
   conversations Conversation[]
   activities    Activity[]
+  invoices      Invoice[]
 
   @@index([tenantId])
   @@index([companyId])
@@ -440,6 +454,7 @@ model Revenue {
   opportunity Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Restrict)
   contact     Contact?    @relation(fields: [contactId], references: [id], onDelete: SetNull)
   company     Company?    @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  invoice     Invoice?
 
   @@unique([opportunityId])
   @@index([tenantId])
@@ -514,6 +529,8 @@ model Message {
   senderId       String?          @map("sender_id") @db.Uuid
   content        String
   direction      MessageDirection @default(outbound)
+  type           String           @default("text")
+  isInternal     Boolean          @default(false) @map("is_internal")
   externalId     String?          @map("external_id")
   externalStatus String?          @map("external_status")
   deliveryError  String?          @map("delivery_error")
@@ -527,6 +544,99 @@ model Message {
   @@index([tenantId])
   @@index([sentAt])
   @@map("messages")
+}
+
+// ─── Invoice ──────────────────────────────────────────────────────────────────
+
+model Invoice {
+  id            String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId      String        @map("tenant_id") @db.Uuid
+  number        String        @map("number")          // e.g. "INV-2026-0001"
+  contactId     String?       @map("contact_id") @db.Uuid
+  companyId     String?       @map("company_id") @db.Uuid
+  revenueId     String?       @unique @map("revenue_id") @db.Uuid
+  status        InvoiceStatus @default(draft)
+  totalAmount   Decimal       @map("total_amount") @db.Decimal(14, 2)
+  notes         String?
+  issuedAt      DateTime      @default(now()) @map("issued_at")
+  dueAt         DateTime?     @map("due_at")
+  paidAt        DateTime?     @map("paid_at")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  tenant  Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  contact Contact?      @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  company Company?      @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  revenue Revenue?      @relation(fields: [revenueId], references: [id], onDelete: SetNull)
+  items   InvoiceItem[]
+
+  @@unique([tenantId, number])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([contactId])
+  @@map("invoices")
+}
+
+model InvoiceItem {
+  id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  invoiceId   String  @map("invoice_id") @db.Uuid
+  tenantId    String  @map("tenant_id") @db.Uuid
+  description String
+  quantity    Int     @default(1)
+  unitPrice   Decimal @map("unit_price") @db.Decimal(14, 2)
+  totalPrice  Decimal @map("total_price") @db.Decimal(14, 2)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+  @@index([tenantId])
+  @@map("invoice_items")
+}
+
+// ─── Automation ───────────────────────────────────────────────────────────────
+
+model Automation {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId    String    @map("tenant_id") @db.Uuid
+  name        String
+  description String?
+  isActive    Boolean   @default(true) @map("is_active")
+  trigger     Json      // { type: TriggerType }
+  conditions  Json      @default("[]") // Condition[]
+  actions     Json      // ActionConfig[]
+  runCount    Int       @default(0) @map("run_count")
+  lastRunAt   DateTime? @map("last_run_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  tenant Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  logs   AutomationLog[]
+
+  @@index([tenantId])
+  @@index([tenantId, isActive])
+  @@map("automations")
+}
+
+model AutomationLog {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  automationId String   @map("automation_id") @db.Uuid
+  tenantId     String   @map("tenant_id") @db.Uuid
+  entityType   String?  @map("entity_type")
+  entityId     String?  @map("entity_id") @db.Uuid
+  status       String   @default("success") // "success" | "failed" | "skipped"
+  error        String?
+  actionsRun   Json     @default("[]") @map("actions_run")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  automation Automation @relation(fields: [automationId], references: [id], onDelete: Cascade)
+  tenant     Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([automationId])
+  @@index([tenantId])
+  @@index([createdAt])
+  @@map("automation_logs")
 }
 
 // ─── Activity (linha do tempo do contato) ─────────────────────────────────────

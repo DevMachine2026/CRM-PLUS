@@ -32,6 +32,8 @@ export type MessageMinAggregateOutputType = {
   senderId: string | null
   content: string | null
   direction: $Enums.MessageDirection | null
+  type: string | null
+  isInternal: boolean | null
   externalId: string | null
   externalStatus: string | null
   deliveryError: string | null
@@ -47,6 +49,8 @@ export type MessageMaxAggregateOutputType = {
   senderId: string | null
   content: string | null
   direction: $Enums.MessageDirection | null
+  type: string | null
+  isInternal: boolean | null
   externalId: string | null
   externalStatus: string | null
   deliveryError: string | null
@@ -62,6 +66,8 @@ export type MessageCountAggregateOutputType = {
   senderId: number
   content: number
   direction: number
+  type: number
+  isInternal: number
   externalId: number
   externalStatus: number
   deliveryError: number
@@ -79,6 +85,8 @@ export type MessageMinAggregateInputType = {
   senderId?: true
   content?: true
   direction?: true
+  type?: true
+  isInternal?: true
   externalId?: true
   externalStatus?: true
   deliveryError?: true
@@ -94,6 +102,8 @@ export type MessageMaxAggregateInputType = {
   senderId?: true
   content?: true
   direction?: true
+  type?: true
+  isInternal?: true
   externalId?: true
   externalStatus?: true
   deliveryError?: true
@@ -109,6 +119,8 @@ export type MessageCountAggregateInputType = {
   senderId?: true
   content?: true
   direction?: true
+  type?: true
+  isInternal?: true
   externalId?: true
   externalStatus?: true
   deliveryError?: true
@@ -197,6 +209,8 @@ export type MessageGroupByOutputType = {
   senderId: string | null
   content: string
   direction: $Enums.MessageDirection
+  type: string
+  isInternal: boolean
   externalId: string | null
   externalStatus: string | null
   deliveryError: string | null
@@ -233,6 +247,8 @@ export type MessageWhereInput = {
   senderId?: Prisma.UuidNullableFilter<"Message"> | string | null
   content?: Prisma.StringFilter<"Message"> | string
   direction?: Prisma.EnumMessageDirectionFilter<"Message"> | $Enums.MessageDirection
+  type?: Prisma.StringFilter<"Message"> | string
+  isInternal?: Prisma.BoolFilter<"Message"> | boolean
   externalId?: Prisma.StringNullableFilter<"Message"> | string | null
   externalStatus?: Prisma.StringNullableFilter<"Message"> | string | null
   deliveryError?: Prisma.StringNullableFilter<"Message"> | string | null
@@ -250,6 +266,8 @@ export type MessageOrderByWithRelationInput = {
   senderId?: Prisma.SortOrderInput | Prisma.SortOrder
   content?: Prisma.SortOrder
   direction?: Prisma.SortOrder
+  type?: Prisma.SortOrder
+  isInternal?: Prisma.SortOrder
   externalId?: Prisma.SortOrderInput | Prisma.SortOrder
   externalStatus?: Prisma.SortOrderInput | Prisma.SortOrder
   deliveryError?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -270,6 +288,8 @@ export type MessageWhereUniqueInput = Prisma.AtLeast<{
   senderId?: Prisma.UuidNullableFilter<"Message"> | string | null
   content?: Prisma.StringFilter<"Message"> | string
   direction?: Prisma.EnumMessageDirectionFilter<"Message"> | $Enums.MessageDirection
+  type?: Prisma.StringFilter<"Message"> | string
+  isInternal?: Prisma.BoolFilter<"Message"> | boolean
   externalId?: Prisma.StringNullableFilter<"Message"> | string | null
   externalStatus?: Prisma.StringNullableFilter<"Message"> | string | null
   deliveryError?: Prisma.StringNullableFilter<"Message"> | string | null
@@ -287,6 +307,8 @@ export type MessageOrderByWithAggregationInput = {
   senderId?: Prisma.SortOrderInput | Prisma.SortOrder
   content?: Prisma.SortOrder
   direction?: Prisma.SortOrder
+  type?: Prisma.SortOrder
+  isInternal?: Prisma.SortOrder
   externalId?: Prisma.SortOrderInput | Prisma.SortOrder
   externalStatus?: Prisma.SortOrderInput | Prisma.SortOrder
   deliveryError?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -308,6 +330,8 @@ export type MessageScalarWhereWithAggregatesInput = {
   senderId?: Prisma.UuidNullableWithAggregatesFilter<"Message"> | string | null
   content?: Prisma.StringWithAggregatesFilter<"Message"> | string
   direction?: Prisma.EnumMessageDirectionWithAggregatesFilter<"Message"> | $Enums.MessageDirection
+  type?: Prisma.StringWithAggregatesFilter<"Message"> | string
+  isInternal?: Prisma.BoolWithAggregatesFilter<"Message"> | boolean
   externalId?: Prisma.StringNullableWithAggregatesFilter<"Message"> | string | null
   externalStatus?: Prisma.StringNullableWithAggregatesFilter<"Message"> | string | null
   deliveryError?: Prisma.StringNullableWithAggregatesFilter<"Message"> | string | null
@@ -321,6 +345,8 @@ export type MessageCreateInput = {
   senderId?: string | null
   content: string
   direction?: $Enums.MessageDirection
+  type?: string
+  isInternal?: boolean
   externalId?: string | null
   externalStatus?: string | null
   deliveryError?: string | null
@@ -338,6 +364,8 @@ export type MessageUncheckedCreateInput = {
   senderId?: string | null
   content: string
   direction?: $Enums.MessageDirection
+  type?: string
+  isInternal?: boolean
   externalId?: string | null
   externalStatus?: string | null
   deliveryError?: string | null
@@ -351,6 +379,8 @@ export type MessageUpdateInput = {
   senderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   content?: Prisma.StringFieldUpdateOperationsInput | string
   direction?: Prisma.EnumMessageDirectionFieldUpdateOperationsInput | $Enums.MessageDirection
+  type?: Prisma.StringFieldUpdateOperationsInput | string
+  isInternal?: Prisma.BoolFieldUpdateOperationsInput | boolean
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deliveryError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -368,6 +398,8 @@ export type MessageUncheckedUpdateInput = {
   senderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   content?: Prisma.StringFieldUpdateOperationsInput | string
   direction?: Prisma.EnumMessageDirectionFieldUpdateOperationsInput | $Enums.MessageDirection
+  type?: Prisma.StringFieldUpdateOperationsInput | string
+  isInternal?: Prisma.BoolFieldUpdateOperationsInput | boolean
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deliveryError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -383,6 +415,8 @@ export type MessageCreateManyInput = {
   senderId?: string | null
   content: string
   direction?: $Enums.MessageDirection
+  type?: string
+  isInternal?: boolean
   externalId?: string | null
   externalStatus?: string | null
   deliveryError?: string | null
@@ -396,6 +430,8 @@ export type MessageUpdateManyMutationInput = {
   senderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   content?: Prisma.StringFieldUpdateOperationsInput | string
   direction?: Prisma.EnumMessageDirectionFieldUpdateOperationsInput | $Enums.MessageDirection
+  type?: Prisma.StringFieldUpdateOperationsInput | string
+  isInternal?: Prisma.BoolFieldUpdateOperationsInput | boolean
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deliveryError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -411,6 +447,8 @@ export type MessageUncheckedUpdateManyInput = {
   senderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   content?: Prisma.StringFieldUpdateOperationsInput | string
   direction?: Prisma.EnumMessageDirectionFieldUpdateOperationsInput | $Enums.MessageDirection
+  type?: Prisma.StringFieldUpdateOperationsInput | string
+  isInternal?: Prisma.BoolFieldUpdateOperationsInput | boolean
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deliveryError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -436,6 +474,8 @@ export type MessageCountOrderByAggregateInput = {
   senderId?: Prisma.SortOrder
   content?: Prisma.SortOrder
   direction?: Prisma.SortOrder
+  type?: Prisma.SortOrder
+  isInternal?: Prisma.SortOrder
   externalId?: Prisma.SortOrder
   externalStatus?: Prisma.SortOrder
   deliveryError?: Prisma.SortOrder
@@ -451,6 +491,8 @@ export type MessageMaxOrderByAggregateInput = {
   senderId?: Prisma.SortOrder
   content?: Prisma.SortOrder
   direction?: Prisma.SortOrder
+  type?: Prisma.SortOrder
+  isInternal?: Prisma.SortOrder
   externalId?: Prisma.SortOrder
   externalStatus?: Prisma.SortOrder
   deliveryError?: Prisma.SortOrder
@@ -466,6 +508,8 @@ export type MessageMinOrderByAggregateInput = {
   senderId?: Prisma.SortOrder
   content?: Prisma.SortOrder
   direction?: Prisma.SortOrder
+  type?: Prisma.SortOrder
+  isInternal?: Prisma.SortOrder
   externalId?: Prisma.SortOrder
   externalStatus?: Prisma.SortOrder
   deliveryError?: Prisma.SortOrder
@@ -571,6 +615,8 @@ export type MessageCreateWithoutTenantInput = {
   senderId?: string | null
   content: string
   direction?: $Enums.MessageDirection
+  type?: string
+  isInternal?: boolean
   externalId?: string | null
   externalStatus?: string | null
   deliveryError?: string | null
@@ -586,6 +632,8 @@ export type MessageUncheckedCreateWithoutTenantInput = {
   senderId?: string | null
   content: string
   direction?: $Enums.MessageDirection
+  type?: string
+  isInternal?: boolean
   externalId?: string | null
   externalStatus?: string | null
   deliveryError?: string | null
@@ -630,6 +678,8 @@ export type MessageScalarWhereInput = {
   senderId?: Prisma.UuidNullableFilter<"Message"> | string | null
   content?: Prisma.StringFilter<"Message"> | string
   direction?: Prisma.EnumMessageDirectionFilter<"Message"> | $Enums.MessageDirection
+  type?: Prisma.StringFilter<"Message"> | string
+  isInternal?: Prisma.BoolFilter<"Message"> | boolean
   externalId?: Prisma.StringNullableFilter<"Message"> | string | null
   externalStatus?: Prisma.StringNullableFilter<"Message"> | string | null
   deliveryError?: Prisma.StringNullableFilter<"Message"> | string | null
@@ -643,6 +693,8 @@ export type MessageCreateWithoutConversationInput = {
   senderId?: string | null
   content: string
   direction?: $Enums.MessageDirection
+  type?: string
+  isInternal?: boolean
   externalId?: string | null
   externalStatus?: string | null
   deliveryError?: string | null
@@ -658,6 +710,8 @@ export type MessageUncheckedCreateWithoutConversationInput = {
   senderId?: string | null
   content: string
   direction?: $Enums.MessageDirection
+  type?: string
+  isInternal?: boolean
   externalId?: string | null
   externalStatus?: string | null
   deliveryError?: string | null
@@ -698,6 +752,8 @@ export type MessageCreateManyTenantInput = {
   senderId?: string | null
   content: string
   direction?: $Enums.MessageDirection
+  type?: string
+  isInternal?: boolean
   externalId?: string | null
   externalStatus?: string | null
   deliveryError?: string | null
@@ -711,6 +767,8 @@ export type MessageUpdateWithoutTenantInput = {
   senderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   content?: Prisma.StringFieldUpdateOperationsInput | string
   direction?: Prisma.EnumMessageDirectionFieldUpdateOperationsInput | $Enums.MessageDirection
+  type?: Prisma.StringFieldUpdateOperationsInput | string
+  isInternal?: Prisma.BoolFieldUpdateOperationsInput | boolean
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deliveryError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -726,6 +784,8 @@ export type MessageUncheckedUpdateWithoutTenantInput = {
   senderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   content?: Prisma.StringFieldUpdateOperationsInput | string
   direction?: Prisma.EnumMessageDirectionFieldUpdateOperationsInput | $Enums.MessageDirection
+  type?: Prisma.StringFieldUpdateOperationsInput | string
+  isInternal?: Prisma.BoolFieldUpdateOperationsInput | boolean
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deliveryError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -740,6 +800,8 @@ export type MessageUncheckedUpdateManyWithoutTenantInput = {
   senderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   content?: Prisma.StringFieldUpdateOperationsInput | string
   direction?: Prisma.EnumMessageDirectionFieldUpdateOperationsInput | $Enums.MessageDirection
+  type?: Prisma.StringFieldUpdateOperationsInput | string
+  isInternal?: Prisma.BoolFieldUpdateOperationsInput | boolean
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deliveryError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -754,6 +816,8 @@ export type MessageCreateManyConversationInput = {
   senderId?: string | null
   content: string
   direction?: $Enums.MessageDirection
+  type?: string
+  isInternal?: boolean
   externalId?: string | null
   externalStatus?: string | null
   deliveryError?: string | null
@@ -767,6 +831,8 @@ export type MessageUpdateWithoutConversationInput = {
   senderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   content?: Prisma.StringFieldUpdateOperationsInput | string
   direction?: Prisma.EnumMessageDirectionFieldUpdateOperationsInput | $Enums.MessageDirection
+  type?: Prisma.StringFieldUpdateOperationsInput | string
+  isInternal?: Prisma.BoolFieldUpdateOperationsInput | boolean
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deliveryError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -782,6 +848,8 @@ export type MessageUncheckedUpdateWithoutConversationInput = {
   senderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   content?: Prisma.StringFieldUpdateOperationsInput | string
   direction?: Prisma.EnumMessageDirectionFieldUpdateOperationsInput | $Enums.MessageDirection
+  type?: Prisma.StringFieldUpdateOperationsInput | string
+  isInternal?: Prisma.BoolFieldUpdateOperationsInput | boolean
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deliveryError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -796,6 +864,8 @@ export type MessageUncheckedUpdateManyWithoutConversationInput = {
   senderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   content?: Prisma.StringFieldUpdateOperationsInput | string
   direction?: Prisma.EnumMessageDirectionFieldUpdateOperationsInput | $Enums.MessageDirection
+  type?: Prisma.StringFieldUpdateOperationsInput | string
+  isInternal?: Prisma.BoolFieldUpdateOperationsInput | boolean
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deliveryError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -813,6 +883,8 @@ export type MessageSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   senderId?: boolean
   content?: boolean
   direction?: boolean
+  type?: boolean
+  isInternal?: boolean
   externalId?: boolean
   externalStatus?: boolean
   deliveryError?: boolean
@@ -830,6 +902,8 @@ export type MessageSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   senderId?: boolean
   content?: boolean
   direction?: boolean
+  type?: boolean
+  isInternal?: boolean
   externalId?: boolean
   externalStatus?: boolean
   deliveryError?: boolean
@@ -847,6 +921,8 @@ export type MessageSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   senderId?: boolean
   content?: boolean
   direction?: boolean
+  type?: boolean
+  isInternal?: boolean
   externalId?: boolean
   externalStatus?: boolean
   deliveryError?: boolean
@@ -864,6 +940,8 @@ export type MessageSelectScalar = {
   senderId?: boolean
   content?: boolean
   direction?: boolean
+  type?: boolean
+  isInternal?: boolean
   externalId?: boolean
   externalStatus?: boolean
   deliveryError?: boolean
@@ -871,7 +949,7 @@ export type MessageSelectScalar = {
   createdAt?: boolean
 }
 
-export type MessageOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "conversationId" | "tenantId" | "senderType" | "senderId" | "content" | "direction" | "externalId" | "externalStatus" | "deliveryError" | "sentAt" | "createdAt", ExtArgs["result"]["message"]>
+export type MessageOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "conversationId" | "tenantId" | "senderType" | "senderId" | "content" | "direction" | "type" | "isInternal" | "externalId" | "externalStatus" | "deliveryError" | "sentAt" | "createdAt", ExtArgs["result"]["message"]>
 export type MessageInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   conversation?: boolean | Prisma.ConversationDefaultArgs<ExtArgs>
   tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>
@@ -899,6 +977,8 @@ export type $MessagePayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     senderId: string | null
     content: string
     direction: $Enums.MessageDirection
+    type: string
+    isInternal: boolean
     externalId: string | null
     externalStatus: string | null
     deliveryError: string | null
@@ -1336,6 +1416,8 @@ export interface MessageFieldRefs {
   readonly senderId: Prisma.FieldRef<"Message", 'String'>
   readonly content: Prisma.FieldRef<"Message", 'String'>
   readonly direction: Prisma.FieldRef<"Message", 'MessageDirection'>
+  readonly type: Prisma.FieldRef<"Message", 'String'>
+  readonly isInternal: Prisma.FieldRef<"Message", 'Boolean'>
   readonly externalId: Prisma.FieldRef<"Message", 'String'>
   readonly externalStatus: Prisma.FieldRef<"Message", 'String'>
   readonly deliveryError: Prisma.FieldRef<"Message", 'String'>
