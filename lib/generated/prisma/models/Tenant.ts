@@ -222,6 +222,7 @@ export type TenantWhereInput = {
   automationLogs?: Prisma.AutomationLogListRelationFilter
   invoices?: Prisma.InvoiceListRelationFilter
   invoiceItems?: Prisma.InvoiceItemListRelationFilter
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryListRelationFilter
 }
 
 export type TenantOrderByWithRelationInput = {
@@ -253,6 +254,7 @@ export type TenantOrderByWithRelationInput = {
   automationLogs?: Prisma.AutomationLogOrderByRelationAggregateInput
   invoices?: Prisma.InvoiceOrderByRelationAggregateInput
   invoiceItems?: Prisma.InvoiceItemOrderByRelationAggregateInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryOrderByRelationAggregateInput
 }
 
 export type TenantWhereUniqueInput = Prisma.AtLeast<{
@@ -287,6 +289,7 @@ export type TenantWhereUniqueInput = Prisma.AtLeast<{
   automationLogs?: Prisma.AutomationLogListRelationFilter
   invoices?: Prisma.InvoiceListRelationFilter
   invoiceItems?: Prisma.InvoiceItemListRelationFilter
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryListRelationFilter
 }, "id" | "slug">
 
 export type TenantOrderByWithAggregationInput = {
@@ -346,6 +349,7 @@ export type TenantCreateInput = {
   automationLogs?: Prisma.AutomationLogCreateNestedManyWithoutTenantInput
   invoices?: Prisma.InvoiceCreateNestedManyWithoutTenantInput
   invoiceItems?: Prisma.InvoiceItemCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateInput = {
@@ -377,6 +381,7 @@ export type TenantUncheckedCreateInput = {
   automationLogs?: Prisma.AutomationLogUncheckedCreateNestedManyWithoutTenantInput
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutTenantInput
   invoiceItems?: Prisma.InvoiceItemUncheckedCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUpdateInput = {
@@ -408,6 +413,7 @@ export type TenantUpdateInput = {
   automationLogs?: Prisma.AutomationLogUpdateManyWithoutTenantNestedInput
   invoices?: Prisma.InvoiceUpdateManyWithoutTenantNestedInput
   invoiceItems?: Prisma.InvoiceItemUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateInput = {
@@ -439,6 +445,7 @@ export type TenantUncheckedUpdateInput = {
   automationLogs?: Prisma.AutomationLogUncheckedUpdateManyWithoutTenantNestedInput
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutTenantNestedInput
   invoiceItems?: Prisma.InvoiceItemUncheckedUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateManyInput = {
@@ -806,6 +813,20 @@ export type TenantUpdateOneRequiredWithoutActivitiesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.TenantUpdateToOneWithWhereWithoutActivitiesInput, Prisma.TenantUpdateWithoutActivitiesInput>, Prisma.TenantUncheckedUpdateWithoutActivitiesInput>
 }
 
+export type TenantCreateNestedOneWithoutOpportunityStageHistoriesInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutOpportunityStageHistoriesInput, Prisma.TenantUncheckedCreateWithoutOpportunityStageHistoriesInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutOpportunityStageHistoriesInput
+  connect?: Prisma.TenantWhereUniqueInput
+}
+
+export type TenantUpdateOneRequiredWithoutOpportunityStageHistoriesNestedInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutOpportunityStageHistoriesInput, Prisma.TenantUncheckedCreateWithoutOpportunityStageHistoriesInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutOpportunityStageHistoriesInput
+  upsert?: Prisma.TenantUpsertWithoutOpportunityStageHistoriesInput
+  connect?: Prisma.TenantWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TenantUpdateToOneWithWhereWithoutOpportunityStageHistoriesInput, Prisma.TenantUpdateWithoutOpportunityStageHistoriesInput>, Prisma.TenantUncheckedUpdateWithoutOpportunityStageHistoriesInput>
+}
+
 export type TenantCreateWithoutUsersInput = {
   id?: string
   name: string
@@ -834,6 +855,7 @@ export type TenantCreateWithoutUsersInput = {
   automationLogs?: Prisma.AutomationLogCreateNestedManyWithoutTenantInput
   invoices?: Prisma.InvoiceCreateNestedManyWithoutTenantInput
   invoiceItems?: Prisma.InvoiceItemCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutUsersInput = {
@@ -864,6 +886,7 @@ export type TenantUncheckedCreateWithoutUsersInput = {
   automationLogs?: Prisma.AutomationLogUncheckedCreateNestedManyWithoutTenantInput
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutTenantInput
   invoiceItems?: Prisma.InvoiceItemUncheckedCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutUsersInput = {
@@ -910,6 +933,7 @@ export type TenantUpdateWithoutUsersInput = {
   automationLogs?: Prisma.AutomationLogUpdateManyWithoutTenantNestedInput
   invoices?: Prisma.InvoiceUpdateManyWithoutTenantNestedInput
   invoiceItems?: Prisma.InvoiceItemUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutUsersInput = {
@@ -940,6 +964,7 @@ export type TenantUncheckedUpdateWithoutUsersInput = {
   automationLogs?: Prisma.AutomationLogUncheckedUpdateManyWithoutTenantNestedInput
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutTenantNestedInput
   invoiceItems?: Prisma.InvoiceItemUncheckedUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutPasswordResetTokensInput = {
@@ -970,6 +995,7 @@ export type TenantCreateWithoutPasswordResetTokensInput = {
   automationLogs?: Prisma.AutomationLogCreateNestedManyWithoutTenantInput
   invoices?: Prisma.InvoiceCreateNestedManyWithoutTenantInput
   invoiceItems?: Prisma.InvoiceItemCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutPasswordResetTokensInput = {
@@ -1000,6 +1026,7 @@ export type TenantUncheckedCreateWithoutPasswordResetTokensInput = {
   automationLogs?: Prisma.AutomationLogUncheckedCreateNestedManyWithoutTenantInput
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutTenantInput
   invoiceItems?: Prisma.InvoiceItemUncheckedCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutPasswordResetTokensInput = {
@@ -1046,6 +1073,7 @@ export type TenantUpdateWithoutPasswordResetTokensInput = {
   automationLogs?: Prisma.AutomationLogUpdateManyWithoutTenantNestedInput
   invoices?: Prisma.InvoiceUpdateManyWithoutTenantNestedInput
   invoiceItems?: Prisma.InvoiceItemUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutPasswordResetTokensInput = {
@@ -1076,6 +1104,7 @@ export type TenantUncheckedUpdateWithoutPasswordResetTokensInput = {
   automationLogs?: Prisma.AutomationLogUncheckedUpdateManyWithoutTenantNestedInput
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutTenantNestedInput
   invoiceItems?: Prisma.InvoiceItemUncheckedUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutAiLogsInput = {
@@ -1106,6 +1135,7 @@ export type TenantCreateWithoutAiLogsInput = {
   automationLogs?: Prisma.AutomationLogCreateNestedManyWithoutTenantInput
   invoices?: Prisma.InvoiceCreateNestedManyWithoutTenantInput
   invoiceItems?: Prisma.InvoiceItemCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutAiLogsInput = {
@@ -1136,6 +1166,7 @@ export type TenantUncheckedCreateWithoutAiLogsInput = {
   automationLogs?: Prisma.AutomationLogUncheckedCreateNestedManyWithoutTenantInput
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutTenantInput
   invoiceItems?: Prisma.InvoiceItemUncheckedCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutAiLogsInput = {
@@ -1182,6 +1213,7 @@ export type TenantUpdateWithoutAiLogsInput = {
   automationLogs?: Prisma.AutomationLogUpdateManyWithoutTenantNestedInput
   invoices?: Prisma.InvoiceUpdateManyWithoutTenantNestedInput
   invoiceItems?: Prisma.InvoiceItemUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutAiLogsInput = {
@@ -1212,6 +1244,7 @@ export type TenantUncheckedUpdateWithoutAiLogsInput = {
   automationLogs?: Prisma.AutomationLogUncheckedUpdateManyWithoutTenantNestedInput
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutTenantNestedInput
   invoiceItems?: Prisma.InvoiceItemUncheckedUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutCompaniesInput = {
@@ -1242,6 +1275,7 @@ export type TenantCreateWithoutCompaniesInput = {
   automationLogs?: Prisma.AutomationLogCreateNestedManyWithoutTenantInput
   invoices?: Prisma.InvoiceCreateNestedManyWithoutTenantInput
   invoiceItems?: Prisma.InvoiceItemCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutCompaniesInput = {
@@ -1272,6 +1306,7 @@ export type TenantUncheckedCreateWithoutCompaniesInput = {
   automationLogs?: Prisma.AutomationLogUncheckedCreateNestedManyWithoutTenantInput
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutTenantInput
   invoiceItems?: Prisma.InvoiceItemUncheckedCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutCompaniesInput = {
@@ -1318,6 +1353,7 @@ export type TenantUpdateWithoutCompaniesInput = {
   automationLogs?: Prisma.AutomationLogUpdateManyWithoutTenantNestedInput
   invoices?: Prisma.InvoiceUpdateManyWithoutTenantNestedInput
   invoiceItems?: Prisma.InvoiceItemUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutCompaniesInput = {
@@ -1348,6 +1384,7 @@ export type TenantUncheckedUpdateWithoutCompaniesInput = {
   automationLogs?: Prisma.AutomationLogUncheckedUpdateManyWithoutTenantNestedInput
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutTenantNestedInput
   invoiceItems?: Prisma.InvoiceItemUncheckedUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutContactsInput = {
@@ -1378,6 +1415,7 @@ export type TenantCreateWithoutContactsInput = {
   automationLogs?: Prisma.AutomationLogCreateNestedManyWithoutTenantInput
   invoices?: Prisma.InvoiceCreateNestedManyWithoutTenantInput
   invoiceItems?: Prisma.InvoiceItemCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutContactsInput = {
@@ -1408,6 +1446,7 @@ export type TenantUncheckedCreateWithoutContactsInput = {
   automationLogs?: Prisma.AutomationLogUncheckedCreateNestedManyWithoutTenantInput
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutTenantInput
   invoiceItems?: Prisma.InvoiceItemUncheckedCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutContactsInput = {
@@ -1454,6 +1493,7 @@ export type TenantUpdateWithoutContactsInput = {
   automationLogs?: Prisma.AutomationLogUpdateManyWithoutTenantNestedInput
   invoices?: Prisma.InvoiceUpdateManyWithoutTenantNestedInput
   invoiceItems?: Prisma.InvoiceItemUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutContactsInput = {
@@ -1484,6 +1524,7 @@ export type TenantUncheckedUpdateWithoutContactsInput = {
   automationLogs?: Prisma.AutomationLogUncheckedUpdateManyWithoutTenantNestedInput
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutTenantNestedInput
   invoiceItems?: Prisma.InvoiceItemUncheckedUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutProductsInput = {
@@ -1514,6 +1555,7 @@ export type TenantCreateWithoutProductsInput = {
   automationLogs?: Prisma.AutomationLogCreateNestedManyWithoutTenantInput
   invoices?: Prisma.InvoiceCreateNestedManyWithoutTenantInput
   invoiceItems?: Prisma.InvoiceItemCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutProductsInput = {
@@ -1544,6 +1586,7 @@ export type TenantUncheckedCreateWithoutProductsInput = {
   automationLogs?: Prisma.AutomationLogUncheckedCreateNestedManyWithoutTenantInput
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutTenantInput
   invoiceItems?: Prisma.InvoiceItemUncheckedCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutProductsInput = {
@@ -1590,6 +1633,7 @@ export type TenantUpdateWithoutProductsInput = {
   automationLogs?: Prisma.AutomationLogUpdateManyWithoutTenantNestedInput
   invoices?: Prisma.InvoiceUpdateManyWithoutTenantNestedInput
   invoiceItems?: Prisma.InvoiceItemUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutProductsInput = {
@@ -1620,6 +1664,7 @@ export type TenantUncheckedUpdateWithoutProductsInput = {
   automationLogs?: Prisma.AutomationLogUncheckedUpdateManyWithoutTenantNestedInput
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutTenantNestedInput
   invoiceItems?: Prisma.InvoiceItemUncheckedUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutTagsInput = {
@@ -1650,6 +1695,7 @@ export type TenantCreateWithoutTagsInput = {
   automationLogs?: Prisma.AutomationLogCreateNestedManyWithoutTenantInput
   invoices?: Prisma.InvoiceCreateNestedManyWithoutTenantInput
   invoiceItems?: Prisma.InvoiceItemCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutTagsInput = {
@@ -1680,6 +1726,7 @@ export type TenantUncheckedCreateWithoutTagsInput = {
   automationLogs?: Prisma.AutomationLogUncheckedCreateNestedManyWithoutTenantInput
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutTenantInput
   invoiceItems?: Prisma.InvoiceItemUncheckedCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutTagsInput = {
@@ -1726,6 +1773,7 @@ export type TenantUpdateWithoutTagsInput = {
   automationLogs?: Prisma.AutomationLogUpdateManyWithoutTenantNestedInput
   invoices?: Prisma.InvoiceUpdateManyWithoutTenantNestedInput
   invoiceItems?: Prisma.InvoiceItemUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutTagsInput = {
@@ -1756,6 +1804,7 @@ export type TenantUncheckedUpdateWithoutTagsInput = {
   automationLogs?: Prisma.AutomationLogUncheckedUpdateManyWithoutTenantNestedInput
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutTenantNestedInput
   invoiceItems?: Prisma.InvoiceItemUncheckedUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutPipelinesInput = {
@@ -1786,6 +1835,7 @@ export type TenantCreateWithoutPipelinesInput = {
   automationLogs?: Prisma.AutomationLogCreateNestedManyWithoutTenantInput
   invoices?: Prisma.InvoiceCreateNestedManyWithoutTenantInput
   invoiceItems?: Prisma.InvoiceItemCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutPipelinesInput = {
@@ -1816,6 +1866,7 @@ export type TenantUncheckedCreateWithoutPipelinesInput = {
   automationLogs?: Prisma.AutomationLogUncheckedCreateNestedManyWithoutTenantInput
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutTenantInput
   invoiceItems?: Prisma.InvoiceItemUncheckedCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutPipelinesInput = {
@@ -1862,6 +1913,7 @@ export type TenantUpdateWithoutPipelinesInput = {
   automationLogs?: Prisma.AutomationLogUpdateManyWithoutTenantNestedInput
   invoices?: Prisma.InvoiceUpdateManyWithoutTenantNestedInput
   invoiceItems?: Prisma.InvoiceItemUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutPipelinesInput = {
@@ -1892,6 +1944,7 @@ export type TenantUncheckedUpdateWithoutPipelinesInput = {
   automationLogs?: Prisma.AutomationLogUncheckedUpdateManyWithoutTenantNestedInput
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutTenantNestedInput
   invoiceItems?: Prisma.InvoiceItemUncheckedUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutPipelineStagesInput = {
@@ -1922,6 +1975,7 @@ export type TenantCreateWithoutPipelineStagesInput = {
   automationLogs?: Prisma.AutomationLogCreateNestedManyWithoutTenantInput
   invoices?: Prisma.InvoiceCreateNestedManyWithoutTenantInput
   invoiceItems?: Prisma.InvoiceItemCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutPipelineStagesInput = {
@@ -1952,6 +2006,7 @@ export type TenantUncheckedCreateWithoutPipelineStagesInput = {
   automationLogs?: Prisma.AutomationLogUncheckedCreateNestedManyWithoutTenantInput
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutTenantInput
   invoiceItems?: Prisma.InvoiceItemUncheckedCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutPipelineStagesInput = {
@@ -1998,6 +2053,7 @@ export type TenantUpdateWithoutPipelineStagesInput = {
   automationLogs?: Prisma.AutomationLogUpdateManyWithoutTenantNestedInput
   invoices?: Prisma.InvoiceUpdateManyWithoutTenantNestedInput
   invoiceItems?: Prisma.InvoiceItemUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutPipelineStagesInput = {
@@ -2028,6 +2084,7 @@ export type TenantUncheckedUpdateWithoutPipelineStagesInput = {
   automationLogs?: Prisma.AutomationLogUncheckedUpdateManyWithoutTenantNestedInput
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutTenantNestedInput
   invoiceItems?: Prisma.InvoiceItemUncheckedUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutOpportunitiesInput = {
@@ -2058,6 +2115,7 @@ export type TenantCreateWithoutOpportunitiesInput = {
   automationLogs?: Prisma.AutomationLogCreateNestedManyWithoutTenantInput
   invoices?: Prisma.InvoiceCreateNestedManyWithoutTenantInput
   invoiceItems?: Prisma.InvoiceItemCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutOpportunitiesInput = {
@@ -2088,6 +2146,7 @@ export type TenantUncheckedCreateWithoutOpportunitiesInput = {
   automationLogs?: Prisma.AutomationLogUncheckedCreateNestedManyWithoutTenantInput
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutTenantInput
   invoiceItems?: Prisma.InvoiceItemUncheckedCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutOpportunitiesInput = {
@@ -2134,6 +2193,7 @@ export type TenantUpdateWithoutOpportunitiesInput = {
   automationLogs?: Prisma.AutomationLogUpdateManyWithoutTenantNestedInput
   invoices?: Prisma.InvoiceUpdateManyWithoutTenantNestedInput
   invoiceItems?: Prisma.InvoiceItemUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutOpportunitiesInput = {
@@ -2164,6 +2224,7 @@ export type TenantUncheckedUpdateWithoutOpportunitiesInput = {
   automationLogs?: Prisma.AutomationLogUncheckedUpdateManyWithoutTenantNestedInput
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutTenantNestedInput
   invoiceItems?: Prisma.InvoiceItemUncheckedUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutOpportunityProductsInput = {
@@ -2194,6 +2255,7 @@ export type TenantCreateWithoutOpportunityProductsInput = {
   automationLogs?: Prisma.AutomationLogCreateNestedManyWithoutTenantInput
   invoices?: Prisma.InvoiceCreateNestedManyWithoutTenantInput
   invoiceItems?: Prisma.InvoiceItemCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutOpportunityProductsInput = {
@@ -2224,6 +2286,7 @@ export type TenantUncheckedCreateWithoutOpportunityProductsInput = {
   automationLogs?: Prisma.AutomationLogUncheckedCreateNestedManyWithoutTenantInput
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutTenantInput
   invoiceItems?: Prisma.InvoiceItemUncheckedCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutOpportunityProductsInput = {
@@ -2270,6 +2333,7 @@ export type TenantUpdateWithoutOpportunityProductsInput = {
   automationLogs?: Prisma.AutomationLogUpdateManyWithoutTenantNestedInput
   invoices?: Prisma.InvoiceUpdateManyWithoutTenantNestedInput
   invoiceItems?: Prisma.InvoiceItemUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutOpportunityProductsInput = {
@@ -2300,6 +2364,7 @@ export type TenantUncheckedUpdateWithoutOpportunityProductsInput = {
   automationLogs?: Prisma.AutomationLogUncheckedUpdateManyWithoutTenantNestedInput
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutTenantNestedInput
   invoiceItems?: Prisma.InvoiceItemUncheckedUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutRevenuesInput = {
@@ -2330,6 +2395,7 @@ export type TenantCreateWithoutRevenuesInput = {
   automationLogs?: Prisma.AutomationLogCreateNestedManyWithoutTenantInput
   invoices?: Prisma.InvoiceCreateNestedManyWithoutTenantInput
   invoiceItems?: Prisma.InvoiceItemCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutRevenuesInput = {
@@ -2360,6 +2426,7 @@ export type TenantUncheckedCreateWithoutRevenuesInput = {
   automationLogs?: Prisma.AutomationLogUncheckedCreateNestedManyWithoutTenantInput
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutTenantInput
   invoiceItems?: Prisma.InvoiceItemUncheckedCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutRevenuesInput = {
@@ -2406,6 +2473,7 @@ export type TenantUpdateWithoutRevenuesInput = {
   automationLogs?: Prisma.AutomationLogUpdateManyWithoutTenantNestedInput
   invoices?: Prisma.InvoiceUpdateManyWithoutTenantNestedInput
   invoiceItems?: Prisma.InvoiceItemUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutRevenuesInput = {
@@ -2436,6 +2504,7 @@ export type TenantUncheckedUpdateWithoutRevenuesInput = {
   automationLogs?: Prisma.AutomationLogUncheckedUpdateManyWithoutTenantNestedInput
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutTenantNestedInput
   invoiceItems?: Prisma.InvoiceItemUncheckedUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutTasksInput = {
@@ -2466,6 +2535,7 @@ export type TenantCreateWithoutTasksInput = {
   automationLogs?: Prisma.AutomationLogCreateNestedManyWithoutTenantInput
   invoices?: Prisma.InvoiceCreateNestedManyWithoutTenantInput
   invoiceItems?: Prisma.InvoiceItemCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutTasksInput = {
@@ -2496,6 +2566,7 @@ export type TenantUncheckedCreateWithoutTasksInput = {
   automationLogs?: Prisma.AutomationLogUncheckedCreateNestedManyWithoutTenantInput
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutTenantInput
   invoiceItems?: Prisma.InvoiceItemUncheckedCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutTasksInput = {
@@ -2542,6 +2613,7 @@ export type TenantUpdateWithoutTasksInput = {
   automationLogs?: Prisma.AutomationLogUpdateManyWithoutTenantNestedInput
   invoices?: Prisma.InvoiceUpdateManyWithoutTenantNestedInput
   invoiceItems?: Prisma.InvoiceItemUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutTasksInput = {
@@ -2572,6 +2644,7 @@ export type TenantUncheckedUpdateWithoutTasksInput = {
   automationLogs?: Prisma.AutomationLogUncheckedUpdateManyWithoutTenantNestedInput
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutTenantNestedInput
   invoiceItems?: Prisma.InvoiceItemUncheckedUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutConversationsInput = {
@@ -2602,6 +2675,7 @@ export type TenantCreateWithoutConversationsInput = {
   automationLogs?: Prisma.AutomationLogCreateNestedManyWithoutTenantInput
   invoices?: Prisma.InvoiceCreateNestedManyWithoutTenantInput
   invoiceItems?: Prisma.InvoiceItemCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutConversationsInput = {
@@ -2632,6 +2706,7 @@ export type TenantUncheckedCreateWithoutConversationsInput = {
   automationLogs?: Prisma.AutomationLogUncheckedCreateNestedManyWithoutTenantInput
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutTenantInput
   invoiceItems?: Prisma.InvoiceItemUncheckedCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutConversationsInput = {
@@ -2678,6 +2753,7 @@ export type TenantUpdateWithoutConversationsInput = {
   automationLogs?: Prisma.AutomationLogUpdateManyWithoutTenantNestedInput
   invoices?: Prisma.InvoiceUpdateManyWithoutTenantNestedInput
   invoiceItems?: Prisma.InvoiceItemUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutConversationsInput = {
@@ -2708,6 +2784,7 @@ export type TenantUncheckedUpdateWithoutConversationsInput = {
   automationLogs?: Prisma.AutomationLogUncheckedUpdateManyWithoutTenantNestedInput
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutTenantNestedInput
   invoiceItems?: Prisma.InvoiceItemUncheckedUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutMessagesInput = {
@@ -2738,6 +2815,7 @@ export type TenantCreateWithoutMessagesInput = {
   automationLogs?: Prisma.AutomationLogCreateNestedManyWithoutTenantInput
   invoices?: Prisma.InvoiceCreateNestedManyWithoutTenantInput
   invoiceItems?: Prisma.InvoiceItemCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutMessagesInput = {
@@ -2768,6 +2846,7 @@ export type TenantUncheckedCreateWithoutMessagesInput = {
   automationLogs?: Prisma.AutomationLogUncheckedCreateNestedManyWithoutTenantInput
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutTenantInput
   invoiceItems?: Prisma.InvoiceItemUncheckedCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutMessagesInput = {
@@ -2814,6 +2893,7 @@ export type TenantUpdateWithoutMessagesInput = {
   automationLogs?: Prisma.AutomationLogUpdateManyWithoutTenantNestedInput
   invoices?: Prisma.InvoiceUpdateManyWithoutTenantNestedInput
   invoiceItems?: Prisma.InvoiceItemUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutMessagesInput = {
@@ -2844,6 +2924,7 @@ export type TenantUncheckedUpdateWithoutMessagesInput = {
   automationLogs?: Prisma.AutomationLogUncheckedUpdateManyWithoutTenantNestedInput
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutTenantNestedInput
   invoiceItems?: Prisma.InvoiceItemUncheckedUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutInvoicesInput = {
@@ -2874,6 +2955,7 @@ export type TenantCreateWithoutInvoicesInput = {
   automations?: Prisma.AutomationCreateNestedManyWithoutTenantInput
   automationLogs?: Prisma.AutomationLogCreateNestedManyWithoutTenantInput
   invoiceItems?: Prisma.InvoiceItemCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutInvoicesInput = {
@@ -2904,6 +2986,7 @@ export type TenantUncheckedCreateWithoutInvoicesInput = {
   automations?: Prisma.AutomationUncheckedCreateNestedManyWithoutTenantInput
   automationLogs?: Prisma.AutomationLogUncheckedCreateNestedManyWithoutTenantInput
   invoiceItems?: Prisma.InvoiceItemUncheckedCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutInvoicesInput = {
@@ -2950,6 +3033,7 @@ export type TenantUpdateWithoutInvoicesInput = {
   automations?: Prisma.AutomationUpdateManyWithoutTenantNestedInput
   automationLogs?: Prisma.AutomationLogUpdateManyWithoutTenantNestedInput
   invoiceItems?: Prisma.InvoiceItemUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutInvoicesInput = {
@@ -2980,6 +3064,7 @@ export type TenantUncheckedUpdateWithoutInvoicesInput = {
   automations?: Prisma.AutomationUncheckedUpdateManyWithoutTenantNestedInput
   automationLogs?: Prisma.AutomationLogUncheckedUpdateManyWithoutTenantNestedInput
   invoiceItems?: Prisma.InvoiceItemUncheckedUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutInvoiceItemsInput = {
@@ -3010,6 +3095,7 @@ export type TenantCreateWithoutInvoiceItemsInput = {
   automations?: Prisma.AutomationCreateNestedManyWithoutTenantInput
   automationLogs?: Prisma.AutomationLogCreateNestedManyWithoutTenantInput
   invoices?: Prisma.InvoiceCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutInvoiceItemsInput = {
@@ -3040,6 +3126,7 @@ export type TenantUncheckedCreateWithoutInvoiceItemsInput = {
   automations?: Prisma.AutomationUncheckedCreateNestedManyWithoutTenantInput
   automationLogs?: Prisma.AutomationLogUncheckedCreateNestedManyWithoutTenantInput
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutInvoiceItemsInput = {
@@ -3086,6 +3173,7 @@ export type TenantUpdateWithoutInvoiceItemsInput = {
   automations?: Prisma.AutomationUpdateManyWithoutTenantNestedInput
   automationLogs?: Prisma.AutomationLogUpdateManyWithoutTenantNestedInput
   invoices?: Prisma.InvoiceUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutInvoiceItemsInput = {
@@ -3116,6 +3204,7 @@ export type TenantUncheckedUpdateWithoutInvoiceItemsInput = {
   automations?: Prisma.AutomationUncheckedUpdateManyWithoutTenantNestedInput
   automationLogs?: Prisma.AutomationLogUncheckedUpdateManyWithoutTenantNestedInput
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutAutomationsInput = {
@@ -3146,6 +3235,7 @@ export type TenantCreateWithoutAutomationsInput = {
   automationLogs?: Prisma.AutomationLogCreateNestedManyWithoutTenantInput
   invoices?: Prisma.InvoiceCreateNestedManyWithoutTenantInput
   invoiceItems?: Prisma.InvoiceItemCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutAutomationsInput = {
@@ -3176,6 +3266,7 @@ export type TenantUncheckedCreateWithoutAutomationsInput = {
   automationLogs?: Prisma.AutomationLogUncheckedCreateNestedManyWithoutTenantInput
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutTenantInput
   invoiceItems?: Prisma.InvoiceItemUncheckedCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutAutomationsInput = {
@@ -3222,6 +3313,7 @@ export type TenantUpdateWithoutAutomationsInput = {
   automationLogs?: Prisma.AutomationLogUpdateManyWithoutTenantNestedInput
   invoices?: Prisma.InvoiceUpdateManyWithoutTenantNestedInput
   invoiceItems?: Prisma.InvoiceItemUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutAutomationsInput = {
@@ -3252,6 +3344,7 @@ export type TenantUncheckedUpdateWithoutAutomationsInput = {
   automationLogs?: Prisma.AutomationLogUncheckedUpdateManyWithoutTenantNestedInput
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutTenantNestedInput
   invoiceItems?: Prisma.InvoiceItemUncheckedUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutAutomationLogsInput = {
@@ -3282,6 +3375,7 @@ export type TenantCreateWithoutAutomationLogsInput = {
   automations?: Prisma.AutomationCreateNestedManyWithoutTenantInput
   invoices?: Prisma.InvoiceCreateNestedManyWithoutTenantInput
   invoiceItems?: Prisma.InvoiceItemCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutAutomationLogsInput = {
@@ -3312,6 +3406,7 @@ export type TenantUncheckedCreateWithoutAutomationLogsInput = {
   automations?: Prisma.AutomationUncheckedCreateNestedManyWithoutTenantInput
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutTenantInput
   invoiceItems?: Prisma.InvoiceItemUncheckedCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutAutomationLogsInput = {
@@ -3358,6 +3453,7 @@ export type TenantUpdateWithoutAutomationLogsInput = {
   automations?: Prisma.AutomationUpdateManyWithoutTenantNestedInput
   invoices?: Prisma.InvoiceUpdateManyWithoutTenantNestedInput
   invoiceItems?: Prisma.InvoiceItemUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutAutomationLogsInput = {
@@ -3388,6 +3484,7 @@ export type TenantUncheckedUpdateWithoutAutomationLogsInput = {
   automations?: Prisma.AutomationUncheckedUpdateManyWithoutTenantNestedInput
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutTenantNestedInput
   invoiceItems?: Prisma.InvoiceItemUncheckedUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutActivitiesInput = {
@@ -3418,6 +3515,7 @@ export type TenantCreateWithoutActivitiesInput = {
   automationLogs?: Prisma.AutomationLogCreateNestedManyWithoutTenantInput
   invoices?: Prisma.InvoiceCreateNestedManyWithoutTenantInput
   invoiceItems?: Prisma.InvoiceItemCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutActivitiesInput = {
@@ -3448,6 +3546,7 @@ export type TenantUncheckedCreateWithoutActivitiesInput = {
   automationLogs?: Prisma.AutomationLogUncheckedCreateNestedManyWithoutTenantInput
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutTenantInput
   invoiceItems?: Prisma.InvoiceItemUncheckedCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutActivitiesInput = {
@@ -3494,6 +3593,7 @@ export type TenantUpdateWithoutActivitiesInput = {
   automationLogs?: Prisma.AutomationLogUpdateManyWithoutTenantNestedInput
   invoices?: Prisma.InvoiceUpdateManyWithoutTenantNestedInput
   invoiceItems?: Prisma.InvoiceItemUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutActivitiesInput = {
@@ -3520,6 +3620,147 @@ export type TenantUncheckedUpdateWithoutActivitiesInput = {
   tasks?: Prisma.TaskUncheckedUpdateManyWithoutTenantNestedInput
   conversations?: Prisma.ConversationUncheckedUpdateManyWithoutTenantNestedInput
   messages?: Prisma.MessageUncheckedUpdateManyWithoutTenantNestedInput
+  automations?: Prisma.AutomationUncheckedUpdateManyWithoutTenantNestedInput
+  automationLogs?: Prisma.AutomationLogUncheckedUpdateManyWithoutTenantNestedInput
+  invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutTenantNestedInput
+  invoiceItems?: Prisma.InvoiceItemUncheckedUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantCreateWithoutOpportunityStageHistoriesInput = {
+  id?: string
+  name: string
+  slug: string
+  plan?: $Enums.TenantPlan
+  status?: $Enums.TenantStatus
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserCreateNestedManyWithoutTenantInput
+  passwordResetTokens?: Prisma.PasswordResetTokenCreateNestedManyWithoutTenantInput
+  aiLogs?: Prisma.AiLogCreateNestedManyWithoutTenantInput
+  contacts?: Prisma.ContactCreateNestedManyWithoutTenantInput
+  companies?: Prisma.CompanyCreateNestedManyWithoutTenantInput
+  products?: Prisma.ProductCreateNestedManyWithoutTenantInput
+  tags?: Prisma.TagCreateNestedManyWithoutTenantInput
+  pipelines?: Prisma.PipelineCreateNestedManyWithoutTenantInput
+  pipelineStages?: Prisma.PipelineStageCreateNestedManyWithoutTenantInput
+  opportunities?: Prisma.OpportunityCreateNestedManyWithoutTenantInput
+  opportunityProducts?: Prisma.OpportunityProductCreateNestedManyWithoutTenantInput
+  revenues?: Prisma.RevenueCreateNestedManyWithoutTenantInput
+  tasks?: Prisma.TaskCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageCreateNestedManyWithoutTenantInput
+  activities?: Prisma.ActivityCreateNestedManyWithoutTenantInput
+  automations?: Prisma.AutomationCreateNestedManyWithoutTenantInput
+  automationLogs?: Prisma.AutomationLogCreateNestedManyWithoutTenantInput
+  invoices?: Prisma.InvoiceCreateNestedManyWithoutTenantInput
+  invoiceItems?: Prisma.InvoiceItemCreateNestedManyWithoutTenantInput
+}
+
+export type TenantUncheckedCreateWithoutOpportunityStageHistoriesInput = {
+  id?: string
+  name: string
+  slug: string
+  plan?: $Enums.TenantPlan
+  status?: $Enums.TenantStatus
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutTenantInput
+  passwordResetTokens?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutTenantInput
+  aiLogs?: Prisma.AiLogUncheckedCreateNestedManyWithoutTenantInput
+  contacts?: Prisma.ContactUncheckedCreateNestedManyWithoutTenantInput
+  companies?: Prisma.CompanyUncheckedCreateNestedManyWithoutTenantInput
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutTenantInput
+  tags?: Prisma.TagUncheckedCreateNestedManyWithoutTenantInput
+  pipelines?: Prisma.PipelineUncheckedCreateNestedManyWithoutTenantInput
+  pipelineStages?: Prisma.PipelineStageUncheckedCreateNestedManyWithoutTenantInput
+  opportunities?: Prisma.OpportunityUncheckedCreateNestedManyWithoutTenantInput
+  opportunityProducts?: Prisma.OpportunityProductUncheckedCreateNestedManyWithoutTenantInput
+  revenues?: Prisma.RevenueUncheckedCreateNestedManyWithoutTenantInput
+  tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutTenantInput
+  activities?: Prisma.ActivityUncheckedCreateNestedManyWithoutTenantInput
+  automations?: Prisma.AutomationUncheckedCreateNestedManyWithoutTenantInput
+  automationLogs?: Prisma.AutomationLogUncheckedCreateNestedManyWithoutTenantInput
+  invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutTenantInput
+  invoiceItems?: Prisma.InvoiceItemUncheckedCreateNestedManyWithoutTenantInput
+}
+
+export type TenantCreateOrConnectWithoutOpportunityStageHistoriesInput = {
+  where: Prisma.TenantWhereUniqueInput
+  create: Prisma.XOR<Prisma.TenantCreateWithoutOpportunityStageHistoriesInput, Prisma.TenantUncheckedCreateWithoutOpportunityStageHistoriesInput>
+}
+
+export type TenantUpsertWithoutOpportunityStageHistoriesInput = {
+  update: Prisma.XOR<Prisma.TenantUpdateWithoutOpportunityStageHistoriesInput, Prisma.TenantUncheckedUpdateWithoutOpportunityStageHistoriesInput>
+  create: Prisma.XOR<Prisma.TenantCreateWithoutOpportunityStageHistoriesInput, Prisma.TenantUncheckedCreateWithoutOpportunityStageHistoriesInput>
+  where?: Prisma.TenantWhereInput
+}
+
+export type TenantUpdateToOneWithWhereWithoutOpportunityStageHistoriesInput = {
+  where?: Prisma.TenantWhereInput
+  data: Prisma.XOR<Prisma.TenantUpdateWithoutOpportunityStageHistoriesInput, Prisma.TenantUncheckedUpdateWithoutOpportunityStageHistoriesInput>
+}
+
+export type TenantUpdateWithoutOpportunityStageHistoriesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  plan?: Prisma.EnumTenantPlanFieldUpdateOperationsInput | $Enums.TenantPlan
+  status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUpdateManyWithoutTenantNestedInput
+  passwordResetTokens?: Prisma.PasswordResetTokenUpdateManyWithoutTenantNestedInput
+  aiLogs?: Prisma.AiLogUpdateManyWithoutTenantNestedInput
+  contacts?: Prisma.ContactUpdateManyWithoutTenantNestedInput
+  companies?: Prisma.CompanyUpdateManyWithoutTenantNestedInput
+  products?: Prisma.ProductUpdateManyWithoutTenantNestedInput
+  tags?: Prisma.TagUpdateManyWithoutTenantNestedInput
+  pipelines?: Prisma.PipelineUpdateManyWithoutTenantNestedInput
+  pipelineStages?: Prisma.PipelineStageUpdateManyWithoutTenantNestedInput
+  opportunities?: Prisma.OpportunityUpdateManyWithoutTenantNestedInput
+  opportunityProducts?: Prisma.OpportunityProductUpdateManyWithoutTenantNestedInput
+  revenues?: Prisma.RevenueUpdateManyWithoutTenantNestedInput
+  tasks?: Prisma.TaskUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutTenantNestedInput
+  activities?: Prisma.ActivityUpdateManyWithoutTenantNestedInput
+  automations?: Prisma.AutomationUpdateManyWithoutTenantNestedInput
+  automationLogs?: Prisma.AutomationLogUpdateManyWithoutTenantNestedInput
+  invoices?: Prisma.InvoiceUpdateManyWithoutTenantNestedInput
+  invoiceItems?: Prisma.InvoiceItemUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantUncheckedUpdateWithoutOpportunityStageHistoriesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  plan?: Prisma.EnumTenantPlanFieldUpdateOperationsInput | $Enums.TenantPlan
+  status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUncheckedUpdateManyWithoutTenantNestedInput
+  passwordResetTokens?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutTenantNestedInput
+  aiLogs?: Prisma.AiLogUncheckedUpdateManyWithoutTenantNestedInput
+  contacts?: Prisma.ContactUncheckedUpdateManyWithoutTenantNestedInput
+  companies?: Prisma.CompanyUncheckedUpdateManyWithoutTenantNestedInput
+  products?: Prisma.ProductUncheckedUpdateManyWithoutTenantNestedInput
+  tags?: Prisma.TagUncheckedUpdateManyWithoutTenantNestedInput
+  pipelines?: Prisma.PipelineUncheckedUpdateManyWithoutTenantNestedInput
+  pipelineStages?: Prisma.PipelineStageUncheckedUpdateManyWithoutTenantNestedInput
+  opportunities?: Prisma.OpportunityUncheckedUpdateManyWithoutTenantNestedInput
+  opportunityProducts?: Prisma.OpportunityProductUncheckedUpdateManyWithoutTenantNestedInput
+  revenues?: Prisma.RevenueUncheckedUpdateManyWithoutTenantNestedInput
+  tasks?: Prisma.TaskUncheckedUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutTenantNestedInput
+  activities?: Prisma.ActivityUncheckedUpdateManyWithoutTenantNestedInput
   automations?: Prisma.AutomationUncheckedUpdateManyWithoutTenantNestedInput
   automationLogs?: Prisma.AutomationLogUncheckedUpdateManyWithoutTenantNestedInput
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutTenantNestedInput
@@ -3552,6 +3793,7 @@ export type TenantCountOutputType = {
   automationLogs: number
   invoices: number
   invoiceItems: number
+  opportunityStageHistories: number
 }
 
 export type TenantCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -3575,6 +3817,7 @@ export type TenantCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions
   automationLogs?: boolean | TenantCountOutputTypeCountAutomationLogsArgs
   invoices?: boolean | TenantCountOutputTypeCountInvoicesArgs
   invoiceItems?: boolean | TenantCountOutputTypeCountInvoiceItemsArgs
+  opportunityStageHistories?: boolean | TenantCountOutputTypeCountOpportunityStageHistoriesArgs
 }
 
 /**
@@ -3727,6 +3970,13 @@ export type TenantCountOutputTypeCountInvoiceItemsArgs<ExtArgs extends runtime.T
   where?: Prisma.InvoiceItemWhereInput
 }
 
+/**
+ * TenantCountOutputType without action
+ */
+export type TenantCountOutputTypeCountOpportunityStageHistoriesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.OpportunityStageHistoryWhereInput
+}
+
 
 export type TenantSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -3757,6 +4007,7 @@ export type TenantSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   automationLogs?: boolean | Prisma.Tenant$automationLogsArgs<ExtArgs>
   invoices?: boolean | Prisma.Tenant$invoicesArgs<ExtArgs>
   invoiceItems?: boolean | Prisma.Tenant$invoiceItemsArgs<ExtArgs>
+  opportunityStageHistories?: boolean | Prisma.Tenant$opportunityStageHistoriesArgs<ExtArgs>
   _count?: boolean | Prisma.TenantCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["tenant"]>
 
@@ -3815,6 +4066,7 @@ export type TenantInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   automationLogs?: boolean | Prisma.Tenant$automationLogsArgs<ExtArgs>
   invoices?: boolean | Prisma.Tenant$invoicesArgs<ExtArgs>
   invoiceItems?: boolean | Prisma.Tenant$invoiceItemsArgs<ExtArgs>
+  opportunityStageHistories?: boolean | Prisma.Tenant$opportunityStageHistoriesArgs<ExtArgs>
   _count?: boolean | Prisma.TenantCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type TenantIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -3843,6 +4095,7 @@ export type $TenantPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     automationLogs: Prisma.$AutomationLogPayload<ExtArgs>[]
     invoices: Prisma.$InvoicePayload<ExtArgs>[]
     invoiceItems: Prisma.$InvoiceItemPayload<ExtArgs>[]
+    opportunityStageHistories: Prisma.$OpportunityStageHistoryPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -4267,6 +4520,7 @@ export interface Prisma__TenantClient<T, Null = never, ExtArgs extends runtime.T
   automationLogs<T extends Prisma.Tenant$automationLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$automationLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AutomationLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   invoices<T extends Prisma.Tenant$invoicesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$invoicesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvoicePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   invoiceItems<T extends Prisma.Tenant$invoiceItemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$invoiceItemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvoiceItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  opportunityStageHistories<T extends Prisma.Tenant$opportunityStageHistoriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$opportunityStageHistoriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OpportunityStageHistoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -5174,6 +5428,30 @@ export type Tenant$invoiceItemsArgs<ExtArgs extends runtime.Types.Extensions.Int
   take?: number
   skip?: number
   distinct?: Prisma.InvoiceItemScalarFieldEnum | Prisma.InvoiceItemScalarFieldEnum[]
+}
+
+/**
+ * Tenant.opportunityStageHistories
+ */
+export type Tenant$opportunityStageHistoriesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the OpportunityStageHistory
+   */
+  select?: Prisma.OpportunityStageHistorySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the OpportunityStageHistory
+   */
+  omit?: Prisma.OpportunityStageHistoryOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.OpportunityStageHistoryInclude<ExtArgs> | null
+  where?: Prisma.OpportunityStageHistoryWhereInput
+  orderBy?: Prisma.OpportunityStageHistoryOrderByWithRelationInput | Prisma.OpportunityStageHistoryOrderByWithRelationInput[]
+  cursor?: Prisma.OpportunityStageHistoryWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.OpportunityStageHistoryScalarFieldEnum | Prisma.OpportunityStageHistoryScalarFieldEnum[]
 }
 
 /**

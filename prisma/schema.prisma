@@ -140,6 +140,7 @@ model Tenant {
   automationLogs       AutomationLog[]
   invoices             Invoice[]
   invoiceItems         InvoiceItem[]
+  opportunityStageHistories OpportunityStageHistory[]
 
   @@map("tenants")
 }
@@ -170,6 +171,7 @@ model User {
   assignedTasks        Task[]               @relation("TaskAssignee")
   assignedConversations Conversation[]      @relation("ConversationAssignee")
   activities           Activity[]
+  stageMovements       OpportunityStageHistory[] @relation("StageHistoryMover")
 
   @@unique([tenantId, email])
   @@map("users")
@@ -368,6 +370,8 @@ model PipelineStage {
   pipeline      Pipeline      @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
   tenant        Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   opportunities Opportunity[]
+  fromHistory   OpportunityStageHistory[] @relation("StageHistoryFrom")
+  toHistory     OpportunityStageHistory[] @relation("StageHistoryTo")
 
   @@index([pipelineId])
   @@index([tenantId])
@@ -403,6 +407,7 @@ model Opportunity {
   revenues     Revenue[]
   tasks        Task[]
   activities   Activity[]
+  stageHistory OpportunityStageHistory[]
 
   @@index([tenantId])
   @@index([pipelineId])
@@ -664,4 +669,28 @@ model Activity {
   @@index([contactId])
   @@index([opportunityId])
   @@map("activities")
+}
+
+// ─── OpportunityStageHistory ──────────────────────────────────────────────────
+
+model OpportunityStageHistory {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId        String    @map("tenant_id") @db.Uuid
+  opportunityId   String    @map("opportunity_id") @db.Uuid
+  fromStageId     String?   @map("from_stage_id") @db.Uuid
+  toStageId       String    @map("to_stage_id") @db.Uuid
+  movedByUserId   String?   @map("moved_by_user_id") @db.Uuid
+  source          String    // "manual" | "ai" | "automation"
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  tenant      Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  opportunity Opportunity    @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  fromStage   PipelineStage? @relation("StageHistoryFrom", fields: [fromStageId], references: [id], onDelete: SetNull)
+  toStage     PipelineStage  @relation("StageHistoryTo", fields: [toStageId], references: [id])
+  movedByUser User?          @relation("StageHistoryMover", fields: [movedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([opportunityId])
+  @@index([tenantId])
+  @@index([tenantId, createdAt])
+  @@map("opportunity_stage_history")
 }

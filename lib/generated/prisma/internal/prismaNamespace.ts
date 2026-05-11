@@ -406,7 +406,8 @@ export const ModelName = {
   InvoiceItem: 'InvoiceItem',
   Automation: 'Automation',
   AutomationLog: 'AutomationLog',
-  Activity: 'Activity'
+  Activity: 'Activity',
+  OpportunityStageHistory: 'OpportunityStageHistory'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -422,7 +423,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "tenant" | "user" | "session" | "passwordResetToken" | "aiLog" | "company" | "contact" | "product" | "tag" | "contactTag" | "pipeline" | "pipelineStage" | "opportunity" | "opportunityProduct" | "revenue" | "task" | "conversation" | "message" | "invoice" | "invoiceItem" | "automation" | "automationLog" | "activity"
+    modelProps: "tenant" | "user" | "session" | "passwordResetToken" | "aiLog" | "company" | "contact" | "product" | "tag" | "contactTag" | "pipeline" | "pipelineStage" | "opportunity" | "opportunityProduct" | "revenue" | "task" | "conversation" | "message" | "invoice" | "invoiceItem" | "automation" | "automationLog" | "activity" | "opportunityStageHistory"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2128,6 +2129,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    OpportunityStageHistory: {
+      payload: Prisma.$OpportunityStageHistoryPayload<ExtArgs>
+      fields: Prisma.OpportunityStageHistoryFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.OpportunityStageHistoryFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpportunityStageHistoryPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.OpportunityStageHistoryFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpportunityStageHistoryPayload>
+        }
+        findFirst: {
+          args: Prisma.OpportunityStageHistoryFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpportunityStageHistoryPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.OpportunityStageHistoryFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpportunityStageHistoryPayload>
+        }
+        findMany: {
+          args: Prisma.OpportunityStageHistoryFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpportunityStageHistoryPayload>[]
+        }
+        create: {
+          args: Prisma.OpportunityStageHistoryCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpportunityStageHistoryPayload>
+        }
+        createMany: {
+          args: Prisma.OpportunityStageHistoryCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.OpportunityStageHistoryCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpportunityStageHistoryPayload>[]
+        }
+        delete: {
+          args: Prisma.OpportunityStageHistoryDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpportunityStageHistoryPayload>
+        }
+        update: {
+          args: Prisma.OpportunityStageHistoryUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpportunityStageHistoryPayload>
+        }
+        deleteMany: {
+          args: Prisma.OpportunityStageHistoryDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.OpportunityStageHistoryUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.OpportunityStageHistoryUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpportunityStageHistoryPayload>[]
+        }
+        upsert: {
+          args: Prisma.OpportunityStageHistoryUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpportunityStageHistoryPayload>
+        }
+        aggregate: {
+          args: Prisma.OpportunityStageHistoryAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateOpportunityStageHistory>
+        }
+        groupBy: {
+          args: Prisma.OpportunityStageHistoryGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OpportunityStageHistoryGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.OpportunityStageHistoryCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OpportunityStageHistoryCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -2531,6 +2606,20 @@ export const ActivityScalarFieldEnum = {
 } as const
 
 export type ActivityScalarFieldEnum = (typeof ActivityScalarFieldEnum)[keyof typeof ActivityScalarFieldEnum]
+
+
+export const OpportunityStageHistoryScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  opportunityId: 'opportunityId',
+  fromStageId: 'fromStageId',
+  toStageId: 'toStageId',
+  movedByUserId: 'movedByUserId',
+  source: 'source',
+  createdAt: 'createdAt'
+} as const
+
+export type OpportunityStageHistoryScalarFieldEnum = (typeof OpportunityStageHistoryScalarFieldEnum)[keyof typeof OpportunityStageHistoryScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -3012,6 +3101,7 @@ export type GlobalOmitConfig = {
   automation?: Prisma.AutomationOmit
   automationLog?: Prisma.AutomationLogOmit
   activity?: Prisma.ActivityOmit
+  opportunityStageHistory?: Prisma.OpportunityStageHistoryOmit
 }
 
 /* Types for Logging */

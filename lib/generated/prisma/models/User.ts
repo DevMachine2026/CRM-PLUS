@@ -254,6 +254,7 @@ export type UserWhereInput = {
   assignedTasks?: Prisma.TaskListRelationFilter
   assignedConversations?: Prisma.ConversationListRelationFilter
   activities?: Prisma.ActivityListRelationFilter
+  stageMovements?: Prisma.OpportunityStageHistoryListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -278,6 +279,7 @@ export type UserOrderByWithRelationInput = {
   assignedTasks?: Prisma.TaskOrderByRelationAggregateInput
   assignedConversations?: Prisma.ConversationOrderByRelationAggregateInput
   activities?: Prisma.ActivityOrderByRelationAggregateInput
+  stageMovements?: Prisma.OpportunityStageHistoryOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -306,6 +308,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   assignedTasks?: Prisma.TaskListRelationFilter
   assignedConversations?: Prisma.ConversationListRelationFilter
   activities?: Prisma.ActivityListRelationFilter
+  stageMovements?: Prisma.OpportunityStageHistoryListRelationFilter
 }, "id" | "tenantId_email">
 
 export type UserOrderByWithAggregationInput = {
@@ -367,6 +370,7 @@ export type UserCreateInput = {
   assignedTasks?: Prisma.TaskCreateNestedManyWithoutAssignedUserInput
   assignedConversations?: Prisma.ConversationCreateNestedManyWithoutAssignedUserInput
   activities?: Prisma.ActivityCreateNestedManyWithoutUserInput
+  stageMovements?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutMovedByUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -390,6 +394,7 @@ export type UserUncheckedCreateInput = {
   assignedTasks?: Prisma.TaskUncheckedCreateNestedManyWithoutAssignedUserInput
   assignedConversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutAssignedUserInput
   activities?: Prisma.ActivityUncheckedCreateNestedManyWithoutUserInput
+  stageMovements?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutMovedByUserInput
 }
 
 export type UserUpdateInput = {
@@ -413,6 +418,7 @@ export type UserUpdateInput = {
   assignedTasks?: Prisma.TaskUpdateManyWithoutAssignedUserNestedInput
   assignedConversations?: Prisma.ConversationUpdateManyWithoutAssignedUserNestedInput
   activities?: Prisma.ActivityUpdateManyWithoutUserNestedInput
+  stageMovements?: Prisma.OpportunityStageHistoryUpdateManyWithoutMovedByUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -436,6 +442,7 @@ export type UserUncheckedUpdateInput = {
   assignedTasks?: Prisma.TaskUncheckedUpdateManyWithoutAssignedUserNestedInput
   assignedConversations?: Prisma.ConversationUncheckedUpdateManyWithoutAssignedUserNestedInput
   activities?: Prisma.ActivityUncheckedUpdateManyWithoutUserNestedInput
+  stageMovements?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutMovedByUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -724,6 +731,22 @@ export type UserUpdateOneWithoutActivitiesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutActivitiesInput, Prisma.UserUpdateWithoutActivitiesInput>, Prisma.UserUncheckedUpdateWithoutActivitiesInput>
 }
 
+export type UserCreateNestedOneWithoutStageMovementsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutStageMovementsInput, Prisma.UserUncheckedCreateWithoutStageMovementsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutStageMovementsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneWithoutStageMovementsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutStageMovementsInput, Prisma.UserUncheckedCreateWithoutStageMovementsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutStageMovementsInput
+  upsert?: Prisma.UserUpsertWithoutStageMovementsInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutStageMovementsInput, Prisma.UserUpdateWithoutStageMovementsInput>, Prisma.UserUncheckedUpdateWithoutStageMovementsInput>
+}
+
 export type UserCreateWithoutTenantInput = {
   id?: string
   name: string
@@ -744,6 +767,7 @@ export type UserCreateWithoutTenantInput = {
   assignedTasks?: Prisma.TaskCreateNestedManyWithoutAssignedUserInput
   assignedConversations?: Prisma.ConversationCreateNestedManyWithoutAssignedUserInput
   activities?: Prisma.ActivityCreateNestedManyWithoutUserInput
+  stageMovements?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutMovedByUserInput
 }
 
 export type UserUncheckedCreateWithoutTenantInput = {
@@ -766,6 +790,7 @@ export type UserUncheckedCreateWithoutTenantInput = {
   assignedTasks?: Prisma.TaskUncheckedCreateNestedManyWithoutAssignedUserInput
   assignedConversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutAssignedUserInput
   activities?: Prisma.ActivityUncheckedCreateNestedManyWithoutUserInput
+  stageMovements?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutMovedByUserInput
 }
 
 export type UserCreateOrConnectWithoutTenantInput = {
@@ -833,6 +858,7 @@ export type UserCreateWithoutSessionsInput = {
   assignedTasks?: Prisma.TaskCreateNestedManyWithoutAssignedUserInput
   assignedConversations?: Prisma.ConversationCreateNestedManyWithoutAssignedUserInput
   activities?: Prisma.ActivityCreateNestedManyWithoutUserInput
+  stageMovements?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutMovedByUserInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
@@ -855,6 +881,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   assignedTasks?: Prisma.TaskUncheckedCreateNestedManyWithoutAssignedUserInput
   assignedConversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutAssignedUserInput
   activities?: Prisma.ActivityUncheckedCreateNestedManyWithoutUserInput
+  stageMovements?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutMovedByUserInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -893,6 +920,7 @@ export type UserUpdateWithoutSessionsInput = {
   assignedTasks?: Prisma.TaskUpdateManyWithoutAssignedUserNestedInput
   assignedConversations?: Prisma.ConversationUpdateManyWithoutAssignedUserNestedInput
   activities?: Prisma.ActivityUpdateManyWithoutUserNestedInput
+  stageMovements?: Prisma.OpportunityStageHistoryUpdateManyWithoutMovedByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -915,6 +943,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   assignedTasks?: Prisma.TaskUncheckedUpdateManyWithoutAssignedUserNestedInput
   assignedConversations?: Prisma.ConversationUncheckedUpdateManyWithoutAssignedUserNestedInput
   activities?: Prisma.ActivityUncheckedUpdateManyWithoutUserNestedInput
+  stageMovements?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutMovedByUserNestedInput
 }
 
 export type UserCreateWithoutPasswordResetTokensInput = {
@@ -937,6 +966,7 @@ export type UserCreateWithoutPasswordResetTokensInput = {
   assignedTasks?: Prisma.TaskCreateNestedManyWithoutAssignedUserInput
   assignedConversations?: Prisma.ConversationCreateNestedManyWithoutAssignedUserInput
   activities?: Prisma.ActivityCreateNestedManyWithoutUserInput
+  stageMovements?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutMovedByUserInput
 }
 
 export type UserUncheckedCreateWithoutPasswordResetTokensInput = {
@@ -959,6 +989,7 @@ export type UserUncheckedCreateWithoutPasswordResetTokensInput = {
   assignedTasks?: Prisma.TaskUncheckedCreateNestedManyWithoutAssignedUserInput
   assignedConversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutAssignedUserInput
   activities?: Prisma.ActivityUncheckedCreateNestedManyWithoutUserInput
+  stageMovements?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutMovedByUserInput
 }
 
 export type UserCreateOrConnectWithoutPasswordResetTokensInput = {
@@ -997,6 +1028,7 @@ export type UserUpdateWithoutPasswordResetTokensInput = {
   assignedTasks?: Prisma.TaskUpdateManyWithoutAssignedUserNestedInput
   assignedConversations?: Prisma.ConversationUpdateManyWithoutAssignedUserNestedInput
   activities?: Prisma.ActivityUpdateManyWithoutUserNestedInput
+  stageMovements?: Prisma.OpportunityStageHistoryUpdateManyWithoutMovedByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPasswordResetTokensInput = {
@@ -1019,6 +1051,7 @@ export type UserUncheckedUpdateWithoutPasswordResetTokensInput = {
   assignedTasks?: Prisma.TaskUncheckedUpdateManyWithoutAssignedUserNestedInput
   assignedConversations?: Prisma.ConversationUncheckedUpdateManyWithoutAssignedUserNestedInput
   activities?: Prisma.ActivityUncheckedUpdateManyWithoutUserNestedInput
+  stageMovements?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutMovedByUserNestedInput
 }
 
 export type UserCreateWithoutAiLogsInput = {
@@ -1041,6 +1074,7 @@ export type UserCreateWithoutAiLogsInput = {
   assignedTasks?: Prisma.TaskCreateNestedManyWithoutAssignedUserInput
   assignedConversations?: Prisma.ConversationCreateNestedManyWithoutAssignedUserInput
   activities?: Prisma.ActivityCreateNestedManyWithoutUserInput
+  stageMovements?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutMovedByUserInput
 }
 
 export type UserUncheckedCreateWithoutAiLogsInput = {
@@ -1063,6 +1097,7 @@ export type UserUncheckedCreateWithoutAiLogsInput = {
   assignedTasks?: Prisma.TaskUncheckedCreateNestedManyWithoutAssignedUserInput
   assignedConversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutAssignedUserInput
   activities?: Prisma.ActivityUncheckedCreateNestedManyWithoutUserInput
+  stageMovements?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutMovedByUserInput
 }
 
 export type UserCreateOrConnectWithoutAiLogsInput = {
@@ -1101,6 +1136,7 @@ export type UserUpdateWithoutAiLogsInput = {
   assignedTasks?: Prisma.TaskUpdateManyWithoutAssignedUserNestedInput
   assignedConversations?: Prisma.ConversationUpdateManyWithoutAssignedUserNestedInput
   activities?: Prisma.ActivityUpdateManyWithoutUserNestedInput
+  stageMovements?: Prisma.OpportunityStageHistoryUpdateManyWithoutMovedByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAiLogsInput = {
@@ -1123,6 +1159,7 @@ export type UserUncheckedUpdateWithoutAiLogsInput = {
   assignedTasks?: Prisma.TaskUncheckedUpdateManyWithoutAssignedUserNestedInput
   assignedConversations?: Prisma.ConversationUncheckedUpdateManyWithoutAssignedUserNestedInput
   activities?: Prisma.ActivityUncheckedUpdateManyWithoutUserNestedInput
+  stageMovements?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutMovedByUserNestedInput
 }
 
 export type UserCreateWithoutOpportunitiesInput = {
@@ -1145,6 +1182,7 @@ export type UserCreateWithoutOpportunitiesInput = {
   assignedTasks?: Prisma.TaskCreateNestedManyWithoutAssignedUserInput
   assignedConversations?: Prisma.ConversationCreateNestedManyWithoutAssignedUserInput
   activities?: Prisma.ActivityCreateNestedManyWithoutUserInput
+  stageMovements?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutMovedByUserInput
 }
 
 export type UserUncheckedCreateWithoutOpportunitiesInput = {
@@ -1167,6 +1205,7 @@ export type UserUncheckedCreateWithoutOpportunitiesInput = {
   assignedTasks?: Prisma.TaskUncheckedCreateNestedManyWithoutAssignedUserInput
   assignedConversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutAssignedUserInput
   activities?: Prisma.ActivityUncheckedCreateNestedManyWithoutUserInput
+  stageMovements?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutMovedByUserInput
 }
 
 export type UserCreateOrConnectWithoutOpportunitiesInput = {
@@ -1205,6 +1244,7 @@ export type UserUpdateWithoutOpportunitiesInput = {
   assignedTasks?: Prisma.TaskUpdateManyWithoutAssignedUserNestedInput
   assignedConversations?: Prisma.ConversationUpdateManyWithoutAssignedUserNestedInput
   activities?: Prisma.ActivityUpdateManyWithoutUserNestedInput
+  stageMovements?: Prisma.OpportunityStageHistoryUpdateManyWithoutMovedByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutOpportunitiesInput = {
@@ -1227,6 +1267,7 @@ export type UserUncheckedUpdateWithoutOpportunitiesInput = {
   assignedTasks?: Prisma.TaskUncheckedUpdateManyWithoutAssignedUserNestedInput
   assignedConversations?: Prisma.ConversationUncheckedUpdateManyWithoutAssignedUserNestedInput
   activities?: Prisma.ActivityUncheckedUpdateManyWithoutUserNestedInput
+  stageMovements?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutMovedByUserNestedInput
 }
 
 export type UserCreateWithoutAssignedTasksInput = {
@@ -1249,6 +1290,7 @@ export type UserCreateWithoutAssignedTasksInput = {
   opportunities?: Prisma.OpportunityCreateNestedManyWithoutAssignedUserInput
   assignedConversations?: Prisma.ConversationCreateNestedManyWithoutAssignedUserInput
   activities?: Prisma.ActivityCreateNestedManyWithoutUserInput
+  stageMovements?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutMovedByUserInput
 }
 
 export type UserUncheckedCreateWithoutAssignedTasksInput = {
@@ -1271,6 +1313,7 @@ export type UserUncheckedCreateWithoutAssignedTasksInput = {
   opportunities?: Prisma.OpportunityUncheckedCreateNestedManyWithoutAssignedUserInput
   assignedConversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutAssignedUserInput
   activities?: Prisma.ActivityUncheckedCreateNestedManyWithoutUserInput
+  stageMovements?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutMovedByUserInput
 }
 
 export type UserCreateOrConnectWithoutAssignedTasksInput = {
@@ -1309,6 +1352,7 @@ export type UserUpdateWithoutAssignedTasksInput = {
   opportunities?: Prisma.OpportunityUpdateManyWithoutAssignedUserNestedInput
   assignedConversations?: Prisma.ConversationUpdateManyWithoutAssignedUserNestedInput
   activities?: Prisma.ActivityUpdateManyWithoutUserNestedInput
+  stageMovements?: Prisma.OpportunityStageHistoryUpdateManyWithoutMovedByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAssignedTasksInput = {
@@ -1331,6 +1375,7 @@ export type UserUncheckedUpdateWithoutAssignedTasksInput = {
   opportunities?: Prisma.OpportunityUncheckedUpdateManyWithoutAssignedUserNestedInput
   assignedConversations?: Prisma.ConversationUncheckedUpdateManyWithoutAssignedUserNestedInput
   activities?: Prisma.ActivityUncheckedUpdateManyWithoutUserNestedInput
+  stageMovements?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutMovedByUserNestedInput
 }
 
 export type UserCreateWithoutAssignedConversationsInput = {
@@ -1353,6 +1398,7 @@ export type UserCreateWithoutAssignedConversationsInput = {
   opportunities?: Prisma.OpportunityCreateNestedManyWithoutAssignedUserInput
   assignedTasks?: Prisma.TaskCreateNestedManyWithoutAssignedUserInput
   activities?: Prisma.ActivityCreateNestedManyWithoutUserInput
+  stageMovements?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutMovedByUserInput
 }
 
 export type UserUncheckedCreateWithoutAssignedConversationsInput = {
@@ -1375,6 +1421,7 @@ export type UserUncheckedCreateWithoutAssignedConversationsInput = {
   opportunities?: Prisma.OpportunityUncheckedCreateNestedManyWithoutAssignedUserInput
   assignedTasks?: Prisma.TaskUncheckedCreateNestedManyWithoutAssignedUserInput
   activities?: Prisma.ActivityUncheckedCreateNestedManyWithoutUserInput
+  stageMovements?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutMovedByUserInput
 }
 
 export type UserCreateOrConnectWithoutAssignedConversationsInput = {
@@ -1413,6 +1460,7 @@ export type UserUpdateWithoutAssignedConversationsInput = {
   opportunities?: Prisma.OpportunityUpdateManyWithoutAssignedUserNestedInput
   assignedTasks?: Prisma.TaskUpdateManyWithoutAssignedUserNestedInput
   activities?: Prisma.ActivityUpdateManyWithoutUserNestedInput
+  stageMovements?: Prisma.OpportunityStageHistoryUpdateManyWithoutMovedByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAssignedConversationsInput = {
@@ -1435,6 +1483,7 @@ export type UserUncheckedUpdateWithoutAssignedConversationsInput = {
   opportunities?: Prisma.OpportunityUncheckedUpdateManyWithoutAssignedUserNestedInput
   assignedTasks?: Prisma.TaskUncheckedUpdateManyWithoutAssignedUserNestedInput
   activities?: Prisma.ActivityUncheckedUpdateManyWithoutUserNestedInput
+  stageMovements?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutMovedByUserNestedInput
 }
 
 export type UserCreateWithoutActivitiesInput = {
@@ -1457,6 +1506,7 @@ export type UserCreateWithoutActivitiesInput = {
   opportunities?: Prisma.OpportunityCreateNestedManyWithoutAssignedUserInput
   assignedTasks?: Prisma.TaskCreateNestedManyWithoutAssignedUserInput
   assignedConversations?: Prisma.ConversationCreateNestedManyWithoutAssignedUserInput
+  stageMovements?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutMovedByUserInput
 }
 
 export type UserUncheckedCreateWithoutActivitiesInput = {
@@ -1479,6 +1529,7 @@ export type UserUncheckedCreateWithoutActivitiesInput = {
   opportunities?: Prisma.OpportunityUncheckedCreateNestedManyWithoutAssignedUserInput
   assignedTasks?: Prisma.TaskUncheckedCreateNestedManyWithoutAssignedUserInput
   assignedConversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutAssignedUserInput
+  stageMovements?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutMovedByUserInput
 }
 
 export type UserCreateOrConnectWithoutActivitiesInput = {
@@ -1517,6 +1568,7 @@ export type UserUpdateWithoutActivitiesInput = {
   opportunities?: Prisma.OpportunityUpdateManyWithoutAssignedUserNestedInput
   assignedTasks?: Prisma.TaskUpdateManyWithoutAssignedUserNestedInput
   assignedConversations?: Prisma.ConversationUpdateManyWithoutAssignedUserNestedInput
+  stageMovements?: Prisma.OpportunityStageHistoryUpdateManyWithoutMovedByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutActivitiesInput = {
@@ -1539,6 +1591,115 @@ export type UserUncheckedUpdateWithoutActivitiesInput = {
   opportunities?: Prisma.OpportunityUncheckedUpdateManyWithoutAssignedUserNestedInput
   assignedTasks?: Prisma.TaskUncheckedUpdateManyWithoutAssignedUserNestedInput
   assignedConversations?: Prisma.ConversationUncheckedUpdateManyWithoutAssignedUserNestedInput
+  stageMovements?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutMovedByUserNestedInput
+}
+
+export type UserCreateWithoutStageMovementsInput = {
+  id?: string
+  name: string
+  email: string
+  emailVerified?: Date | string | null
+  passwordHash?: string | null
+  role?: $Enums.UserRole
+  avatarUrl?: string | null
+  phone?: string | null
+  isActive?: boolean
+  lastLoginAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  tenant: Prisma.TenantCreateNestedOneWithoutUsersInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  passwordResetTokens?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
+  aiLogs?: Prisma.AiLogCreateNestedManyWithoutUserInput
+  opportunities?: Prisma.OpportunityCreateNestedManyWithoutAssignedUserInput
+  assignedTasks?: Prisma.TaskCreateNestedManyWithoutAssignedUserInput
+  assignedConversations?: Prisma.ConversationCreateNestedManyWithoutAssignedUserInput
+  activities?: Prisma.ActivityCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutStageMovementsInput = {
+  id?: string
+  tenantId: string
+  name: string
+  email: string
+  emailVerified?: Date | string | null
+  passwordHash?: string | null
+  role?: $Enums.UserRole
+  avatarUrl?: string | null
+  phone?: string | null
+  isActive?: boolean
+  lastLoginAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  passwordResetTokens?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+  aiLogs?: Prisma.AiLogUncheckedCreateNestedManyWithoutUserInput
+  opportunities?: Prisma.OpportunityUncheckedCreateNestedManyWithoutAssignedUserInput
+  assignedTasks?: Prisma.TaskUncheckedCreateNestedManyWithoutAssignedUserInput
+  assignedConversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutAssignedUserInput
+  activities?: Prisma.ActivityUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutStageMovementsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutStageMovementsInput, Prisma.UserUncheckedCreateWithoutStageMovementsInput>
+}
+
+export type UserUpsertWithoutStageMovementsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutStageMovementsInput, Prisma.UserUncheckedUpdateWithoutStageMovementsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutStageMovementsInput, Prisma.UserUncheckedCreateWithoutStageMovementsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutStageMovementsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutStageMovementsInput, Prisma.UserUncheckedUpdateWithoutStageMovementsInput>
+}
+
+export type UserUpdateWithoutStageMovementsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutUsersNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  passwordResetTokens?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
+  aiLogs?: Prisma.AiLogUpdateManyWithoutUserNestedInput
+  opportunities?: Prisma.OpportunityUpdateManyWithoutAssignedUserNestedInput
+  assignedTasks?: Prisma.TaskUpdateManyWithoutAssignedUserNestedInput
+  assignedConversations?: Prisma.ConversationUpdateManyWithoutAssignedUserNestedInput
+  activities?: Prisma.ActivityUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutStageMovementsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  passwordResetTokens?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
+  aiLogs?: Prisma.AiLogUncheckedUpdateManyWithoutUserNestedInput
+  opportunities?: Prisma.OpportunityUncheckedUpdateManyWithoutAssignedUserNestedInput
+  assignedTasks?: Prisma.TaskUncheckedUpdateManyWithoutAssignedUserNestedInput
+  assignedConversations?: Prisma.ConversationUncheckedUpdateManyWithoutAssignedUserNestedInput
+  activities?: Prisma.ActivityUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyTenantInput = {
@@ -1576,6 +1737,7 @@ export type UserUpdateWithoutTenantInput = {
   assignedTasks?: Prisma.TaskUpdateManyWithoutAssignedUserNestedInput
   assignedConversations?: Prisma.ConversationUpdateManyWithoutAssignedUserNestedInput
   activities?: Prisma.ActivityUpdateManyWithoutUserNestedInput
+  stageMovements?: Prisma.OpportunityStageHistoryUpdateManyWithoutMovedByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTenantInput = {
@@ -1598,6 +1760,7 @@ export type UserUncheckedUpdateWithoutTenantInput = {
   assignedTasks?: Prisma.TaskUncheckedUpdateManyWithoutAssignedUserNestedInput
   assignedConversations?: Prisma.ConversationUncheckedUpdateManyWithoutAssignedUserNestedInput
   activities?: Prisma.ActivityUncheckedUpdateManyWithoutUserNestedInput
+  stageMovements?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutMovedByUserNestedInput
 }
 
 export type UserUncheckedUpdateManyWithoutTenantInput = {
@@ -1628,6 +1791,7 @@ export type UserCountOutputType = {
   assignedTasks: number
   assignedConversations: number
   activities: number
+  stageMovements: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1638,6 +1802,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   assignedTasks?: boolean | UserCountOutputTypeCountAssignedTasksArgs
   assignedConversations?: boolean | UserCountOutputTypeCountAssignedConversationsArgs
   activities?: boolean | UserCountOutputTypeCountActivitiesArgs
+  stageMovements?: boolean | UserCountOutputTypeCountStageMovementsArgs
 }
 
 /**
@@ -1699,6 +1864,13 @@ export type UserCountOutputTypeCountActivitiesArgs<ExtArgs extends runtime.Types
   where?: Prisma.ActivityWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountStageMovementsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.OpportunityStageHistoryWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1722,6 +1894,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   assignedTasks?: boolean | Prisma.User$assignedTasksArgs<ExtArgs>
   assignedConversations?: boolean | Prisma.User$assignedConversationsArgs<ExtArgs>
   activities?: boolean | Prisma.User$activitiesArgs<ExtArgs>
+  stageMovements?: boolean | Prisma.User$stageMovementsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -1785,6 +1958,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   assignedTasks?: boolean | Prisma.User$assignedTasksArgs<ExtArgs>
   assignedConversations?: boolean | Prisma.User$assignedConversationsArgs<ExtArgs>
   activities?: boolean | Prisma.User$activitiesArgs<ExtArgs>
+  stageMovements?: boolean | Prisma.User$stageMovementsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1805,6 +1979,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     assignedTasks: Prisma.$TaskPayload<ExtArgs>[]
     assignedConversations: Prisma.$ConversationPayload<ExtArgs>[]
     activities: Prisma.$ActivityPayload<ExtArgs>[]
+    stageMovements: Prisma.$OpportunityStageHistoryPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2222,6 +2397,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   assignedTasks<T extends Prisma.User$assignedTasksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$assignedTasksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   assignedConversations<T extends Prisma.User$assignedConversationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$assignedConversationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ConversationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   activities<T extends Prisma.User$activitiesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$activitiesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ActivityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  stageMovements<T extends Prisma.User$stageMovementsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$stageMovementsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OpportunityStageHistoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2830,6 +3006,30 @@ export type User$activitiesArgs<ExtArgs extends runtime.Types.Extensions.Interna
   take?: number
   skip?: number
   distinct?: Prisma.ActivityScalarFieldEnum | Prisma.ActivityScalarFieldEnum[]
+}
+
+/**
+ * User.stageMovements
+ */
+export type User$stageMovementsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the OpportunityStageHistory
+   */
+  select?: Prisma.OpportunityStageHistorySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the OpportunityStageHistory
+   */
+  omit?: Prisma.OpportunityStageHistoryOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.OpportunityStageHistoryInclude<ExtArgs> | null
+  where?: Prisma.OpportunityStageHistoryWhereInput
+  orderBy?: Prisma.OpportunityStageHistoryOrderByWithRelationInput | Prisma.OpportunityStageHistoryOrderByWithRelationInput[]
+  cursor?: Prisma.OpportunityStageHistoryWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.OpportunityStageHistoryScalarFieldEnum | Prisma.OpportunityStageHistoryScalarFieldEnum[]
 }
 
 /**

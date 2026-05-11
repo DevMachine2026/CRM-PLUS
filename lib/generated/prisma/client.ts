@@ -156,3 +156,8 @@ export type AutomationLog = Prisma.AutomationLogModel
  * 
  */
 export type Activity = Prisma.ActivityModel
+/**
+ * Model OpportunityStageHistory
+ * 
+ */
+export type OpportunityStageHistory = Prisma.OpportunityStageHistoryModel

@@ -73,7 +73,8 @@ export const ModelName = {
   InvoiceItem: 'InvoiceItem',
   Automation: 'Automation',
   AutomationLog: 'AutomationLog',
-  Activity: 'Activity'
+  Activity: 'Activity',
+  OpportunityStageHistory: 'OpportunityStageHistory'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -456,6 +457,20 @@ export const ActivityScalarFieldEnum = {
 } as const
 
 export type ActivityScalarFieldEnum = (typeof ActivityScalarFieldEnum)[keyof typeof ActivityScalarFieldEnum]
+
+
+export const OpportunityStageHistoryScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  opportunityId: 'opportunityId',
+  fromStageId: 'fromStageId',
+  toStageId: 'toStageId',
+  movedByUserId: 'movedByUserId',
+  source: 'source',
+  createdAt: 'createdAt'
+} as const
+
+export type OpportunityStageHistoryScalarFieldEnum = (typeof OpportunityStageHistoryScalarFieldEnum)[keyof typeof OpportunityStageHistoryScalarFieldEnum]
 
 
 export const SortOrder = {
