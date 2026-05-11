@@ -192,6 +192,9 @@ export type TagWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Tag"> | Date | string
   tenant?: Prisma.XOR<Prisma.TenantScalarRelationFilter, Prisma.TenantWhereInput>
   contacts?: Prisma.ContactTagListRelationFilter
+  companies?: Prisma.CompanyTagListRelationFilter
+  opportunities?: Prisma.OpportunityTagListRelationFilter
+  conversations?: Prisma.ConversationTagListRelationFilter
 }
 
 export type TagOrderByWithRelationInput = {
@@ -203,6 +206,9 @@ export type TagOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   tenant?: Prisma.TenantOrderByWithRelationInput
   contacts?: Prisma.ContactTagOrderByRelationAggregateInput
+  companies?: Prisma.CompanyTagOrderByRelationAggregateInput
+  opportunities?: Prisma.OpportunityTagOrderByRelationAggregateInput
+  conversations?: Prisma.ConversationTagOrderByRelationAggregateInput
 }
 
 export type TagWhereUniqueInput = Prisma.AtLeast<{
@@ -218,6 +224,9 @@ export type TagWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"Tag"> | Date | string
   tenant?: Prisma.XOR<Prisma.TenantScalarRelationFilter, Prisma.TenantWhereInput>
   contacts?: Prisma.ContactTagListRelationFilter
+  companies?: Prisma.CompanyTagListRelationFilter
+  opportunities?: Prisma.OpportunityTagListRelationFilter
+  conversations?: Prisma.ConversationTagListRelationFilter
 }, "id" | "tenantId_name">
 
 export type TagOrderByWithAggregationInput = {
@@ -252,6 +261,9 @@ export type TagCreateInput = {
   updatedAt?: Date | string
   tenant: Prisma.TenantCreateNestedOneWithoutTagsInput
   contacts?: Prisma.ContactTagCreateNestedManyWithoutTagInput
+  companies?: Prisma.CompanyTagCreateNestedManyWithoutTagInput
+  opportunities?: Prisma.OpportunityTagCreateNestedManyWithoutTagInput
+  conversations?: Prisma.ConversationTagCreateNestedManyWithoutTagInput
 }
 
 export type TagUncheckedCreateInput = {
@@ -262,6 +274,9 @@ export type TagUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   contacts?: Prisma.ContactTagUncheckedCreateNestedManyWithoutTagInput
+  companies?: Prisma.CompanyTagUncheckedCreateNestedManyWithoutTagInput
+  opportunities?: Prisma.OpportunityTagUncheckedCreateNestedManyWithoutTagInput
+  conversations?: Prisma.ConversationTagUncheckedCreateNestedManyWithoutTagInput
 }
 
 export type TagUpdateInput = {
@@ -272,6 +287,9 @@ export type TagUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tenant?: Prisma.TenantUpdateOneRequiredWithoutTagsNestedInput
   contacts?: Prisma.ContactTagUpdateManyWithoutTagNestedInput
+  companies?: Prisma.CompanyTagUpdateManyWithoutTagNestedInput
+  opportunities?: Prisma.OpportunityTagUpdateManyWithoutTagNestedInput
+  conversations?: Prisma.ConversationTagUpdateManyWithoutTagNestedInput
 }
 
 export type TagUncheckedUpdateInput = {
@@ -282,6 +300,9 @@ export type TagUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   contacts?: Prisma.ContactTagUncheckedUpdateManyWithoutTagNestedInput
+  companies?: Prisma.CompanyTagUncheckedUpdateManyWithoutTagNestedInput
+  opportunities?: Prisma.OpportunityTagUncheckedUpdateManyWithoutTagNestedInput
+  conversations?: Prisma.ConversationTagUncheckedUpdateManyWithoutTagNestedInput
 }
 
 export type TagCreateManyInput = {
@@ -413,6 +434,48 @@ export type TagUpdateOneRequiredWithoutContactsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.TagUpdateToOneWithWhereWithoutContactsInput, Prisma.TagUpdateWithoutContactsInput>, Prisma.TagUncheckedUpdateWithoutContactsInput>
 }
 
+export type TagCreateNestedOneWithoutCompaniesInput = {
+  create?: Prisma.XOR<Prisma.TagCreateWithoutCompaniesInput, Prisma.TagUncheckedCreateWithoutCompaniesInput>
+  connectOrCreate?: Prisma.TagCreateOrConnectWithoutCompaniesInput
+  connect?: Prisma.TagWhereUniqueInput
+}
+
+export type TagUpdateOneRequiredWithoutCompaniesNestedInput = {
+  create?: Prisma.XOR<Prisma.TagCreateWithoutCompaniesInput, Prisma.TagUncheckedCreateWithoutCompaniesInput>
+  connectOrCreate?: Prisma.TagCreateOrConnectWithoutCompaniesInput
+  upsert?: Prisma.TagUpsertWithoutCompaniesInput
+  connect?: Prisma.TagWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TagUpdateToOneWithWhereWithoutCompaniesInput, Prisma.TagUpdateWithoutCompaniesInput>, Prisma.TagUncheckedUpdateWithoutCompaniesInput>
+}
+
+export type TagCreateNestedOneWithoutOpportunitiesInput = {
+  create?: Prisma.XOR<Prisma.TagCreateWithoutOpportunitiesInput, Prisma.TagUncheckedCreateWithoutOpportunitiesInput>
+  connectOrCreate?: Prisma.TagCreateOrConnectWithoutOpportunitiesInput
+  connect?: Prisma.TagWhereUniqueInput
+}
+
+export type TagUpdateOneRequiredWithoutOpportunitiesNestedInput = {
+  create?: Prisma.XOR<Prisma.TagCreateWithoutOpportunitiesInput, Prisma.TagUncheckedCreateWithoutOpportunitiesInput>
+  connectOrCreate?: Prisma.TagCreateOrConnectWithoutOpportunitiesInput
+  upsert?: Prisma.TagUpsertWithoutOpportunitiesInput
+  connect?: Prisma.TagWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TagUpdateToOneWithWhereWithoutOpportunitiesInput, Prisma.TagUpdateWithoutOpportunitiesInput>, Prisma.TagUncheckedUpdateWithoutOpportunitiesInput>
+}
+
+export type TagCreateNestedOneWithoutConversationsInput = {
+  create?: Prisma.XOR<Prisma.TagCreateWithoutConversationsInput, Prisma.TagUncheckedCreateWithoutConversationsInput>
+  connectOrCreate?: Prisma.TagCreateOrConnectWithoutConversationsInput
+  connect?: Prisma.TagWhereUniqueInput
+}
+
+export type TagUpdateOneRequiredWithoutConversationsNestedInput = {
+  create?: Prisma.XOR<Prisma.TagCreateWithoutConversationsInput, Prisma.TagUncheckedCreateWithoutConversationsInput>
+  connectOrCreate?: Prisma.TagCreateOrConnectWithoutConversationsInput
+  upsert?: Prisma.TagUpsertWithoutConversationsInput
+  connect?: Prisma.TagWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TagUpdateToOneWithWhereWithoutConversationsInput, Prisma.TagUpdateWithoutConversationsInput>, Prisma.TagUncheckedUpdateWithoutConversationsInput>
+}
+
 export type TagCreateWithoutTenantInput = {
   id?: string
   name: string
@@ -420,6 +483,9 @@ export type TagCreateWithoutTenantInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   contacts?: Prisma.ContactTagCreateNestedManyWithoutTagInput
+  companies?: Prisma.CompanyTagCreateNestedManyWithoutTagInput
+  opportunities?: Prisma.OpportunityTagCreateNestedManyWithoutTagInput
+  conversations?: Prisma.ConversationTagCreateNestedManyWithoutTagInput
 }
 
 export type TagUncheckedCreateWithoutTenantInput = {
@@ -429,6 +495,9 @@ export type TagUncheckedCreateWithoutTenantInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   contacts?: Prisma.ContactTagUncheckedCreateNestedManyWithoutTagInput
+  companies?: Prisma.CompanyTagUncheckedCreateNestedManyWithoutTagInput
+  opportunities?: Prisma.OpportunityTagUncheckedCreateNestedManyWithoutTagInput
+  conversations?: Prisma.ConversationTagUncheckedCreateNestedManyWithoutTagInput
 }
 
 export type TagCreateOrConnectWithoutTenantInput = {
@@ -476,6 +545,9 @@ export type TagCreateWithoutContactsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   tenant: Prisma.TenantCreateNestedOneWithoutTagsInput
+  companies?: Prisma.CompanyTagCreateNestedManyWithoutTagInput
+  opportunities?: Prisma.OpportunityTagCreateNestedManyWithoutTagInput
+  conversations?: Prisma.ConversationTagCreateNestedManyWithoutTagInput
 }
 
 export type TagUncheckedCreateWithoutContactsInput = {
@@ -485,6 +557,9 @@ export type TagUncheckedCreateWithoutContactsInput = {
   color?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  companies?: Prisma.CompanyTagUncheckedCreateNestedManyWithoutTagInput
+  opportunities?: Prisma.OpportunityTagUncheckedCreateNestedManyWithoutTagInput
+  conversations?: Prisma.ConversationTagUncheckedCreateNestedManyWithoutTagInput
 }
 
 export type TagCreateOrConnectWithoutContactsInput = {
@@ -510,6 +585,9 @@ export type TagUpdateWithoutContactsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tenant?: Prisma.TenantUpdateOneRequiredWithoutTagsNestedInput
+  companies?: Prisma.CompanyTagUpdateManyWithoutTagNestedInput
+  opportunities?: Prisma.OpportunityTagUpdateManyWithoutTagNestedInput
+  conversations?: Prisma.ConversationTagUpdateManyWithoutTagNestedInput
 }
 
 export type TagUncheckedUpdateWithoutContactsInput = {
@@ -519,6 +597,201 @@ export type TagUncheckedUpdateWithoutContactsInput = {
   color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  companies?: Prisma.CompanyTagUncheckedUpdateManyWithoutTagNestedInput
+  opportunities?: Prisma.OpportunityTagUncheckedUpdateManyWithoutTagNestedInput
+  conversations?: Prisma.ConversationTagUncheckedUpdateManyWithoutTagNestedInput
+}
+
+export type TagCreateWithoutCompaniesInput = {
+  id?: string
+  name: string
+  color?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  tenant: Prisma.TenantCreateNestedOneWithoutTagsInput
+  contacts?: Prisma.ContactTagCreateNestedManyWithoutTagInput
+  opportunities?: Prisma.OpportunityTagCreateNestedManyWithoutTagInput
+  conversations?: Prisma.ConversationTagCreateNestedManyWithoutTagInput
+}
+
+export type TagUncheckedCreateWithoutCompaniesInput = {
+  id?: string
+  tenantId: string
+  name: string
+  color?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  contacts?: Prisma.ContactTagUncheckedCreateNestedManyWithoutTagInput
+  opportunities?: Prisma.OpportunityTagUncheckedCreateNestedManyWithoutTagInput
+  conversations?: Prisma.ConversationTagUncheckedCreateNestedManyWithoutTagInput
+}
+
+export type TagCreateOrConnectWithoutCompaniesInput = {
+  where: Prisma.TagWhereUniqueInput
+  create: Prisma.XOR<Prisma.TagCreateWithoutCompaniesInput, Prisma.TagUncheckedCreateWithoutCompaniesInput>
+}
+
+export type TagUpsertWithoutCompaniesInput = {
+  update: Prisma.XOR<Prisma.TagUpdateWithoutCompaniesInput, Prisma.TagUncheckedUpdateWithoutCompaniesInput>
+  create: Prisma.XOR<Prisma.TagCreateWithoutCompaniesInput, Prisma.TagUncheckedCreateWithoutCompaniesInput>
+  where?: Prisma.TagWhereInput
+}
+
+export type TagUpdateToOneWithWhereWithoutCompaniesInput = {
+  where?: Prisma.TagWhereInput
+  data: Prisma.XOR<Prisma.TagUpdateWithoutCompaniesInput, Prisma.TagUncheckedUpdateWithoutCompaniesInput>
+}
+
+export type TagUpdateWithoutCompaniesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutTagsNestedInput
+  contacts?: Prisma.ContactTagUpdateManyWithoutTagNestedInput
+  opportunities?: Prisma.OpportunityTagUpdateManyWithoutTagNestedInput
+  conversations?: Prisma.ConversationTagUpdateManyWithoutTagNestedInput
+}
+
+export type TagUncheckedUpdateWithoutCompaniesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contacts?: Prisma.ContactTagUncheckedUpdateManyWithoutTagNestedInput
+  opportunities?: Prisma.OpportunityTagUncheckedUpdateManyWithoutTagNestedInput
+  conversations?: Prisma.ConversationTagUncheckedUpdateManyWithoutTagNestedInput
+}
+
+export type TagCreateWithoutOpportunitiesInput = {
+  id?: string
+  name: string
+  color?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  tenant: Prisma.TenantCreateNestedOneWithoutTagsInput
+  contacts?: Prisma.ContactTagCreateNestedManyWithoutTagInput
+  companies?: Prisma.CompanyTagCreateNestedManyWithoutTagInput
+  conversations?: Prisma.ConversationTagCreateNestedManyWithoutTagInput
+}
+
+export type TagUncheckedCreateWithoutOpportunitiesInput = {
+  id?: string
+  tenantId: string
+  name: string
+  color?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  contacts?: Prisma.ContactTagUncheckedCreateNestedManyWithoutTagInput
+  companies?: Prisma.CompanyTagUncheckedCreateNestedManyWithoutTagInput
+  conversations?: Prisma.ConversationTagUncheckedCreateNestedManyWithoutTagInput
+}
+
+export type TagCreateOrConnectWithoutOpportunitiesInput = {
+  where: Prisma.TagWhereUniqueInput
+  create: Prisma.XOR<Prisma.TagCreateWithoutOpportunitiesInput, Prisma.TagUncheckedCreateWithoutOpportunitiesInput>
+}
+
+export type TagUpsertWithoutOpportunitiesInput = {
+  update: Prisma.XOR<Prisma.TagUpdateWithoutOpportunitiesInput, Prisma.TagUncheckedUpdateWithoutOpportunitiesInput>
+  create: Prisma.XOR<Prisma.TagCreateWithoutOpportunitiesInput, Prisma.TagUncheckedCreateWithoutOpportunitiesInput>
+  where?: Prisma.TagWhereInput
+}
+
+export type TagUpdateToOneWithWhereWithoutOpportunitiesInput = {
+  where?: Prisma.TagWhereInput
+  data: Prisma.XOR<Prisma.TagUpdateWithoutOpportunitiesInput, Prisma.TagUncheckedUpdateWithoutOpportunitiesInput>
+}
+
+export type TagUpdateWithoutOpportunitiesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutTagsNestedInput
+  contacts?: Prisma.ContactTagUpdateManyWithoutTagNestedInput
+  companies?: Prisma.CompanyTagUpdateManyWithoutTagNestedInput
+  conversations?: Prisma.ConversationTagUpdateManyWithoutTagNestedInput
+}
+
+export type TagUncheckedUpdateWithoutOpportunitiesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contacts?: Prisma.ContactTagUncheckedUpdateManyWithoutTagNestedInput
+  companies?: Prisma.CompanyTagUncheckedUpdateManyWithoutTagNestedInput
+  conversations?: Prisma.ConversationTagUncheckedUpdateManyWithoutTagNestedInput
+}
+
+export type TagCreateWithoutConversationsInput = {
+  id?: string
+  name: string
+  color?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  tenant: Prisma.TenantCreateNestedOneWithoutTagsInput
+  contacts?: Prisma.ContactTagCreateNestedManyWithoutTagInput
+  companies?: Prisma.CompanyTagCreateNestedManyWithoutTagInput
+  opportunities?: Prisma.OpportunityTagCreateNestedManyWithoutTagInput
+}
+
+export type TagUncheckedCreateWithoutConversationsInput = {
+  id?: string
+  tenantId: string
+  name: string
+  color?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  contacts?: Prisma.ContactTagUncheckedCreateNestedManyWithoutTagInput
+  companies?: Prisma.CompanyTagUncheckedCreateNestedManyWithoutTagInput
+  opportunities?: Prisma.OpportunityTagUncheckedCreateNestedManyWithoutTagInput
+}
+
+export type TagCreateOrConnectWithoutConversationsInput = {
+  where: Prisma.TagWhereUniqueInput
+  create: Prisma.XOR<Prisma.TagCreateWithoutConversationsInput, Prisma.TagUncheckedCreateWithoutConversationsInput>
+}
+
+export type TagUpsertWithoutConversationsInput = {
+  update: Prisma.XOR<Prisma.TagUpdateWithoutConversationsInput, Prisma.TagUncheckedUpdateWithoutConversationsInput>
+  create: Prisma.XOR<Prisma.TagCreateWithoutConversationsInput, Prisma.TagUncheckedCreateWithoutConversationsInput>
+  where?: Prisma.TagWhereInput
+}
+
+export type TagUpdateToOneWithWhereWithoutConversationsInput = {
+  where?: Prisma.TagWhereInput
+  data: Prisma.XOR<Prisma.TagUpdateWithoutConversationsInput, Prisma.TagUncheckedUpdateWithoutConversationsInput>
+}
+
+export type TagUpdateWithoutConversationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutTagsNestedInput
+  contacts?: Prisma.ContactTagUpdateManyWithoutTagNestedInput
+  companies?: Prisma.CompanyTagUpdateManyWithoutTagNestedInput
+  opportunities?: Prisma.OpportunityTagUpdateManyWithoutTagNestedInput
+}
+
+export type TagUncheckedUpdateWithoutConversationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contacts?: Prisma.ContactTagUncheckedUpdateManyWithoutTagNestedInput
+  companies?: Prisma.CompanyTagUncheckedUpdateManyWithoutTagNestedInput
+  opportunities?: Prisma.OpportunityTagUncheckedUpdateManyWithoutTagNestedInput
 }
 
 export type TagCreateManyTenantInput = {
@@ -536,6 +809,9 @@ export type TagUpdateWithoutTenantInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   contacts?: Prisma.ContactTagUpdateManyWithoutTagNestedInput
+  companies?: Prisma.CompanyTagUpdateManyWithoutTagNestedInput
+  opportunities?: Prisma.OpportunityTagUpdateManyWithoutTagNestedInput
+  conversations?: Prisma.ConversationTagUpdateManyWithoutTagNestedInput
 }
 
 export type TagUncheckedUpdateWithoutTenantInput = {
@@ -545,6 +821,9 @@ export type TagUncheckedUpdateWithoutTenantInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   contacts?: Prisma.ContactTagUncheckedUpdateManyWithoutTagNestedInput
+  companies?: Prisma.CompanyTagUncheckedUpdateManyWithoutTagNestedInput
+  opportunities?: Prisma.OpportunityTagUncheckedUpdateManyWithoutTagNestedInput
+  conversations?: Prisma.ConversationTagUncheckedUpdateManyWithoutTagNestedInput
 }
 
 export type TagUncheckedUpdateManyWithoutTenantInput = {
@@ -562,10 +841,16 @@ export type TagUncheckedUpdateManyWithoutTenantInput = {
 
 export type TagCountOutputType = {
   contacts: number
+  companies: number
+  opportunities: number
+  conversations: number
 }
 
 export type TagCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   contacts?: boolean | TagCountOutputTypeCountContactsArgs
+  companies?: boolean | TagCountOutputTypeCountCompaniesArgs
+  opportunities?: boolean | TagCountOutputTypeCountOpportunitiesArgs
+  conversations?: boolean | TagCountOutputTypeCountConversationsArgs
 }
 
 /**
@@ -585,6 +870,27 @@ export type TagCountOutputTypeCountContactsArgs<ExtArgs extends runtime.Types.Ex
   where?: Prisma.ContactTagWhereInput
 }
 
+/**
+ * TagCountOutputType without action
+ */
+export type TagCountOutputTypeCountCompaniesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CompanyTagWhereInput
+}
+
+/**
+ * TagCountOutputType without action
+ */
+export type TagCountOutputTypeCountOpportunitiesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.OpportunityTagWhereInput
+}
+
+/**
+ * TagCountOutputType without action
+ */
+export type TagCountOutputTypeCountConversationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ConversationTagWhereInput
+}
+
 
 export type TagSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -595,6 +901,9 @@ export type TagSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = ru
   updatedAt?: boolean
   tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>
   contacts?: boolean | Prisma.Tag$contactsArgs<ExtArgs>
+  companies?: boolean | Prisma.Tag$companiesArgs<ExtArgs>
+  opportunities?: boolean | Prisma.Tag$opportunitiesArgs<ExtArgs>
+  conversations?: boolean | Prisma.Tag$conversationsArgs<ExtArgs>
   _count?: boolean | Prisma.TagCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["tag"]>
 
@@ -631,6 +940,9 @@ export type TagOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
 export type TagInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>
   contacts?: boolean | Prisma.Tag$contactsArgs<ExtArgs>
+  companies?: boolean | Prisma.Tag$companiesArgs<ExtArgs>
+  opportunities?: boolean | Prisma.Tag$opportunitiesArgs<ExtArgs>
+  conversations?: boolean | Prisma.Tag$conversationsArgs<ExtArgs>
   _count?: boolean | Prisma.TagCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type TagIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -645,6 +957,9 @@ export type $TagPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   objects: {
     tenant: Prisma.$TenantPayload<ExtArgs>
     contacts: Prisma.$ContactTagPayload<ExtArgs>[]
+    companies: Prisma.$CompanyTagPayload<ExtArgs>[]
+    opportunities: Prisma.$OpportunityTagPayload<ExtArgs>[]
+    conversations: Prisma.$ConversationTagPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1049,6 +1364,9 @@ export interface Prisma__TagClient<T, Null = never, ExtArgs extends runtime.Type
   readonly [Symbol.toStringTag]: "PrismaPromise"
   tenant<T extends Prisma.TenantDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TenantDefaultArgs<ExtArgs>>): Prisma.Prisma__TenantClient<runtime.Types.Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   contacts<T extends Prisma.Tag$contactsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tag$contactsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ContactTagPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  companies<T extends Prisma.Tag$companiesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tag$companiesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CompanyTagPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  opportunities<T extends Prisma.Tag$opportunitiesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tag$opportunitiesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OpportunityTagPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  conversations<T extends Prisma.Tag$conversationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tag$conversationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ConversationTagPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1506,6 +1824,78 @@ export type Tag$contactsArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
   take?: number
   skip?: number
   distinct?: Prisma.ContactTagScalarFieldEnum | Prisma.ContactTagScalarFieldEnum[]
+}
+
+/**
+ * Tag.companies
+ */
+export type Tag$companiesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CompanyTag
+   */
+  select?: Prisma.CompanyTagSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CompanyTag
+   */
+  omit?: Prisma.CompanyTagOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CompanyTagInclude<ExtArgs> | null
+  where?: Prisma.CompanyTagWhereInput
+  orderBy?: Prisma.CompanyTagOrderByWithRelationInput | Prisma.CompanyTagOrderByWithRelationInput[]
+  cursor?: Prisma.CompanyTagWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CompanyTagScalarFieldEnum | Prisma.CompanyTagScalarFieldEnum[]
+}
+
+/**
+ * Tag.opportunities
+ */
+export type Tag$opportunitiesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the OpportunityTag
+   */
+  select?: Prisma.OpportunityTagSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the OpportunityTag
+   */
+  omit?: Prisma.OpportunityTagOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.OpportunityTagInclude<ExtArgs> | null
+  where?: Prisma.OpportunityTagWhereInput
+  orderBy?: Prisma.OpportunityTagOrderByWithRelationInput | Prisma.OpportunityTagOrderByWithRelationInput[]
+  cursor?: Prisma.OpportunityTagWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.OpportunityTagScalarFieldEnum | Prisma.OpportunityTagScalarFieldEnum[]
+}
+
+/**
+ * Tag.conversations
+ */
+export type Tag$conversationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ConversationTag
+   */
+  select?: Prisma.ConversationTagSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ConversationTag
+   */
+  omit?: Prisma.ConversationTagOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ConversationTagInclude<ExtArgs> | null
+  where?: Prisma.ConversationTagWhereInput
+  orderBy?: Prisma.ConversationTagOrderByWithRelationInput | Prisma.ConversationTagOrderByWithRelationInput[]
+  cursor?: Prisma.ConversationTagWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ConversationTagScalarFieldEnum | Prisma.ConversationTagScalarFieldEnum[]
 }
 
 /**

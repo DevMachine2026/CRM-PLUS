@@ -407,7 +407,10 @@ export const ModelName = {
   Automation: 'Automation',
   AutomationLog: 'AutomationLog',
   Activity: 'Activity',
-  OpportunityStageHistory: 'OpportunityStageHistory'
+  OpportunityStageHistory: 'OpportunityStageHistory',
+  CompanyTag: 'CompanyTag',
+  OpportunityTag: 'OpportunityTag',
+  ConversationTag: 'ConversationTag'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -423,7 +426,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "tenant" | "user" | "session" | "passwordResetToken" | "aiLog" | "company" | "contact" | "product" | "tag" | "contactTag" | "pipeline" | "pipelineStage" | "opportunity" | "opportunityProduct" | "revenue" | "task" | "conversation" | "message" | "invoice" | "invoiceItem" | "automation" | "automationLog" | "activity" | "opportunityStageHistory"
+    modelProps: "tenant" | "user" | "session" | "passwordResetToken" | "aiLog" | "company" | "contact" | "product" | "tag" | "contactTag" | "pipeline" | "pipelineStage" | "opportunity" | "opportunityProduct" | "revenue" | "task" | "conversation" | "message" | "invoice" | "invoiceItem" | "automation" | "automationLog" | "activity" | "opportunityStageHistory" | "companyTag" | "opportunityTag" | "conversationTag"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2203,6 +2206,228 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    CompanyTag: {
+      payload: Prisma.$CompanyTagPayload<ExtArgs>
+      fields: Prisma.CompanyTagFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CompanyTagFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyTagPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CompanyTagFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyTagPayload>
+        }
+        findFirst: {
+          args: Prisma.CompanyTagFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyTagPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CompanyTagFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyTagPayload>
+        }
+        findMany: {
+          args: Prisma.CompanyTagFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyTagPayload>[]
+        }
+        create: {
+          args: Prisma.CompanyTagCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyTagPayload>
+        }
+        createMany: {
+          args: Prisma.CompanyTagCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CompanyTagCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyTagPayload>[]
+        }
+        delete: {
+          args: Prisma.CompanyTagDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyTagPayload>
+        }
+        update: {
+          args: Prisma.CompanyTagUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyTagPayload>
+        }
+        deleteMany: {
+          args: Prisma.CompanyTagDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CompanyTagUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CompanyTagUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyTagPayload>[]
+        }
+        upsert: {
+          args: Prisma.CompanyTagUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyTagPayload>
+        }
+        aggregate: {
+          args: Prisma.CompanyTagAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCompanyTag>
+        }
+        groupBy: {
+          args: Prisma.CompanyTagGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CompanyTagGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CompanyTagCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CompanyTagCountAggregateOutputType> | number
+        }
+      }
+    }
+    OpportunityTag: {
+      payload: Prisma.$OpportunityTagPayload<ExtArgs>
+      fields: Prisma.OpportunityTagFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.OpportunityTagFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpportunityTagPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.OpportunityTagFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpportunityTagPayload>
+        }
+        findFirst: {
+          args: Prisma.OpportunityTagFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpportunityTagPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.OpportunityTagFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpportunityTagPayload>
+        }
+        findMany: {
+          args: Prisma.OpportunityTagFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpportunityTagPayload>[]
+        }
+        create: {
+          args: Prisma.OpportunityTagCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpportunityTagPayload>
+        }
+        createMany: {
+          args: Prisma.OpportunityTagCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.OpportunityTagCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpportunityTagPayload>[]
+        }
+        delete: {
+          args: Prisma.OpportunityTagDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpportunityTagPayload>
+        }
+        update: {
+          args: Prisma.OpportunityTagUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpportunityTagPayload>
+        }
+        deleteMany: {
+          args: Prisma.OpportunityTagDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.OpportunityTagUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.OpportunityTagUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpportunityTagPayload>[]
+        }
+        upsert: {
+          args: Prisma.OpportunityTagUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpportunityTagPayload>
+        }
+        aggregate: {
+          args: Prisma.OpportunityTagAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateOpportunityTag>
+        }
+        groupBy: {
+          args: Prisma.OpportunityTagGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OpportunityTagGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.OpportunityTagCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OpportunityTagCountAggregateOutputType> | number
+        }
+      }
+    }
+    ConversationTag: {
+      payload: Prisma.$ConversationTagPayload<ExtArgs>
+      fields: Prisma.ConversationTagFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ConversationTagFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConversationTagPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ConversationTagFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConversationTagPayload>
+        }
+        findFirst: {
+          args: Prisma.ConversationTagFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConversationTagPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ConversationTagFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConversationTagPayload>
+        }
+        findMany: {
+          args: Prisma.ConversationTagFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConversationTagPayload>[]
+        }
+        create: {
+          args: Prisma.ConversationTagCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConversationTagPayload>
+        }
+        createMany: {
+          args: Prisma.ConversationTagCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ConversationTagCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConversationTagPayload>[]
+        }
+        delete: {
+          args: Prisma.ConversationTagDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConversationTagPayload>
+        }
+        update: {
+          args: Prisma.ConversationTagUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConversationTagPayload>
+        }
+        deleteMany: {
+          args: Prisma.ConversationTagDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ConversationTagUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ConversationTagUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConversationTagPayload>[]
+        }
+        upsert: {
+          args: Prisma.ConversationTagUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConversationTagPayload>
+        }
+        aggregate: {
+          args: Prisma.ConversationTagAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateConversationTag>
+        }
+        groupBy: {
+          args: Prisma.ConversationTagGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ConversationTagGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ConversationTagCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ConversationTagCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -2620,6 +2845,33 @@ export const OpportunityStageHistoryScalarFieldEnum = {
 } as const
 
 export type OpportunityStageHistoryScalarFieldEnum = (typeof OpportunityStageHistoryScalarFieldEnum)[keyof typeof OpportunityStageHistoryScalarFieldEnum]
+
+
+export const CompanyTagScalarFieldEnum = {
+  companyId: 'companyId',
+  tagId: 'tagId',
+  createdAt: 'createdAt'
+} as const
+
+export type CompanyTagScalarFieldEnum = (typeof CompanyTagScalarFieldEnum)[keyof typeof CompanyTagScalarFieldEnum]
+
+
+export const OpportunityTagScalarFieldEnum = {
+  opportunityId: 'opportunityId',
+  tagId: 'tagId',
+  createdAt: 'createdAt'
+} as const
+
+export type OpportunityTagScalarFieldEnum = (typeof OpportunityTagScalarFieldEnum)[keyof typeof OpportunityTagScalarFieldEnum]
+
+
+export const ConversationTagScalarFieldEnum = {
+  conversationId: 'conversationId',
+  tagId: 'tagId',
+  createdAt: 'createdAt'
+} as const
+
+export type ConversationTagScalarFieldEnum = (typeof ConversationTagScalarFieldEnum)[keyof typeof ConversationTagScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -3102,6 +3354,9 @@ export type GlobalOmitConfig = {
   automationLog?: Prisma.AutomationLogOmit
   activity?: Prisma.ActivityOmit
   opportunityStageHistory?: Prisma.OpportunityStageHistoryOmit
+  companyTag?: Prisma.CompanyTagOmit
+  opportunityTag?: Prisma.OpportunityTagOmit
+  conversationTag?: Prisma.ConversationTagOmit
 }
 
 /* Types for Logging */

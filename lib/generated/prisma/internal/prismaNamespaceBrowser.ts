@@ -74,7 +74,10 @@ export const ModelName = {
   Automation: 'Automation',
   AutomationLog: 'AutomationLog',
   Activity: 'Activity',
-  OpportunityStageHistory: 'OpportunityStageHistory'
+  OpportunityStageHistory: 'OpportunityStageHistory',
+  CompanyTag: 'CompanyTag',
+  OpportunityTag: 'OpportunityTag',
+  ConversationTag: 'ConversationTag'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -471,6 +474,33 @@ export const OpportunityStageHistoryScalarFieldEnum = {
 } as const
 
 export type OpportunityStageHistoryScalarFieldEnum = (typeof OpportunityStageHistoryScalarFieldEnum)[keyof typeof OpportunityStageHistoryScalarFieldEnum]
+
+
+export const CompanyTagScalarFieldEnum = {
+  companyId: 'companyId',
+  tagId: 'tagId',
+  createdAt: 'createdAt'
+} as const
+
+export type CompanyTagScalarFieldEnum = (typeof CompanyTagScalarFieldEnum)[keyof typeof CompanyTagScalarFieldEnum]
+
+
+export const OpportunityTagScalarFieldEnum = {
+  opportunityId: 'opportunityId',
+  tagId: 'tagId',
+  createdAt: 'createdAt'
+} as const
+
+export type OpportunityTagScalarFieldEnum = (typeof OpportunityTagScalarFieldEnum)[keyof typeof OpportunityTagScalarFieldEnum]
+
+
+export const ConversationTagScalarFieldEnum = {
+  conversationId: 'conversationId',
+  tagId: 'tagId',
+  createdAt: 'createdAt'
+} as const
+
+export type ConversationTagScalarFieldEnum = (typeof ConversationTagScalarFieldEnum)[keyof typeof ConversationTagScalarFieldEnum]
 
 
 export const SortOrder = {

@@ -161,3 +161,18 @@ export type Activity = Prisma.ActivityModel
  * 
  */
 export type OpportunityStageHistory = Prisma.OpportunityStageHistoryModel
+/**
+ * Model CompanyTag
+ * 
+ */
+export type CompanyTag = Prisma.CompanyTagModel
+/**
+ * Model OpportunityTag
+ * 
+ */
+export type OpportunityTag = Prisma.OpportunityTagModel
+/**
+ * Model ConversationTag
+ * 
+ */
+export type ConversationTag = Prisma.ConversationTagModel

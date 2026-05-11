@@ -242,6 +242,7 @@ export type ConversationWhereInput = {
   contact?: Prisma.XOR<Prisma.ContactNullableScalarRelationFilter, Prisma.ContactWhereInput> | null
   assignedUser?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   messages?: Prisma.MessageListRelationFilter
+  tags?: Prisma.ConversationTagListRelationFilter
 }
 
 export type ConversationOrderByWithRelationInput = {
@@ -261,6 +262,7 @@ export type ConversationOrderByWithRelationInput = {
   contact?: Prisma.ContactOrderByWithRelationInput
   assignedUser?: Prisma.UserOrderByWithRelationInput
   messages?: Prisma.MessageOrderByRelationAggregateInput
+  tags?: Prisma.ConversationTagOrderByRelationAggregateInput
 }
 
 export type ConversationWhereUniqueInput = Prisma.AtLeast<{
@@ -283,6 +285,7 @@ export type ConversationWhereUniqueInput = Prisma.AtLeast<{
   contact?: Prisma.XOR<Prisma.ContactNullableScalarRelationFilter, Prisma.ContactWhereInput> | null
   assignedUser?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   messages?: Prisma.MessageListRelationFilter
+  tags?: Prisma.ConversationTagListRelationFilter
 }, "id">
 
 export type ConversationOrderByWithAggregationInput = {
@@ -335,6 +338,7 @@ export type ConversationCreateInput = {
   contact?: Prisma.ContactCreateNestedOneWithoutConversationsInput
   assignedUser?: Prisma.UserCreateNestedOneWithoutAssignedConversationsInput
   messages?: Prisma.MessageCreateNestedManyWithoutConversationInput
+  tags?: Prisma.ConversationTagCreateNestedManyWithoutConversationInput
 }
 
 export type ConversationUncheckedCreateInput = {
@@ -351,6 +355,7 @@ export type ConversationUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   messages?: Prisma.MessageUncheckedCreateNestedManyWithoutConversationInput
+  tags?: Prisma.ConversationTagUncheckedCreateNestedManyWithoutConversationInput
 }
 
 export type ConversationUpdateInput = {
@@ -367,6 +372,7 @@ export type ConversationUpdateInput = {
   contact?: Prisma.ContactUpdateOneWithoutConversationsNestedInput
   assignedUser?: Prisma.UserUpdateOneWithoutAssignedConversationsNestedInput
   messages?: Prisma.MessageUpdateManyWithoutConversationNestedInput
+  tags?: Prisma.ConversationTagUpdateManyWithoutConversationNestedInput
 }
 
 export type ConversationUncheckedUpdateInput = {
@@ -383,6 +389,7 @@ export type ConversationUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   messages?: Prisma.MessageUncheckedUpdateManyWithoutConversationNestedInput
+  tags?: Prisma.ConversationTagUncheckedUpdateManyWithoutConversationNestedInput
 }
 
 export type ConversationCreateManyInput = {
@@ -635,6 +642,20 @@ export type ConversationUpdateOneRequiredWithoutMessagesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ConversationUpdateToOneWithWhereWithoutMessagesInput, Prisma.ConversationUpdateWithoutMessagesInput>, Prisma.ConversationUncheckedUpdateWithoutMessagesInput>
 }
 
+export type ConversationCreateNestedOneWithoutTagsInput = {
+  create?: Prisma.XOR<Prisma.ConversationCreateWithoutTagsInput, Prisma.ConversationUncheckedCreateWithoutTagsInput>
+  connectOrCreate?: Prisma.ConversationCreateOrConnectWithoutTagsInput
+  connect?: Prisma.ConversationWhereUniqueInput
+}
+
+export type ConversationUpdateOneRequiredWithoutTagsNestedInput = {
+  create?: Prisma.XOR<Prisma.ConversationCreateWithoutTagsInput, Prisma.ConversationUncheckedCreateWithoutTagsInput>
+  connectOrCreate?: Prisma.ConversationCreateOrConnectWithoutTagsInput
+  upsert?: Prisma.ConversationUpsertWithoutTagsInput
+  connect?: Prisma.ConversationWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ConversationUpdateToOneWithWhereWithoutTagsInput, Prisma.ConversationUpdateWithoutTagsInput>, Prisma.ConversationUncheckedUpdateWithoutTagsInput>
+}
+
 export type ConversationCreateWithoutTenantInput = {
   id?: string
   channel?: $Enums.ConversationChannel
@@ -648,6 +669,7 @@ export type ConversationCreateWithoutTenantInput = {
   contact?: Prisma.ContactCreateNestedOneWithoutConversationsInput
   assignedUser?: Prisma.UserCreateNestedOneWithoutAssignedConversationsInput
   messages?: Prisma.MessageCreateNestedManyWithoutConversationInput
+  tags?: Prisma.ConversationTagCreateNestedManyWithoutConversationInput
 }
 
 export type ConversationUncheckedCreateWithoutTenantInput = {
@@ -663,6 +685,7 @@ export type ConversationUncheckedCreateWithoutTenantInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   messages?: Prisma.MessageUncheckedCreateNestedManyWithoutConversationInput
+  tags?: Prisma.ConversationTagUncheckedCreateNestedManyWithoutConversationInput
 }
 
 export type ConversationCreateOrConnectWithoutTenantInput = {
@@ -722,6 +745,7 @@ export type ConversationCreateWithoutAssignedUserInput = {
   tenant: Prisma.TenantCreateNestedOneWithoutConversationsInput
   contact?: Prisma.ContactCreateNestedOneWithoutConversationsInput
   messages?: Prisma.MessageCreateNestedManyWithoutConversationInput
+  tags?: Prisma.ConversationTagCreateNestedManyWithoutConversationInput
 }
 
 export type ConversationUncheckedCreateWithoutAssignedUserInput = {
@@ -737,6 +761,7 @@ export type ConversationUncheckedCreateWithoutAssignedUserInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   messages?: Prisma.MessageUncheckedCreateNestedManyWithoutConversationInput
+  tags?: Prisma.ConversationTagUncheckedCreateNestedManyWithoutConversationInput
 }
 
 export type ConversationCreateOrConnectWithoutAssignedUserInput = {
@@ -778,6 +803,7 @@ export type ConversationCreateWithoutContactInput = {
   tenant: Prisma.TenantCreateNestedOneWithoutConversationsInput
   assignedUser?: Prisma.UserCreateNestedOneWithoutAssignedConversationsInput
   messages?: Prisma.MessageCreateNestedManyWithoutConversationInput
+  tags?: Prisma.ConversationTagCreateNestedManyWithoutConversationInput
 }
 
 export type ConversationUncheckedCreateWithoutContactInput = {
@@ -793,6 +819,7 @@ export type ConversationUncheckedCreateWithoutContactInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   messages?: Prisma.MessageUncheckedCreateNestedManyWithoutConversationInput
+  tags?: Prisma.ConversationTagUncheckedCreateNestedManyWithoutConversationInput
 }
 
 export type ConversationCreateOrConnectWithoutContactInput = {
@@ -834,6 +861,7 @@ export type ConversationCreateWithoutMessagesInput = {
   tenant: Prisma.TenantCreateNestedOneWithoutConversationsInput
   contact?: Prisma.ContactCreateNestedOneWithoutConversationsInput
   assignedUser?: Prisma.UserCreateNestedOneWithoutAssignedConversationsInput
+  tags?: Prisma.ConversationTagCreateNestedManyWithoutConversationInput
 }
 
 export type ConversationUncheckedCreateWithoutMessagesInput = {
@@ -849,6 +877,7 @@ export type ConversationUncheckedCreateWithoutMessagesInput = {
   detectedIntent?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  tags?: Prisma.ConversationTagUncheckedCreateNestedManyWithoutConversationInput
 }
 
 export type ConversationCreateOrConnectWithoutMessagesInput = {
@@ -880,6 +909,7 @@ export type ConversationUpdateWithoutMessagesInput = {
   tenant?: Prisma.TenantUpdateOneRequiredWithoutConversationsNestedInput
   contact?: Prisma.ContactUpdateOneWithoutConversationsNestedInput
   assignedUser?: Prisma.UserUpdateOneWithoutAssignedConversationsNestedInput
+  tags?: Prisma.ConversationTagUpdateManyWithoutConversationNestedInput
 }
 
 export type ConversationUncheckedUpdateWithoutMessagesInput = {
@@ -895,6 +925,87 @@ export type ConversationUncheckedUpdateWithoutMessagesInput = {
   detectedIntent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tags?: Prisma.ConversationTagUncheckedUpdateManyWithoutConversationNestedInput
+}
+
+export type ConversationCreateWithoutTagsInput = {
+  id?: string
+  channel?: $Enums.ConversationChannel
+  status?: $Enums.ConversationStatus
+  subject?: string | null
+  lastMessageAt?: Date | string | null
+  summaryText?: string | null
+  detectedIntent?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  tenant: Prisma.TenantCreateNestedOneWithoutConversationsInput
+  contact?: Prisma.ContactCreateNestedOneWithoutConversationsInput
+  assignedUser?: Prisma.UserCreateNestedOneWithoutAssignedConversationsInput
+  messages?: Prisma.MessageCreateNestedManyWithoutConversationInput
+}
+
+export type ConversationUncheckedCreateWithoutTagsInput = {
+  id?: string
+  tenantId: string
+  contactId?: string | null
+  assignedUserId?: string | null
+  channel?: $Enums.ConversationChannel
+  status?: $Enums.ConversationStatus
+  subject?: string | null
+  lastMessageAt?: Date | string | null
+  summaryText?: string | null
+  detectedIntent?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutConversationInput
+}
+
+export type ConversationCreateOrConnectWithoutTagsInput = {
+  where: Prisma.ConversationWhereUniqueInput
+  create: Prisma.XOR<Prisma.ConversationCreateWithoutTagsInput, Prisma.ConversationUncheckedCreateWithoutTagsInput>
+}
+
+export type ConversationUpsertWithoutTagsInput = {
+  update: Prisma.XOR<Prisma.ConversationUpdateWithoutTagsInput, Prisma.ConversationUncheckedUpdateWithoutTagsInput>
+  create: Prisma.XOR<Prisma.ConversationCreateWithoutTagsInput, Prisma.ConversationUncheckedCreateWithoutTagsInput>
+  where?: Prisma.ConversationWhereInput
+}
+
+export type ConversationUpdateToOneWithWhereWithoutTagsInput = {
+  where?: Prisma.ConversationWhereInput
+  data: Prisma.XOR<Prisma.ConversationUpdateWithoutTagsInput, Prisma.ConversationUncheckedUpdateWithoutTagsInput>
+}
+
+export type ConversationUpdateWithoutTagsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  channel?: Prisma.EnumConversationChannelFieldUpdateOperationsInput | $Enums.ConversationChannel
+  status?: Prisma.EnumConversationStatusFieldUpdateOperationsInput | $Enums.ConversationStatus
+  subject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastMessageAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  detectedIntent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutConversationsNestedInput
+  contact?: Prisma.ContactUpdateOneWithoutConversationsNestedInput
+  assignedUser?: Prisma.UserUpdateOneWithoutAssignedConversationsNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutConversationNestedInput
+}
+
+export type ConversationUncheckedUpdateWithoutTagsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignedUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  channel?: Prisma.EnumConversationChannelFieldUpdateOperationsInput | $Enums.ConversationChannel
+  status?: Prisma.EnumConversationStatusFieldUpdateOperationsInput | $Enums.ConversationStatus
+  subject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastMessageAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  detectedIntent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutConversationNestedInput
 }
 
 export type ConversationCreateManyTenantInput = {
@@ -924,6 +1035,7 @@ export type ConversationUpdateWithoutTenantInput = {
   contact?: Prisma.ContactUpdateOneWithoutConversationsNestedInput
   assignedUser?: Prisma.UserUpdateOneWithoutAssignedConversationsNestedInput
   messages?: Prisma.MessageUpdateManyWithoutConversationNestedInput
+  tags?: Prisma.ConversationTagUpdateManyWithoutConversationNestedInput
 }
 
 export type ConversationUncheckedUpdateWithoutTenantInput = {
@@ -939,6 +1051,7 @@ export type ConversationUncheckedUpdateWithoutTenantInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   messages?: Prisma.MessageUncheckedUpdateManyWithoutConversationNestedInput
+  tags?: Prisma.ConversationTagUncheckedUpdateManyWithoutConversationNestedInput
 }
 
 export type ConversationUncheckedUpdateManyWithoutTenantInput = {
@@ -982,6 +1095,7 @@ export type ConversationUpdateWithoutAssignedUserInput = {
   tenant?: Prisma.TenantUpdateOneRequiredWithoutConversationsNestedInput
   contact?: Prisma.ContactUpdateOneWithoutConversationsNestedInput
   messages?: Prisma.MessageUpdateManyWithoutConversationNestedInput
+  tags?: Prisma.ConversationTagUpdateManyWithoutConversationNestedInput
 }
 
 export type ConversationUncheckedUpdateWithoutAssignedUserInput = {
@@ -997,6 +1111,7 @@ export type ConversationUncheckedUpdateWithoutAssignedUserInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   messages?: Prisma.MessageUncheckedUpdateManyWithoutConversationNestedInput
+  tags?: Prisma.ConversationTagUncheckedUpdateManyWithoutConversationNestedInput
 }
 
 export type ConversationUncheckedUpdateManyWithoutAssignedUserInput = {
@@ -1040,6 +1155,7 @@ export type ConversationUpdateWithoutContactInput = {
   tenant?: Prisma.TenantUpdateOneRequiredWithoutConversationsNestedInput
   assignedUser?: Prisma.UserUpdateOneWithoutAssignedConversationsNestedInput
   messages?: Prisma.MessageUpdateManyWithoutConversationNestedInput
+  tags?: Prisma.ConversationTagUpdateManyWithoutConversationNestedInput
 }
 
 export type ConversationUncheckedUpdateWithoutContactInput = {
@@ -1055,6 +1171,7 @@ export type ConversationUncheckedUpdateWithoutContactInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   messages?: Prisma.MessageUncheckedUpdateManyWithoutConversationNestedInput
+  tags?: Prisma.ConversationTagUncheckedUpdateManyWithoutConversationNestedInput
 }
 
 export type ConversationUncheckedUpdateManyWithoutContactInput = {
@@ -1078,10 +1195,12 @@ export type ConversationUncheckedUpdateManyWithoutContactInput = {
 
 export type ConversationCountOutputType = {
   messages: number
+  tags: number
 }
 
 export type ConversationCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   messages?: boolean | ConversationCountOutputTypeCountMessagesArgs
+  tags?: boolean | ConversationCountOutputTypeCountTagsArgs
 }
 
 /**
@@ -1099,6 +1218,13 @@ export type ConversationCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types
  */
 export type ConversationCountOutputTypeCountMessagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.MessageWhereInput
+}
+
+/**
+ * ConversationCountOutputType without action
+ */
+export type ConversationCountOutputTypeCountTagsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ConversationTagWhereInput
 }
 
 
@@ -1119,6 +1245,7 @@ export type ConversationSelect<ExtArgs extends runtime.Types.Extensions.Internal
   contact?: boolean | Prisma.Conversation$contactArgs<ExtArgs>
   assignedUser?: boolean | Prisma.Conversation$assignedUserArgs<ExtArgs>
   messages?: boolean | Prisma.Conversation$messagesArgs<ExtArgs>
+  tags?: boolean | Prisma.Conversation$tagsArgs<ExtArgs>
   _count?: boolean | Prisma.ConversationCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["conversation"]>
 
@@ -1179,6 +1306,7 @@ export type ConversationInclude<ExtArgs extends runtime.Types.Extensions.Interna
   contact?: boolean | Prisma.Conversation$contactArgs<ExtArgs>
   assignedUser?: boolean | Prisma.Conversation$assignedUserArgs<ExtArgs>
   messages?: boolean | Prisma.Conversation$messagesArgs<ExtArgs>
+  tags?: boolean | Prisma.Conversation$tagsArgs<ExtArgs>
   _count?: boolean | Prisma.ConversationCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ConversationIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1199,6 +1327,7 @@ export type $ConversationPayload<ExtArgs extends runtime.Types.Extensions.Intern
     contact: Prisma.$ContactPayload<ExtArgs> | null
     assignedUser: Prisma.$UserPayload<ExtArgs> | null
     messages: Prisma.$MessagePayload<ExtArgs>[]
+    tags: Prisma.$ConversationTagPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1611,6 +1740,7 @@ export interface Prisma__ConversationClient<T, Null = never, ExtArgs extends run
   contact<T extends Prisma.Conversation$contactArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Conversation$contactArgs<ExtArgs>>): Prisma.Prisma__ContactClient<runtime.Types.Result.GetResult<Prisma.$ContactPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   assignedUser<T extends Prisma.Conversation$assignedUserArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Conversation$assignedUserArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   messages<T extends Prisma.Conversation$messagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Conversation$messagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  tags<T extends Prisma.Conversation$tagsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Conversation$tagsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ConversationTagPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2112,6 +2242,30 @@ export type Conversation$messagesArgs<ExtArgs extends runtime.Types.Extensions.I
   take?: number
   skip?: number
   distinct?: Prisma.MessageScalarFieldEnum | Prisma.MessageScalarFieldEnum[]
+}
+
+/**
+ * Conversation.tags
+ */
+export type Conversation$tagsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ConversationTag
+   */
+  select?: Prisma.ConversationTagSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ConversationTag
+   */
+  omit?: Prisma.ConversationTagOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ConversationTagInclude<ExtArgs> | null
+  where?: Prisma.ConversationTagWhereInput
+  orderBy?: Prisma.ConversationTagOrderByWithRelationInput | Prisma.ConversationTagOrderByWithRelationInput[]
+  cursor?: Prisma.ConversationTagWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ConversationTagScalarFieldEnum | Prisma.ConversationTagScalarFieldEnum[]
 }
 
 /**
