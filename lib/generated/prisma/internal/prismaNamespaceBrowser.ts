@@ -77,7 +77,9 @@ export const ModelName = {
   OpportunityStageHistory: 'OpportunityStageHistory',
   CompanyTag: 'CompanyTag',
   OpportunityTag: 'OpportunityTag',
-  ConversationTag: 'ConversationTag'
+  ConversationTag: 'ConversationTag',
+  Integration: 'Integration',
+  WebhookLog: 'WebhookLog'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -501,6 +503,36 @@ export const ConversationTagScalarFieldEnum = {
 } as const
 
 export type ConversationTagScalarFieldEnum = (typeof ConversationTagScalarFieldEnum)[keyof typeof ConversationTagScalarFieldEnum]
+
+
+export const IntegrationScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  channelType: 'channelType',
+  name: 'name',
+  credentials: 'credentials',
+  webhookUrl: 'webhookUrl',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type IntegrationScalarFieldEnum = (typeof IntegrationScalarFieldEnum)[keyof typeof IntegrationScalarFieldEnum]
+
+
+export const WebhookLogScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  integrationId: 'integrationId',
+  channel: 'channel',
+  payload: 'payload',
+  status: 'status',
+  error: 'error',
+  processedAt: 'processedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type WebhookLogScalarFieldEnum = (typeof WebhookLogScalarFieldEnum)[keyof typeof WebhookLogScalarFieldEnum]
 
 
 export const SortOrder = {

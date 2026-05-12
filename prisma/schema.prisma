@@ -141,6 +141,8 @@ model Tenant {
   invoices             Invoice[]
   invoiceItems         InvoiceItem[]
   opportunityStageHistories OpportunityStageHistory[]
+  integrations Integration[]
+  webhookLogs  WebhookLog[]
 
   @@map("tenants")
 }
@@ -741,4 +743,46 @@ model ConversationTag {
 
   @@id([conversationId, tagId])
   @@map("conversation_tags")
+}
+
+// ─── Integration ──────────────────────────────────────────────────────────────
+
+model Integration {
+  id          String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId    String              @map("tenant_id") @db.Uuid
+  channelType ConversationChannel @map("channel_type")
+  name        String
+  credentials Json                @default("{}") // encrypt at application layer before storing
+  webhookUrl  String?             @map("webhook_url")
+  isActive    Boolean             @default(true) @map("is_active")
+  createdAt   DateTime            @default(now()) @map("created_at")
+  updatedAt   DateTime            @updatedAt @map("updated_at")
+
+  tenant      Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  webhookLogs WebhookLog[]
+
+  @@unique([tenantId, channelType, name])
+  @@index([tenantId])
+  @@map("integrations")
+}
+
+// ─── WebhookLog ───────────────────────────────────────────────────────────────
+
+model WebhookLog {
+  id            String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId      String              @map("tenant_id") @db.Uuid
+  integrationId String?             @map("integration_id") @db.Uuid
+  channel       ConversationChannel
+  payload       Json                @default("{}")
+  status        String              @default("received")
+  error         String?
+  processedAt   DateTime?           @map("processed_at")
+  createdAt     DateTime            @default(now()) @map("created_at")
+
+  tenant      Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  integration Integration? @relation(fields: [integrationId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, status, createdAt])
+  @@index([integrationId])
+  @@map("webhook_logs")
 }

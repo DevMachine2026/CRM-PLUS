@@ -152,3 +152,13 @@ export type OpportunityTag = Prisma.OpportunityTagModel
  * 
  */
 export type ConversationTag = Prisma.ConversationTagModel
+/**
+ * Model Integration
+ * 
+ */
+export type Integration = Prisma.IntegrationModel
+/**
+ * Model WebhookLog
+ * 
+ */
+export type WebhookLog = Prisma.WebhookLogModel
