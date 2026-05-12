@@ -143,6 +143,7 @@ model Tenant {
   opportunityStageHistories OpportunityStageHistory[]
   integrations Integration[]
   webhookLogs  WebhookLog[]
+  userGoals    UserGoal[]
 
   @@map("tenants")
 }
@@ -174,6 +175,7 @@ model User {
   assignedConversations Conversation[]      @relation("ConversationAssignee")
   activities           Activity[]
   stageMovements       OpportunityStageHistory[] @relation("StageHistoryMover")
+  goals                UserGoal[]
 
   @@unique([tenantId, email])
   @@map("users")
@@ -785,4 +787,26 @@ model WebhookLog {
   @@index([tenantId, status, createdAt])
   @@index([integrationId])
   @@map("webhook_logs")
+}
+
+// ─── UserGoal ─────────────────────────────────────────────────────────────────
+
+model UserGoal {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId    String   @map("tenant_id") @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  targetType  String   @map("target_type")
+  targetValue Decimal  @map("target_value") @db.Decimal(14, 2)
+  periodType  String   @map("period_type")
+  startsAt    DateTime @map("starts_at")
+  endsAt      DateTime @map("ends_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, targetType, startsAt])
+  @@index([tenantId, userId])
+  @@map("user_goals")
 }

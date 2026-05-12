@@ -412,7 +412,8 @@ export const ModelName = {
   OpportunityTag: 'OpportunityTag',
   ConversationTag: 'ConversationTag',
   Integration: 'Integration',
-  WebhookLog: 'WebhookLog'
+  WebhookLog: 'WebhookLog',
+  UserGoal: 'UserGoal'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -428,7 +429,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "tenant" | "user" | "session" | "passwordResetToken" | "aiLog" | "company" | "contact" | "product" | "tag" | "contactTag" | "pipeline" | "pipelineStage" | "opportunity" | "opportunityProduct" | "revenue" | "task" | "conversation" | "message" | "invoice" | "invoiceItem" | "automation" | "automationLog" | "activity" | "opportunityStageHistory" | "companyTag" | "opportunityTag" | "conversationTag" | "integration" | "webhookLog"
+    modelProps: "tenant" | "user" | "session" | "passwordResetToken" | "aiLog" | "company" | "contact" | "product" | "tag" | "contactTag" | "pipeline" | "pipelineStage" | "opportunity" | "opportunityProduct" | "revenue" | "task" | "conversation" | "message" | "invoice" | "invoiceItem" | "automation" | "automationLog" | "activity" | "opportunityStageHistory" | "companyTag" | "opportunityTag" | "conversationTag" | "integration" | "webhookLog" | "userGoal"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2578,6 +2579,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    UserGoal: {
+      payload: Prisma.$UserGoalPayload<ExtArgs>
+      fields: Prisma.UserGoalFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.UserGoalFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserGoalPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.UserGoalFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserGoalPayload>
+        }
+        findFirst: {
+          args: Prisma.UserGoalFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserGoalPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.UserGoalFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserGoalPayload>
+        }
+        findMany: {
+          args: Prisma.UserGoalFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserGoalPayload>[]
+        }
+        create: {
+          args: Prisma.UserGoalCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserGoalPayload>
+        }
+        createMany: {
+          args: Prisma.UserGoalCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.UserGoalCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserGoalPayload>[]
+        }
+        delete: {
+          args: Prisma.UserGoalDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserGoalPayload>
+        }
+        update: {
+          args: Prisma.UserGoalUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserGoalPayload>
+        }
+        deleteMany: {
+          args: Prisma.UserGoalDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.UserGoalUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.UserGoalUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserGoalPayload>[]
+        }
+        upsert: {
+          args: Prisma.UserGoalUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserGoalPayload>
+        }
+        aggregate: {
+          args: Prisma.UserGoalAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateUserGoal>
+        }
+        groupBy: {
+          args: Prisma.UserGoalGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.UserGoalGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.UserGoalCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.UserGoalCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -3052,6 +3127,22 @@ export const WebhookLogScalarFieldEnum = {
 } as const
 
 export type WebhookLogScalarFieldEnum = (typeof WebhookLogScalarFieldEnum)[keyof typeof WebhookLogScalarFieldEnum]
+
+
+export const UserGoalScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  userId: 'userId',
+  targetType: 'targetType',
+  targetValue: 'targetValue',
+  periodType: 'periodType',
+  startsAt: 'startsAt',
+  endsAt: 'endsAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UserGoalScalarFieldEnum = (typeof UserGoalScalarFieldEnum)[keyof typeof UserGoalScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -3539,6 +3630,7 @@ export type GlobalOmitConfig = {
   conversationTag?: Prisma.ConversationTagOmit
   integration?: Prisma.IntegrationOmit
   webhookLog?: Prisma.WebhookLogOmit
+  userGoal?: Prisma.UserGoalOmit
 }
 
 /* Types for Logging */

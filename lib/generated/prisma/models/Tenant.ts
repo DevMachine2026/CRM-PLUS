@@ -225,6 +225,7 @@ export type TenantWhereInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryListRelationFilter
   integrations?: Prisma.IntegrationListRelationFilter
   webhookLogs?: Prisma.WebhookLogListRelationFilter
+  userGoals?: Prisma.UserGoalListRelationFilter
 }
 
 export type TenantOrderByWithRelationInput = {
@@ -259,6 +260,7 @@ export type TenantOrderByWithRelationInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryOrderByRelationAggregateInput
   integrations?: Prisma.IntegrationOrderByRelationAggregateInput
   webhookLogs?: Prisma.WebhookLogOrderByRelationAggregateInput
+  userGoals?: Prisma.UserGoalOrderByRelationAggregateInput
 }
 
 export type TenantWhereUniqueInput = Prisma.AtLeast<{
@@ -296,6 +298,7 @@ export type TenantWhereUniqueInput = Prisma.AtLeast<{
   opportunityStageHistories?: Prisma.OpportunityStageHistoryListRelationFilter
   integrations?: Prisma.IntegrationListRelationFilter
   webhookLogs?: Prisma.WebhookLogListRelationFilter
+  userGoals?: Prisma.UserGoalListRelationFilter
 }, "id" | "slug">
 
 export type TenantOrderByWithAggregationInput = {
@@ -358,6 +361,7 @@ export type TenantCreateInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateInput = {
@@ -392,6 +396,7 @@ export type TenantUncheckedCreateInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogUncheckedCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUpdateInput = {
@@ -426,6 +431,7 @@ export type TenantUpdateInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateInput = {
@@ -460,6 +466,7 @@ export type TenantUncheckedUpdateInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUncheckedUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateManyInput = {
@@ -869,6 +876,20 @@ export type TenantUpdateOneRequiredWithoutWebhookLogsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.TenantUpdateToOneWithWhereWithoutWebhookLogsInput, Prisma.TenantUpdateWithoutWebhookLogsInput>, Prisma.TenantUncheckedUpdateWithoutWebhookLogsInput>
 }
 
+export type TenantCreateNestedOneWithoutUserGoalsInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutUserGoalsInput, Prisma.TenantUncheckedCreateWithoutUserGoalsInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutUserGoalsInput
+  connect?: Prisma.TenantWhereUniqueInput
+}
+
+export type TenantUpdateOneRequiredWithoutUserGoalsNestedInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutUserGoalsInput, Prisma.TenantUncheckedCreateWithoutUserGoalsInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutUserGoalsInput
+  upsert?: Prisma.TenantUpsertWithoutUserGoalsInput
+  connect?: Prisma.TenantWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TenantUpdateToOneWithWhereWithoutUserGoalsInput, Prisma.TenantUpdateWithoutUserGoalsInput>, Prisma.TenantUncheckedUpdateWithoutUserGoalsInput>
+}
+
 export type TenantCreateWithoutUsersInput = {
   id?: string
   name: string
@@ -900,6 +921,7 @@ export type TenantCreateWithoutUsersInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutUsersInput = {
@@ -933,6 +955,7 @@ export type TenantUncheckedCreateWithoutUsersInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogUncheckedCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutUsersInput = {
@@ -982,6 +1005,7 @@ export type TenantUpdateWithoutUsersInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutUsersInput = {
@@ -1015,6 +1039,7 @@ export type TenantUncheckedUpdateWithoutUsersInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUncheckedUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutPasswordResetTokensInput = {
@@ -1048,6 +1073,7 @@ export type TenantCreateWithoutPasswordResetTokensInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutPasswordResetTokensInput = {
@@ -1081,6 +1107,7 @@ export type TenantUncheckedCreateWithoutPasswordResetTokensInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogUncheckedCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutPasswordResetTokensInput = {
@@ -1130,6 +1157,7 @@ export type TenantUpdateWithoutPasswordResetTokensInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutPasswordResetTokensInput = {
@@ -1163,6 +1191,7 @@ export type TenantUncheckedUpdateWithoutPasswordResetTokensInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUncheckedUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutAiLogsInput = {
@@ -1196,6 +1225,7 @@ export type TenantCreateWithoutAiLogsInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutAiLogsInput = {
@@ -1229,6 +1259,7 @@ export type TenantUncheckedCreateWithoutAiLogsInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogUncheckedCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutAiLogsInput = {
@@ -1278,6 +1309,7 @@ export type TenantUpdateWithoutAiLogsInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutAiLogsInput = {
@@ -1311,6 +1343,7 @@ export type TenantUncheckedUpdateWithoutAiLogsInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUncheckedUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutCompaniesInput = {
@@ -1344,6 +1377,7 @@ export type TenantCreateWithoutCompaniesInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutCompaniesInput = {
@@ -1377,6 +1411,7 @@ export type TenantUncheckedCreateWithoutCompaniesInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogUncheckedCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutCompaniesInput = {
@@ -1426,6 +1461,7 @@ export type TenantUpdateWithoutCompaniesInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutCompaniesInput = {
@@ -1459,6 +1495,7 @@ export type TenantUncheckedUpdateWithoutCompaniesInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUncheckedUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutContactsInput = {
@@ -1492,6 +1529,7 @@ export type TenantCreateWithoutContactsInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutContactsInput = {
@@ -1525,6 +1563,7 @@ export type TenantUncheckedCreateWithoutContactsInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogUncheckedCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutContactsInput = {
@@ -1574,6 +1613,7 @@ export type TenantUpdateWithoutContactsInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutContactsInput = {
@@ -1607,6 +1647,7 @@ export type TenantUncheckedUpdateWithoutContactsInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUncheckedUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutProductsInput = {
@@ -1640,6 +1681,7 @@ export type TenantCreateWithoutProductsInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutProductsInput = {
@@ -1673,6 +1715,7 @@ export type TenantUncheckedCreateWithoutProductsInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogUncheckedCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutProductsInput = {
@@ -1722,6 +1765,7 @@ export type TenantUpdateWithoutProductsInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutProductsInput = {
@@ -1755,6 +1799,7 @@ export type TenantUncheckedUpdateWithoutProductsInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUncheckedUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutTagsInput = {
@@ -1788,6 +1833,7 @@ export type TenantCreateWithoutTagsInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutTagsInput = {
@@ -1821,6 +1867,7 @@ export type TenantUncheckedCreateWithoutTagsInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogUncheckedCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutTagsInput = {
@@ -1870,6 +1917,7 @@ export type TenantUpdateWithoutTagsInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutTagsInput = {
@@ -1903,6 +1951,7 @@ export type TenantUncheckedUpdateWithoutTagsInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUncheckedUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutPipelinesInput = {
@@ -1936,6 +1985,7 @@ export type TenantCreateWithoutPipelinesInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutPipelinesInput = {
@@ -1969,6 +2019,7 @@ export type TenantUncheckedCreateWithoutPipelinesInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogUncheckedCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutPipelinesInput = {
@@ -2018,6 +2069,7 @@ export type TenantUpdateWithoutPipelinesInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutPipelinesInput = {
@@ -2051,6 +2103,7 @@ export type TenantUncheckedUpdateWithoutPipelinesInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUncheckedUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutPipelineStagesInput = {
@@ -2084,6 +2137,7 @@ export type TenantCreateWithoutPipelineStagesInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutPipelineStagesInput = {
@@ -2117,6 +2171,7 @@ export type TenantUncheckedCreateWithoutPipelineStagesInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogUncheckedCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutPipelineStagesInput = {
@@ -2166,6 +2221,7 @@ export type TenantUpdateWithoutPipelineStagesInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutPipelineStagesInput = {
@@ -2199,6 +2255,7 @@ export type TenantUncheckedUpdateWithoutPipelineStagesInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUncheckedUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutOpportunitiesInput = {
@@ -2232,6 +2289,7 @@ export type TenantCreateWithoutOpportunitiesInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutOpportunitiesInput = {
@@ -2265,6 +2323,7 @@ export type TenantUncheckedCreateWithoutOpportunitiesInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogUncheckedCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutOpportunitiesInput = {
@@ -2314,6 +2373,7 @@ export type TenantUpdateWithoutOpportunitiesInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutOpportunitiesInput = {
@@ -2347,6 +2407,7 @@ export type TenantUncheckedUpdateWithoutOpportunitiesInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUncheckedUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutOpportunityProductsInput = {
@@ -2380,6 +2441,7 @@ export type TenantCreateWithoutOpportunityProductsInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutOpportunityProductsInput = {
@@ -2413,6 +2475,7 @@ export type TenantUncheckedCreateWithoutOpportunityProductsInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogUncheckedCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutOpportunityProductsInput = {
@@ -2462,6 +2525,7 @@ export type TenantUpdateWithoutOpportunityProductsInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutOpportunityProductsInput = {
@@ -2495,6 +2559,7 @@ export type TenantUncheckedUpdateWithoutOpportunityProductsInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUncheckedUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutRevenuesInput = {
@@ -2528,6 +2593,7 @@ export type TenantCreateWithoutRevenuesInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutRevenuesInput = {
@@ -2561,6 +2627,7 @@ export type TenantUncheckedCreateWithoutRevenuesInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogUncheckedCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutRevenuesInput = {
@@ -2610,6 +2677,7 @@ export type TenantUpdateWithoutRevenuesInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutRevenuesInput = {
@@ -2643,6 +2711,7 @@ export type TenantUncheckedUpdateWithoutRevenuesInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUncheckedUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutTasksInput = {
@@ -2676,6 +2745,7 @@ export type TenantCreateWithoutTasksInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutTasksInput = {
@@ -2709,6 +2779,7 @@ export type TenantUncheckedCreateWithoutTasksInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogUncheckedCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutTasksInput = {
@@ -2758,6 +2829,7 @@ export type TenantUpdateWithoutTasksInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutTasksInput = {
@@ -2791,6 +2863,7 @@ export type TenantUncheckedUpdateWithoutTasksInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUncheckedUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutConversationsInput = {
@@ -2824,6 +2897,7 @@ export type TenantCreateWithoutConversationsInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutConversationsInput = {
@@ -2857,6 +2931,7 @@ export type TenantUncheckedCreateWithoutConversationsInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogUncheckedCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutConversationsInput = {
@@ -2906,6 +2981,7 @@ export type TenantUpdateWithoutConversationsInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutConversationsInput = {
@@ -2939,6 +3015,7 @@ export type TenantUncheckedUpdateWithoutConversationsInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUncheckedUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutMessagesInput = {
@@ -2972,6 +3049,7 @@ export type TenantCreateWithoutMessagesInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutMessagesInput = {
@@ -3005,6 +3083,7 @@ export type TenantUncheckedCreateWithoutMessagesInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogUncheckedCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutMessagesInput = {
@@ -3054,6 +3133,7 @@ export type TenantUpdateWithoutMessagesInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutMessagesInput = {
@@ -3087,6 +3167,7 @@ export type TenantUncheckedUpdateWithoutMessagesInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUncheckedUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutInvoicesInput = {
@@ -3120,6 +3201,7 @@ export type TenantCreateWithoutInvoicesInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutInvoicesInput = {
@@ -3153,6 +3235,7 @@ export type TenantUncheckedCreateWithoutInvoicesInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogUncheckedCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutInvoicesInput = {
@@ -3202,6 +3285,7 @@ export type TenantUpdateWithoutInvoicesInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutInvoicesInput = {
@@ -3235,6 +3319,7 @@ export type TenantUncheckedUpdateWithoutInvoicesInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUncheckedUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutInvoiceItemsInput = {
@@ -3268,6 +3353,7 @@ export type TenantCreateWithoutInvoiceItemsInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutInvoiceItemsInput = {
@@ -3301,6 +3387,7 @@ export type TenantUncheckedCreateWithoutInvoiceItemsInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogUncheckedCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutInvoiceItemsInput = {
@@ -3350,6 +3437,7 @@ export type TenantUpdateWithoutInvoiceItemsInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutInvoiceItemsInput = {
@@ -3383,6 +3471,7 @@ export type TenantUncheckedUpdateWithoutInvoiceItemsInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUncheckedUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutAutomationsInput = {
@@ -3416,6 +3505,7 @@ export type TenantCreateWithoutAutomationsInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutAutomationsInput = {
@@ -3449,6 +3539,7 @@ export type TenantUncheckedCreateWithoutAutomationsInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogUncheckedCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutAutomationsInput = {
@@ -3498,6 +3589,7 @@ export type TenantUpdateWithoutAutomationsInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutAutomationsInput = {
@@ -3531,6 +3623,7 @@ export type TenantUncheckedUpdateWithoutAutomationsInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUncheckedUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutAutomationLogsInput = {
@@ -3564,6 +3657,7 @@ export type TenantCreateWithoutAutomationLogsInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutAutomationLogsInput = {
@@ -3597,6 +3691,7 @@ export type TenantUncheckedCreateWithoutAutomationLogsInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogUncheckedCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutAutomationLogsInput = {
@@ -3646,6 +3741,7 @@ export type TenantUpdateWithoutAutomationLogsInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutAutomationLogsInput = {
@@ -3679,6 +3775,7 @@ export type TenantUncheckedUpdateWithoutAutomationLogsInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUncheckedUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutActivitiesInput = {
@@ -3712,6 +3809,7 @@ export type TenantCreateWithoutActivitiesInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutActivitiesInput = {
@@ -3745,6 +3843,7 @@ export type TenantUncheckedCreateWithoutActivitiesInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogUncheckedCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutActivitiesInput = {
@@ -3794,6 +3893,7 @@ export type TenantUpdateWithoutActivitiesInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutActivitiesInput = {
@@ -3827,6 +3927,7 @@ export type TenantUncheckedUpdateWithoutActivitiesInput = {
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUncheckedUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutOpportunityStageHistoriesInput = {
@@ -3860,6 +3961,7 @@ export type TenantCreateWithoutOpportunityStageHistoriesInput = {
   invoiceItems?: Prisma.InvoiceItemCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutOpportunityStageHistoriesInput = {
@@ -3893,6 +3995,7 @@ export type TenantUncheckedCreateWithoutOpportunityStageHistoriesInput = {
   invoiceItems?: Prisma.InvoiceItemUncheckedCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogUncheckedCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutOpportunityStageHistoriesInput = {
@@ -3942,6 +4045,7 @@ export type TenantUpdateWithoutOpportunityStageHistoriesInput = {
   invoiceItems?: Prisma.InvoiceItemUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutOpportunityStageHistoriesInput = {
@@ -3975,6 +4079,7 @@ export type TenantUncheckedUpdateWithoutOpportunityStageHistoriesInput = {
   invoiceItems?: Prisma.InvoiceItemUncheckedUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUncheckedUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutIntegrationsInput = {
@@ -4008,6 +4113,7 @@ export type TenantCreateWithoutIntegrationsInput = {
   invoiceItems?: Prisma.InvoiceItemCreateNestedManyWithoutTenantInput
   opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutIntegrationsInput = {
@@ -4041,6 +4147,7 @@ export type TenantUncheckedCreateWithoutIntegrationsInput = {
   invoiceItems?: Prisma.InvoiceItemUncheckedCreateNestedManyWithoutTenantInput
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
   webhookLogs?: Prisma.WebhookLogUncheckedCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutIntegrationsInput = {
@@ -4090,6 +4197,7 @@ export type TenantUpdateWithoutIntegrationsInput = {
   invoiceItems?: Prisma.InvoiceItemUpdateManyWithoutTenantNestedInput
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutIntegrationsInput = {
@@ -4123,6 +4231,7 @@ export type TenantUncheckedUpdateWithoutIntegrationsInput = {
   invoiceItems?: Prisma.InvoiceItemUncheckedUpdateManyWithoutTenantNestedInput
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
   webhookLogs?: Prisma.WebhookLogUncheckedUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutWebhookLogsInput = {
@@ -4156,6 +4265,7 @@ export type TenantCreateWithoutWebhookLogsInput = {
   invoiceItems?: Prisma.InvoiceItemCreateNestedManyWithoutTenantInput
   opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutWebhookLogsInput = {
@@ -4189,6 +4299,7 @@ export type TenantUncheckedCreateWithoutWebhookLogsInput = {
   invoiceItems?: Prisma.InvoiceItemUncheckedCreateNestedManyWithoutTenantInput
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
   integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutTenantInput
+  userGoals?: Prisma.UserGoalUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutWebhookLogsInput = {
@@ -4238,6 +4349,7 @@ export type TenantUpdateWithoutWebhookLogsInput = {
   invoiceItems?: Prisma.InvoiceItemUpdateManyWithoutTenantNestedInput
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutWebhookLogsInput = {
@@ -4271,6 +4383,159 @@ export type TenantUncheckedUpdateWithoutWebhookLogsInput = {
   invoiceItems?: Prisma.InvoiceItemUncheckedUpdateManyWithoutTenantNestedInput
   opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
   integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutTenantNestedInput
+  userGoals?: Prisma.UserGoalUncheckedUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantCreateWithoutUserGoalsInput = {
+  id?: string
+  name: string
+  slug: string
+  plan?: $Enums.TenantPlan
+  status?: $Enums.TenantStatus
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserCreateNestedManyWithoutTenantInput
+  passwordResetTokens?: Prisma.PasswordResetTokenCreateNestedManyWithoutTenantInput
+  aiLogs?: Prisma.AiLogCreateNestedManyWithoutTenantInput
+  contacts?: Prisma.ContactCreateNestedManyWithoutTenantInput
+  companies?: Prisma.CompanyCreateNestedManyWithoutTenantInput
+  products?: Prisma.ProductCreateNestedManyWithoutTenantInput
+  tags?: Prisma.TagCreateNestedManyWithoutTenantInput
+  pipelines?: Prisma.PipelineCreateNestedManyWithoutTenantInput
+  pipelineStages?: Prisma.PipelineStageCreateNestedManyWithoutTenantInput
+  opportunities?: Prisma.OpportunityCreateNestedManyWithoutTenantInput
+  opportunityProducts?: Prisma.OpportunityProductCreateNestedManyWithoutTenantInput
+  revenues?: Prisma.RevenueCreateNestedManyWithoutTenantInput
+  tasks?: Prisma.TaskCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageCreateNestedManyWithoutTenantInput
+  activities?: Prisma.ActivityCreateNestedManyWithoutTenantInput
+  automations?: Prisma.AutomationCreateNestedManyWithoutTenantInput
+  automationLogs?: Prisma.AutomationLogCreateNestedManyWithoutTenantInput
+  invoices?: Prisma.InvoiceCreateNestedManyWithoutTenantInput
+  invoiceItems?: Prisma.InvoiceItemCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryCreateNestedManyWithoutTenantInput
+  integrations?: Prisma.IntegrationCreateNestedManyWithoutTenantInput
+  webhookLogs?: Prisma.WebhookLogCreateNestedManyWithoutTenantInput
+}
+
+export type TenantUncheckedCreateWithoutUserGoalsInput = {
+  id?: string
+  name: string
+  slug: string
+  plan?: $Enums.TenantPlan
+  status?: $Enums.TenantStatus
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutTenantInput
+  passwordResetTokens?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutTenantInput
+  aiLogs?: Prisma.AiLogUncheckedCreateNestedManyWithoutTenantInput
+  contacts?: Prisma.ContactUncheckedCreateNestedManyWithoutTenantInput
+  companies?: Prisma.CompanyUncheckedCreateNestedManyWithoutTenantInput
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutTenantInput
+  tags?: Prisma.TagUncheckedCreateNestedManyWithoutTenantInput
+  pipelines?: Prisma.PipelineUncheckedCreateNestedManyWithoutTenantInput
+  pipelineStages?: Prisma.PipelineStageUncheckedCreateNestedManyWithoutTenantInput
+  opportunities?: Prisma.OpportunityUncheckedCreateNestedManyWithoutTenantInput
+  opportunityProducts?: Prisma.OpportunityProductUncheckedCreateNestedManyWithoutTenantInput
+  revenues?: Prisma.RevenueUncheckedCreateNestedManyWithoutTenantInput
+  tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutTenantInput
+  activities?: Prisma.ActivityUncheckedCreateNestedManyWithoutTenantInput
+  automations?: Prisma.AutomationUncheckedCreateNestedManyWithoutTenantInput
+  automationLogs?: Prisma.AutomationLogUncheckedCreateNestedManyWithoutTenantInput
+  invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutTenantInput
+  invoiceItems?: Prisma.InvoiceItemUncheckedCreateNestedManyWithoutTenantInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedCreateNestedManyWithoutTenantInput
+  integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutTenantInput
+  webhookLogs?: Prisma.WebhookLogUncheckedCreateNestedManyWithoutTenantInput
+}
+
+export type TenantCreateOrConnectWithoutUserGoalsInput = {
+  where: Prisma.TenantWhereUniqueInput
+  create: Prisma.XOR<Prisma.TenantCreateWithoutUserGoalsInput, Prisma.TenantUncheckedCreateWithoutUserGoalsInput>
+}
+
+export type TenantUpsertWithoutUserGoalsInput = {
+  update: Prisma.XOR<Prisma.TenantUpdateWithoutUserGoalsInput, Prisma.TenantUncheckedUpdateWithoutUserGoalsInput>
+  create: Prisma.XOR<Prisma.TenantCreateWithoutUserGoalsInput, Prisma.TenantUncheckedCreateWithoutUserGoalsInput>
+  where?: Prisma.TenantWhereInput
+}
+
+export type TenantUpdateToOneWithWhereWithoutUserGoalsInput = {
+  where?: Prisma.TenantWhereInput
+  data: Prisma.XOR<Prisma.TenantUpdateWithoutUserGoalsInput, Prisma.TenantUncheckedUpdateWithoutUserGoalsInput>
+}
+
+export type TenantUpdateWithoutUserGoalsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  plan?: Prisma.EnumTenantPlanFieldUpdateOperationsInput | $Enums.TenantPlan
+  status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUpdateManyWithoutTenantNestedInput
+  passwordResetTokens?: Prisma.PasswordResetTokenUpdateManyWithoutTenantNestedInput
+  aiLogs?: Prisma.AiLogUpdateManyWithoutTenantNestedInput
+  contacts?: Prisma.ContactUpdateManyWithoutTenantNestedInput
+  companies?: Prisma.CompanyUpdateManyWithoutTenantNestedInput
+  products?: Prisma.ProductUpdateManyWithoutTenantNestedInput
+  tags?: Prisma.TagUpdateManyWithoutTenantNestedInput
+  pipelines?: Prisma.PipelineUpdateManyWithoutTenantNestedInput
+  pipelineStages?: Prisma.PipelineStageUpdateManyWithoutTenantNestedInput
+  opportunities?: Prisma.OpportunityUpdateManyWithoutTenantNestedInput
+  opportunityProducts?: Prisma.OpportunityProductUpdateManyWithoutTenantNestedInput
+  revenues?: Prisma.RevenueUpdateManyWithoutTenantNestedInput
+  tasks?: Prisma.TaskUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutTenantNestedInput
+  activities?: Prisma.ActivityUpdateManyWithoutTenantNestedInput
+  automations?: Prisma.AutomationUpdateManyWithoutTenantNestedInput
+  automationLogs?: Prisma.AutomationLogUpdateManyWithoutTenantNestedInput
+  invoices?: Prisma.InvoiceUpdateManyWithoutTenantNestedInput
+  invoiceItems?: Prisma.InvoiceItemUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUpdateManyWithoutTenantNestedInput
+  integrations?: Prisma.IntegrationUpdateManyWithoutTenantNestedInput
+  webhookLogs?: Prisma.WebhookLogUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantUncheckedUpdateWithoutUserGoalsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  plan?: Prisma.EnumTenantPlanFieldUpdateOperationsInput | $Enums.TenantPlan
+  status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUncheckedUpdateManyWithoutTenantNestedInput
+  passwordResetTokens?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutTenantNestedInput
+  aiLogs?: Prisma.AiLogUncheckedUpdateManyWithoutTenantNestedInput
+  contacts?: Prisma.ContactUncheckedUpdateManyWithoutTenantNestedInput
+  companies?: Prisma.CompanyUncheckedUpdateManyWithoutTenantNestedInput
+  products?: Prisma.ProductUncheckedUpdateManyWithoutTenantNestedInput
+  tags?: Prisma.TagUncheckedUpdateManyWithoutTenantNestedInput
+  pipelines?: Prisma.PipelineUncheckedUpdateManyWithoutTenantNestedInput
+  pipelineStages?: Prisma.PipelineStageUncheckedUpdateManyWithoutTenantNestedInput
+  opportunities?: Prisma.OpportunityUncheckedUpdateManyWithoutTenantNestedInput
+  opportunityProducts?: Prisma.OpportunityProductUncheckedUpdateManyWithoutTenantNestedInput
+  revenues?: Prisma.RevenueUncheckedUpdateManyWithoutTenantNestedInput
+  tasks?: Prisma.TaskUncheckedUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutTenantNestedInput
+  activities?: Prisma.ActivityUncheckedUpdateManyWithoutTenantNestedInput
+  automations?: Prisma.AutomationUncheckedUpdateManyWithoutTenantNestedInput
+  automationLogs?: Prisma.AutomationLogUncheckedUpdateManyWithoutTenantNestedInput
+  invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutTenantNestedInput
+  invoiceItems?: Prisma.InvoiceItemUncheckedUpdateManyWithoutTenantNestedInput
+  opportunityStageHistories?: Prisma.OpportunityStageHistoryUncheckedUpdateManyWithoutTenantNestedInput
+  integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutTenantNestedInput
+  webhookLogs?: Prisma.WebhookLogUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 
@@ -4302,6 +4567,7 @@ export type TenantCountOutputType = {
   opportunityStageHistories: number
   integrations: number
   webhookLogs: number
+  userGoals: number
 }
 
 export type TenantCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -4328,6 +4594,7 @@ export type TenantCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions
   opportunityStageHistories?: boolean | TenantCountOutputTypeCountOpportunityStageHistoriesArgs
   integrations?: boolean | TenantCountOutputTypeCountIntegrationsArgs
   webhookLogs?: boolean | TenantCountOutputTypeCountWebhookLogsArgs
+  userGoals?: boolean | TenantCountOutputTypeCountUserGoalsArgs
 }
 
 /**
@@ -4501,6 +4768,13 @@ export type TenantCountOutputTypeCountWebhookLogsArgs<ExtArgs extends runtime.Ty
   where?: Prisma.WebhookLogWhereInput
 }
 
+/**
+ * TenantCountOutputType without action
+ */
+export type TenantCountOutputTypeCountUserGoalsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.UserGoalWhereInput
+}
+
 
 export type TenantSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -4534,6 +4808,7 @@ export type TenantSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   opportunityStageHistories?: boolean | Prisma.Tenant$opportunityStageHistoriesArgs<ExtArgs>
   integrations?: boolean | Prisma.Tenant$integrationsArgs<ExtArgs>
   webhookLogs?: boolean | Prisma.Tenant$webhookLogsArgs<ExtArgs>
+  userGoals?: boolean | Prisma.Tenant$userGoalsArgs<ExtArgs>
   _count?: boolean | Prisma.TenantCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["tenant"]>
 
@@ -4595,6 +4870,7 @@ export type TenantInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   opportunityStageHistories?: boolean | Prisma.Tenant$opportunityStageHistoriesArgs<ExtArgs>
   integrations?: boolean | Prisma.Tenant$integrationsArgs<ExtArgs>
   webhookLogs?: boolean | Prisma.Tenant$webhookLogsArgs<ExtArgs>
+  userGoals?: boolean | Prisma.Tenant$userGoalsArgs<ExtArgs>
   _count?: boolean | Prisma.TenantCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type TenantIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -4626,6 +4902,7 @@ export type $TenantPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     opportunityStageHistories: Prisma.$OpportunityStageHistoryPayload<ExtArgs>[]
     integrations: Prisma.$IntegrationPayload<ExtArgs>[]
     webhookLogs: Prisma.$WebhookLogPayload<ExtArgs>[]
+    userGoals: Prisma.$UserGoalPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -5053,6 +5330,7 @@ export interface Prisma__TenantClient<T, Null = never, ExtArgs extends runtime.T
   opportunityStageHistories<T extends Prisma.Tenant$opportunityStageHistoriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$opportunityStageHistoriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OpportunityStageHistoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   integrations<T extends Prisma.Tenant$integrationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$integrationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$IntegrationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   webhookLogs<T extends Prisma.Tenant$webhookLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$webhookLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WebhookLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  userGoals<T extends Prisma.Tenant$userGoalsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$userGoalsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserGoalPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6032,6 +6310,30 @@ export type Tenant$webhookLogsArgs<ExtArgs extends runtime.Types.Extensions.Inte
   take?: number
   skip?: number
   distinct?: Prisma.WebhookLogScalarFieldEnum | Prisma.WebhookLogScalarFieldEnum[]
+}
+
+/**
+ * Tenant.userGoals
+ */
+export type Tenant$userGoalsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the UserGoal
+   */
+  select?: Prisma.UserGoalSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the UserGoal
+   */
+  omit?: Prisma.UserGoalOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserGoalInclude<ExtArgs> | null
+  where?: Prisma.UserGoalWhereInput
+  orderBy?: Prisma.UserGoalOrderByWithRelationInput | Prisma.UserGoalOrderByWithRelationInput[]
+  cursor?: Prisma.UserGoalWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.UserGoalScalarFieldEnum | Prisma.UserGoalScalarFieldEnum[]
 }
 
 /**

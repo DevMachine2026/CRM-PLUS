@@ -79,7 +79,8 @@ export const ModelName = {
   OpportunityTag: 'OpportunityTag',
   ConversationTag: 'ConversationTag',
   Integration: 'Integration',
-  WebhookLog: 'WebhookLog'
+  WebhookLog: 'WebhookLog',
+  UserGoal: 'UserGoal'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -533,6 +534,22 @@ export const WebhookLogScalarFieldEnum = {
 } as const
 
 export type WebhookLogScalarFieldEnum = (typeof WebhookLogScalarFieldEnum)[keyof typeof WebhookLogScalarFieldEnum]
+
+
+export const UserGoalScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  userId: 'userId',
+  targetType: 'targetType',
+  targetValue: 'targetValue',
+  periodType: 'periodType',
+  startsAt: 'startsAt',
+  endsAt: 'endsAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UserGoalScalarFieldEnum = (typeof UserGoalScalarFieldEnum)[keyof typeof UserGoalScalarFieldEnum]
 
 
 export const SortOrder = {

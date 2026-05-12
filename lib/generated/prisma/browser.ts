@@ -162,3 +162,8 @@ export type Integration = Prisma.IntegrationModel
  * 
  */
 export type WebhookLog = Prisma.WebhookLogModel
+/**
+ * Model UserGoal
+ * 
+ */
+export type UserGoal = Prisma.UserGoalModel
