@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Mail, Phone, Building2, Tag, Brain } from "lucide-react";
+import { ArrowLeft, Mail, Phone, Building2, Tag, Brain, Activity } from "lucide-react";
 import { ContactSummaryCard } from "@/components/contact-summary-card";
 
 export default async function ContactProfilePage({
@@ -59,6 +59,15 @@ export default async function ContactProfilePage({
         orderBy: { dueAt: "asc" },
         take: 5,
         select: { id: true, title: true, dueAt: true, priority: true },
+      },
+      activities: {
+        orderBy: { createdAt: "desc" },
+        take: 20,
+        select: {
+          id: true, type: true, title: true, description: true,
+          scheduledAt: true, completedAt: true, createdAt: true,
+          user: { select: { id: true, name: true } },
+        },
       },
     },
   });
@@ -184,7 +193,7 @@ export default async function ContactProfilePage({
             {contact.conversations.length === 0 ? (
               <p className="text-xs text-muted-foreground">Nenhuma conversa</p>
             ) : contact.conversations.map((conv) => (
-              <Link key={conv.id} href="/inbox" className="block">
+              <Link key={conv.id} href={`/conversations/${conv.id}`} className="block">
                 <div className="text-xs p-2 rounded border hover:bg-accent transition-colors">
                   <div className="flex justify-between">
                     <span className="capitalize font-medium">{conv.channel}</span>
@@ -204,6 +213,51 @@ export default async function ContactProfilePage({
           </CardContent>
         </Card>
       </div>
+
+      {/* Activities Timeline */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-sm font-medium">
+            <Activity className="h-4 w-4" />Linha do Tempo de Atividades
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {contact.activities.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Nenhuma atividade registrada.</p>
+          ) : (
+            <ol className="relative border-l border-muted ml-3">
+              {contact.activities.map((a) => {
+                const icon =
+                  a.type === "call"      ? "📞" :
+                  a.type === "meeting"   ? "🤝" :
+                  a.type === "email"     ? "✉️" :
+                  a.type === "note"      ? "📝" :
+                  a.type === "whatsapp"  ? "💬" :
+                  a.type === "instagram" ? "📸" : "•";
+                return (
+                  <li key={a.id} className="mb-5 ml-4">
+                    <div className="absolute -left-1.5 h-3 w-3 rounded-full border border-background bg-primary" />
+                    <div className="flex items-start gap-2">
+                      <span className="text-base leading-none mt-0.5">{icon}</span>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">{a.title}</p>
+                        {a.description && (
+                          <p className="text-xs text-muted-foreground mt-0.5">{a.description}</p>
+                        )}
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {a.user?.name ?? "Sistema"} · {new Date(a.createdAt).toLocaleDateString("pt-BR")}
+                          {a.scheduledAt && ` · agendado ${new Date(a.scheduledAt).toLocaleDateString("pt-BR")}`}
+                          {a.completedAt && ` · concluído ${new Date(a.completedAt).toLocaleDateString("pt-BR")}`}
+                        </p>
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
