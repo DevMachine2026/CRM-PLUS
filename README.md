@@ -43,8 +43,9 @@ O CRM PLUS não é um CRM onde o vendedor alimenta o sistema. **O sistema alimen
 | Faturamento (receitas automáticas) | ✅ Completo |
 | Inbox unificada (WA + IG + email) | ✅ Completo |
 | Painel de IA (resumo, intenção, sugestão) | ✅ Completo |
-| Engine de Automações | ✅ Completo |
-| Webhooks WhatsApp + Instagram (HMAC) | ✅ Completo |
+| Engine de Automações (triggers conectados) | ✅ Completo |
+| Hardening multi-tenant (API + SSR + client) | ✅ Completo |
+| Webhooks WhatsApp + Instagram (HMAC + idempotência) | ✅ Completo |
 | Cron jobs (stalled leads + follow-up) | ✅ Completo |
 | Provisionamento automático de tenant | ✅ Completo |
 | Settings > Integrações (save de credenciais) | ✅ Completo |
@@ -161,10 +162,49 @@ Veja o [GUIA-DE-TESTES.md](./GUIA-DE-TESTES.md) para o fluxo completo de valida�
 
 ---
 
-## Arquitetura
+## Arquitetura (resumo)
 
-Veja o [SDD.md](./SDD.md) para o documento de design completo.
+| Camada | Local |
+|--------|--------|
+| UI | `app/(dashboard)/*`, `components/` |
+| APIs REST | `app/api/*` |
+| Auth (edge) | `proxy.ts` + `lib/auth/auth.config.ts` |
+| Auth (Node) | `lib/auth/auth.ts` |
+| IA | `lib/ai/provider.ts` + `lib/ai/actions/*` |
+| Automações | `lib/automations/engine.ts` + `lib/automations/emit.ts` |
+| Webhooks inbound | `lib/webhooks/process-inbound.ts` |
+| Provisionamento tenant | `lib/tenant/setup.ts` |
+
+### Motor de automações
+
+O engine (`runAutomations`) é disparado via `lib/automations/emit.ts` nos eventos:
+
+- `contact_created` / `contact_status_changed`
+- `conversation_created`
+- `opportunity_created` / `opportunity_status_changed` / `opportunity_stage_changed`
+- `task_created`
+- `revenue_status_changed`
+
+Cada tenant novo recebe 3 automações padrão ativas (provisionadas em `lib/tenant/setup.ts`). Logs em `automation_logs` — visíveis em **Automações**.
+
+### Webhooks e idempotência
+
+Mensagens inbound (WhatsApp `wamid` / Instagram `mid`) gravam `messages.external_id`. Duplicatas com o mesmo ID no mesmo tenant são ignoradas (`UNIQUE(tenant_id, external_id)`).
+
+### Segurança multi-tenant (v1.0.2)
+
+| Camada | Implementação |
+|--------|----------------|
+| APIs | `tenantWhere(session, id)` em PATCH/DELETE; `tenantId` só da sessão |
+| SSR | `requirePageSession()` + `requirePagePermission()` em todas as páginas do dashboard |
+| Cliente | `apiFetch()` em `lib/api/client-fetch.ts` — redirect em 401/403 |
+| Webhooks | Produção: tenant por credencial de integração; dev: `?tenantId` com UUID válido |
+| Demo | `POST /api/demo/seed` retorna 404 em produção |
+
+UX: banners em `/login` e no dashboard quando `?reason=session_expired` ou `?reason=forbidden`.
+
+Documento completo: [SDD.md](./SDD.md) · Testes: [GUIA-DE-TESTES.md](./GUIA-DE-TESTES.md)
 
 ---
 
-*Última atualização: 2026-05-18 | CRM PLUS v1.0.0*
+*Última atualização: 2026-05-18 | CRM PLUS v1.0.2*

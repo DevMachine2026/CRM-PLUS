@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db/client";
-import { getSession, unauthorized, forbidden } from "@/lib/auth/get-session";
+import { getSession, unauthorized, forbidden} from "@/lib/auth/get-session";
 import { can } from "@/lib/auth/permissions";
+import { emitTaskCreated } from "@/lib/automations/emit";
 import type { TaskStatus, TaskPriority } from "@/lib/generated/prisma/enums";
 
 const VALID_STATUSES: TaskStatus[]   = ["pending", "done", "cancelled"];
@@ -109,6 +110,14 @@ export async function POST(req: NextRequest) {
       contact:     { select: { id: true, name: true } },
       opportunity: { select: { id: true, title: true } },
     },
+  });
+
+  emitTaskCreated(session.tenantId, {
+    id:            task.id,
+    title:         task.title,
+    contactId:     d.contactId ?? null,
+    opportunityId: d.opportunityId ?? null,
+    source:        task.source,
   });
 
   return NextResponse.json({ data: task }, { status: 201 });

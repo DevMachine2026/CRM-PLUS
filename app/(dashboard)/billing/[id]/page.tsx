@@ -1,6 +1,6 @@
-import { auth } from "@/lib/auth/auth";
 import { prisma } from "@/lib/db/client";
 import { redirect, notFound } from "next/navigation";
+import { requirePageSession, requirePagePermission } from "@/lib/auth/get-session";
 import { can } from "@/lib/auth/permissions";
 import { InvoiceDetail } from "./invoice-detail";
 
@@ -16,14 +16,13 @@ export async function generateMetadata({ params }: Props) {
 }
 
 export default async function InvoicePage({ params }: Props) {
-  const session = await auth();
-  if (!session) redirect("/login");
-  if (!can(session.user.role, "read", "billing")) redirect("/dashboard");
+  const session = await requirePageSession();
+  requirePagePermission(session, "read", "billing");
 
   const { id } = await params;
 
   const invoice = await prisma.invoice.findFirst({
-    where: { id, tenantId: session.user.tenantId },
+    where: { id, tenantId: session.tenantId },
     include: {
       items:   { orderBy: { createdAt: "asc" } },
       contact: { select: { id: true, name: true, email: true, phone: true } },
@@ -41,8 +40,8 @@ export default async function InvoicePage({ params }: Props) {
 
   if (!invoice) notFound();
 
-  const canUpdate = can(session.user.role, "update", "billing");
-  const canDelete = can(session.user.role, "delete", "billing");
+  const canUpdate = can(session.role, "update", "billing");
+  const canDelete = can(session.role, "delete", "billing");
 
   return (
     <InvoiceDetail

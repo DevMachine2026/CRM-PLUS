@@ -1,5 +1,5 @@
-import { auth } from "@/lib/auth/auth";
 import { prisma } from "@/lib/db/client";
+import { requirePageSession, requirePagePermission } from "@/lib/auth/get-session";
 import { can } from "@/lib/auth/permissions";
 import { redirect } from "next/navigation";
 import { ProductsClient } from "./products-client";
@@ -10,9 +10,8 @@ export default async function ProductsPage({
 }: {
   searchParams: Promise<{ q?: string; page?: string; status?: string }>;
 }) {
-  const session = await auth();
-  if (!session) redirect("/login");
-  if (!can(session.user.role, "read", "products")) redirect("/dashboard");
+  const session = await requirePageSession();
+  requirePagePermission(session, "read", "products");
 
   const params = await searchParams;
   const search = params.q ?? "";
@@ -24,7 +23,7 @@ export default async function ProductsPage({
   const limit = 20;
 
   const where = {
-    tenantId: session.user.tenantId,
+    tenantId: session.tenantId,
     ...(statusFilter ? { status: statusFilter } : {}),
     ...(search
       ? {
@@ -63,9 +62,9 @@ export default async function ProductsPage({
       page={page}
       search={search}
       statusFilter={statusFilter ?? ""}
-      canCreate={can(session.user.role, "create", "products")}
-      canEdit={can(session.user.role, "update", "products")}
-      canDelete={can(session.user.role, "delete", "products")}
+      canCreate={can(session.role, "create", "products")}
+      canEdit={can(session.role, "update", "products")}
+      canDelete={can(session.role, "delete", "products")}
     />
   );
 }

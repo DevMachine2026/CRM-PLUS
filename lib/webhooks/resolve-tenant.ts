@@ -4,70 +4,59 @@
  * Resolve tenantId a partir de identificadores do payload (phone_number_id,
  * page_id) buscando na tabela integrations.
  *
- * Fallback para dev/simulação: aceita ?tenantId=<UUID> na query string.
+ * Em produção: NUNCA aceita ?tenantId= da query (evita spoofing cross-tenant).
+ * Em dev: ?tenantId=<UUID> permitido para simulação local.
  */
 
 import { prisma } from "@/lib/db/client";
 
-/**
- * Resolve o tenantId para um webhook WhatsApp.
- *
- * Estratégia:
- *  1. Busca integração ativa com credentials.phoneNumberId === phoneNumberId
- *  2. Fallback: ?tenantId=<UUID> na query string (dev / simulação)
- */
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function devTenantOverride(queryTenantId: string | null): string | null {
+  if (process.env.NODE_ENV === "production") return null;
+  if (!queryTenantId || !UUID_RE.test(queryTenantId)) return null;
+  return queryTenantId;
+}
+
+async function matchIntegration(
+  channelType: "whatsapp" | "instagram",
+  match: (creds: Record<string, string>) => boolean
+): Promise<string | null> {
+  const integrations = await prisma.integration.findMany({
+    where: { channelType, isActive: true },
+    select: { tenantId: true, credentials: true },
+  });
+
+  for (const row of integrations) {
+    const creds = row.credentials as Record<string, string>;
+    if (match(creds)) return row.tenantId;
+  }
+  return null;
+}
+
 export async function resolveWhatsAppTenant(
   phoneNumberId: string | undefined,
   queryTenantId: string | null
 ): Promise<string | null> {
   if (phoneNumberId) {
-    const integration = await prisma.integration.findFirst({
-      where: {
-        channelType: "whatsapp",
-        isActive:    true,
-      },
-      select: { tenantId: true, credentials: true },
-    });
-
-    if (integration) {
-      const creds = integration.credentials as Record<string, string>;
-      if (creds.phoneNumberId === phoneNumberId) {
-        return integration.tenantId;
-      }
-    }
+    const tenantId = await matchIntegration("whatsapp", (creds) =>
+      creds.phoneNumberId === phoneNumberId
+    );
+    if (tenantId) return tenantId;
   }
-
-  // fallback para simulação / dev
-  return queryTenantId;
+  return devTenantOverride(queryTenantId);
 }
 
-/**
- * Resolve o tenantId para um webhook Instagram.
- *
- * Estratégia:
- *  1. Busca integração ativa com credentials.pageId === recipientId
- *  2. Fallback: ?tenantId=<UUID> na query string (dev / simulação)
- */
 export async function resolveInstagramTenant(
   recipientId: string | undefined,
   queryTenantId: string | null
 ): Promise<string | null> {
   if (recipientId) {
-    const integration = await prisma.integration.findFirst({
-      where: {
-        channelType: "instagram",
-        isActive:    true,
-      },
-      select: { tenantId: true, credentials: true },
-    });
-
-    if (integration) {
-      const creds = integration.credentials as Record<string, string>;
-      if (creds.pageId === recipientId) {
-        return integration.tenantId;
-      }
-    }
+    const tenantId = await matchIntegration("instagram", (creds) =>
+      creds.pageId === recipientId
+    );
+    if (tenantId) return tenantId;
   }
-
-  return queryTenantId;
+  return devTenantOverride(queryTenantId);
 }

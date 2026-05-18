@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db/client";
-import { getSession, unauthorized, forbidden } from "@/lib/auth/get-session";
+import { getSession, unauthorized, forbidden, tenantWhere } from "@/lib/auth/get-session";
+
 import { can } from "@/lib/auth/permissions";
 import { suggestNextAction } from "@/lib/ai/actions/suggest-next-action";
 import { sendChannelMessage } from "@/lib/channels/send-message";
@@ -26,7 +27,7 @@ export async function GET(
   if (!conv) return NextResponse.json({ error: "Não encontrado." }, { status: 404 });
 
   const messages = await prisma.message.findMany({
-    where:   { conversationId: id },
+    where:   { conversationId: id, tenantId: session.tenantId },
     orderBy: { sentAt: "asc" },
     select: {
       id: true, content: true, direction: true,
@@ -86,7 +87,7 @@ export async function POST(
       },
     }),
     prisma.conversation.update({
-      where: { id },
+      where: tenantWhere(session, id),
       data:  { lastMessageAt: now, status: "open" },
     }),
   ]);
@@ -102,7 +103,7 @@ export async function POST(
     });
 
     await prisma.message.update({
-      where: { id: message.id },
+      where: { id: message.id, tenantId: session.tenantId },
       data:  {
         externalId:    sendResult.externalId,
         externalStatus: sendResult.externalStatus,

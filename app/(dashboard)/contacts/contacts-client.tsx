@@ -1,5 +1,7 @@
 "use client";
 
+import { apiFetch } from "@/lib/api/client-fetch";
+
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -130,7 +132,7 @@ export function ContactsClient({ contacts, allTags, total, page, search, canCrea
     try {
       const url = editContact ? `/api/contacts/${editContact.id}` : "/api/contacts";
       const method = editContact ? "PATCH" : "POST";
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...form, email: form.email || null, phone: form.phone || null }),
@@ -149,7 +151,7 @@ export function ContactsClient({ contacts, allTags, total, page, search, canCrea
 
   async function handleDelete(id: string, name: string) {
     if (!confirm(`Excluir "${name}"?`)) return;
-    await fetch(`/api/contacts/${id}`, { method: "DELETE" });
+    await apiFetch(`/api/contacts/${id}`, { method: "DELETE" });
     startTransition(() => router.refresh());
   }
 
@@ -159,7 +161,7 @@ export function ContactsClient({ contacts, allTags, total, page, search, canCrea
   }
 
   async function addTag(contactId: string, tagId: string) {
-    await fetch(`/api/contacts/${contactId}/tags`, {
+    await apiFetch(`/api/contacts/${contactId}/tags`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ tagId }),
@@ -168,7 +170,7 @@ export function ContactsClient({ contacts, allTags, total, page, search, canCrea
   }
 
   async function removeTag(contactId: string, tagId: string) {
-    await fetch(`/api/contacts/${contactId}/tags/${tagId}`, { method: "DELETE" });
+    await apiFetch(`/api/contacts/${contactId}/tags/${tagId}`, { method: "DELETE" });
     startTransition(() => router.refresh());
   }
 

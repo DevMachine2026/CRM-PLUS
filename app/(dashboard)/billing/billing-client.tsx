@@ -1,5 +1,7 @@
 "use client";
 
+import { apiFetch } from "@/lib/api/client-fetch";
+
 import { useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CheckCircle2, Clock, XCircle, Loader2, DollarSign, Search } from "lucide-react";
@@ -115,7 +117,7 @@ export function BillingClient({ revenues, total, page, limit, canUpdate }: Props
     setIsSaving(true);
     setError("");
     try {
-      const res = await fetch(`/api/revenues/${editingRevenue.id}`, {
+      const res = await apiFetch(`/api/revenues/${editingRevenue.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

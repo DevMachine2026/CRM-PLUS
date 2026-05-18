@@ -1,5 +1,7 @@
 "use client";
 
+import { apiFetch } from "@/lib/api/client-fetch";
+
 import { useState, useTransition } from "react";
 import {
   Building2, Users, Save, Plus, Pencil, Trash2,
@@ -248,7 +250,7 @@ export function SettingsClient({
   async function saveName() {
     setNameSaving(true); setNameError(""); setNameOk(false);
     try {
-      const res  = await fetch("/api/settings", {
+      const res  = await apiFetch("/api/settings", {
         method:  "PATCH",
         headers: { "Content-Type": "application/json" },
         body:    JSON.stringify({ name: nameInput }),
@@ -272,7 +274,7 @@ export function SettingsClient({
   async function runSetup() {
     setSetupLoading(true); setSetupOk(false); setSetupError("");
     try {
-      const res  = await fetch("/api/settings/setup", { method: "POST" });
+      const res  = await apiFetch("/api/settings/setup", { method: "POST" });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "Erro ao provisionar.");
       setSetupOk(true);
@@ -290,7 +292,7 @@ export function SettingsClient({
   const [deleteUser, setDeleteUser] = useState<TeamUser | null>(null);
 
   async function handleCreate(form: MemberForm): Promise<string | null> {
-    const res  = await fetch("/api/team", {
+    const res  = await apiFetch("/api/team", {
       method:  "POST",
       headers: { "Content-Type": "application/json" },
       body:    JSON.stringify({
@@ -309,7 +311,7 @@ export function SettingsClient({
 
   async function handleEdit(form: MemberForm, id?: string): Promise<string | null> {
     if (!id) return "ID inválido.";
-    const res  = await fetch(`/api/team/${id}`, {
+    const res  = await apiFetch(`/api/team/${id}`, {
       method:  "PATCH",
       headers: { "Content-Type": "application/json" },
       body:    JSON.stringify({
@@ -325,7 +327,7 @@ export function SettingsClient({
   }
 
   async function handleToggleActive(user: TeamUser): Promise<void> {
-    const res  = await fetch(`/api/team/${user.id}`, {
+    const res  = await apiFetch(`/api/team/${user.id}`, {
       method:  "PATCH",
       headers: { "Content-Type": "application/json" },
       body:    JSON.stringify({ isActive: !user.isActive }),
@@ -336,7 +338,7 @@ export function SettingsClient({
   }
 
   async function handleDelete(id: string): Promise<string | null> {
-    const res  = await fetch(`/api/team/${id}`, { method: "DELETE" });
+    const res  = await apiFetch(`/api/team/${id}`, { method: "DELETE" });
     const json = await res.json();
     if (!res.ok) return json.error ?? "Erro ao remover.";
     setUsers((prev) => prev.filter((u) => u.id !== id));

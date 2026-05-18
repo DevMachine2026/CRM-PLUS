@@ -1,5 +1,5 @@
-import { auth } from "@/lib/auth/auth";
 import { prisma } from "@/lib/db/client";
+import { requirePageSession, requirePagePermission } from "@/lib/auth/get-session";
 import { can } from "@/lib/auth/permissions";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
@@ -31,14 +31,13 @@ const ACTIVITY_ICON: Record<string, string> = {
 };
 
 export default async function OpportunityDetailPage({ params }: Props) {
-  const session = await auth();
-  if (!session) redirect("/login");
-  if (!can(session.user.role, "read", "opportunities")) redirect("/dashboard");
+  const session = await requirePageSession();
+  requirePagePermission(session, "read", "opportunities");
 
   const { id } = await params;
 
   const opp = await prisma.opportunity.findFirst({
-    where: { id, tenantId: session.user.tenantId },
+    where: { id, tenantId: session.tenantId },
     select: {
       id: true, title: true, value: true, status: true, notes: true,
       expectedCloseAt: true, closedAt: true, createdAt: true, updatedAt: true,

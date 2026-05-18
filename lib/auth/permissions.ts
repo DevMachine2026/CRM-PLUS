@@ -1,8 +1,8 @@
 import type { UserRole } from "@/lib/generated/prisma/enums";
 
-type Action = "create" | "read" | "update" | "delete" | "export" | "admin";
+export type Action = "create" | "read" | "update" | "delete" | "export" | "admin";
 
-type Resource =
+export type Resource =
   | "contacts"
   | "companies"
   | "products"

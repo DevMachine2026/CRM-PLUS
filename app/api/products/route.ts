@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db/client";
-import { getSession, unauthorized, forbidden } from "@/lib/auth/get-session";
+import { getSession, unauthorized, forbidden} from "@/lib/auth/get-session";
 import { can } from "@/lib/auth/permissions";
 import type { ProductStatus } from "@/lib/generated/prisma/enums";
 

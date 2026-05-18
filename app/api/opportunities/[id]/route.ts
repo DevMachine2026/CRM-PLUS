@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db/client";
-import { getSession, unauthorized, forbidden } from "@/lib/auth/get-session";
+import { getSession, unauthorized, forbidden, tenantWhere } from "@/lib/auth/get-session";
+
 import { can } from "@/lib/auth/permissions";
 import { suggestNextAction } from "@/lib/ai/actions/suggest-next-action";
+import {
+  emitOpportunityStageChanged,
+  emitOpportunityStatusChanged,
+} from "@/lib/automations/emit";
 
 const updateSchema = z.object({
   title: z.string().min(1).max(255).optional(),
@@ -95,7 +100,30 @@ export async function PATCH(
     data.closedAt = new Date(parsed.data.closedAt);
   }
 
-  const opportunity = await prisma.opportunity.update({ where: { id }, data });
+  const opportunity = await prisma.opportunity.update({
+    where: tenantWhere(session, id),
+    data,
+  });
+
+  if (parsed.data.status && parsed.data.status !== existing.status) {
+    emitOpportunityStatusChanged(
+      session.tenantId,
+      id,
+      existing.status,
+      parsed.data.status,
+      opportunity.contactId
+    );
+  }
+
+  if (parsed.data.stageId && parsed.data.stageId !== existing.stageId) {
+    emitOpportunityStageChanged(
+      session.tenantId,
+      id,
+      existing.stageId,
+      parsed.data.stageId,
+      opportunity.contactId
+    );
+  }
 
   // Auto-generate revenue when marking won (upsert — never duplicates)
   if (parsed.data.status === "won") {
@@ -117,7 +145,10 @@ export async function PATCH(
   // Fire-and-forget: suggest next action on stage change or won/lost
   if (parsed.data.stageId || parsed.data.status) {
     const stageName = parsed.data.stageId
-      ? (await prisma.pipelineStage.findUnique({ where: { id: parsed.data.stageId }, select: { name: true } }))?.name
+      ? (await prisma.pipelineStage.findFirst({
+          where: { id: parsed.data.stageId, tenantId: session.tenantId },
+          select: { name: true },
+        }))?.name
       : undefined;
     const stalledDays = Math.floor(
       (Date.now() - existing.updatedAt.getTime()) / 86400000
@@ -149,6 +180,6 @@ export async function DELETE(
   const existing = await findOpportunity(id, session.tenantId);
   if (!existing) return NextResponse.json({ error: "Não encontrado." }, { status: 404 });
 
-  await prisma.opportunity.delete({ where: { id } });
+  await prisma.opportunity.delete({ where: tenantWhere(session, id) });
   return NextResponse.json({ data: { id } });
 }

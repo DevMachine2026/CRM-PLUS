@@ -202,7 +202,7 @@ export async function detectStageAdvance(
 
   if (shouldAdvance && nextStage && confidence >= 65) {
     await prisma.opportunity.update({
-      where: { id: input.opportunityId },
+      where: { id: input.opportunityId, tenantId: input.tenantId },
       data:  { stageId: nextStage.id },
     });
     moved = true;

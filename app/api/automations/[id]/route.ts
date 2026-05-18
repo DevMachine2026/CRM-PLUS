@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db/client";
-import { getSession, unauthorized, forbidden } from "@/lib/auth/get-session";
+import { getSession, unauthorized, forbidden, tenantWhere } from "@/lib/auth/get-session";
+
 import { can } from "@/lib/auth/permissions";
 
 const patchSchema = z.object({
@@ -91,7 +92,7 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
   const { name, description, isActive, trigger, conditions, actions } = parsed.data;
 
   const updated = await prisma.automation.update({
-    where: { id },
+    where: tenantWhere(session, id),
     data: {
       ...(name !== undefined ? { name } : {}),
       ...(description !== undefined ? { description } : {}),
@@ -120,7 +121,7 @@ export async function DELETE(_req: NextRequest, { params }: RouteContext) {
     return NextResponse.json({ error: "Automação não encontrada." }, { status: 404 });
   }
 
-  await prisma.automation.delete({ where: { id } });
+  await prisma.automation.delete({ where: tenantWhere(session, id) });
 
   return new NextResponse(null, { status: 204 });
 }

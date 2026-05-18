@@ -1,5 +1,5 @@
-import { auth } from "@/lib/auth/auth";
 import { prisma } from "@/lib/db/client";
+import { requirePageSession, requirePagePermission } from "@/lib/auth/get-session";
 import { can } from "@/lib/auth/permissions";
 import { redirect } from "next/navigation";
 import { BillingClient } from "./billing-client";
@@ -19,11 +19,10 @@ export default async function BillingPage({
 }: {
   searchParams: Promise<{ status?: string; dateFrom?: string; dateTo?: string; page?: string }>;
 }) {
-  const session = await auth();
-  if (!session) redirect("/login");
-  if (!can(session.user.role, "read", "billing")) redirect("/dashboard");
+  const session = await requirePageSession();
+  requirePagePermission(session, "read", "billing");
 
-  const tenantId = session.user.tenantId;
+  const tenantId = session.tenantId;
   const params = await searchParams;
   const statusFilter = parseStatus(params.status);
   const dateFrom = params.dateFrom ?? undefined;
@@ -67,7 +66,7 @@ export default async function BillingPage({
     prisma.revenue.count({ where }),
   ]);
 
-  const canUpdate = can(session.user.role, "update", "billing");
+  const canUpdate = can(session.role, "update", "billing");
 
   return (
     <BillingClient

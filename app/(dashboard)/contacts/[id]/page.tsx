@@ -1,7 +1,6 @@
-import { auth } from "@/lib/auth/auth";
 import { prisma } from "@/lib/db/client";
-import { can } from "@/lib/auth/permissions";
-import { redirect, notFound } from "next/navigation";
+import { requirePageSession, requirePagePermission } from "@/lib/auth/get-session";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,14 +13,13 @@ export default async function ContactProfilePage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const session = await auth();
-  if (!session) redirect("/login");
-  if (!can(session.user.role, "read", "contacts")) redirect("/dashboard");
+  const session = await requirePageSession();
+  requirePagePermission(session, "read", "contacts");
 
   const { id } = await params;
 
   const contact = await prisma.contact.findFirst({
-    where: { id, tenantId: session.user.tenantId },
+    where: { id, tenantId: session.tenantId },
     select: {
       id:        true,
       name:      true,

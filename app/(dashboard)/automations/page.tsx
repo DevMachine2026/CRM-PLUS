@@ -1,17 +1,15 @@
-import { auth } from "@/lib/auth/auth";
 import { prisma } from "@/lib/db/client";
 import { redirect } from "next/navigation";
+import { requirePageSession, requirePagePermission } from "@/lib/auth/get-session";
 import { can } from "@/lib/auth/permissions";
 import { AutomationsClient } from "./automations-client";
 
 export const metadata = { title: "Automações — CRM PLUS" };
 
 export default async function AutomationsPage() {
-  const session = await auth();
-  if (!session) redirect("/login");
-
-  const tenantId = session.user.tenantId;
-  const role = session.user.role;
+  const session = await requirePageSession();
+  const tenantId = session.tenantId;
+  const role = session.role;
 
   const [automations, automationLogs, stages] = await Promise.all([
     prisma.automation.findMany({

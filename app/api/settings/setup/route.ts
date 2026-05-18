@@ -9,7 +9,7 @@
  */
 
 import { NextResponse } from "next/server";
-import { getSession, unauthorized, forbidden } from "@/lib/auth/get-session";
+import { getSession, unauthorized, forbidden} from "@/lib/auth/get-session";
 import { can } from "@/lib/auth/permissions";
 import { setupNewTenant } from "@/lib/tenant/setup";
 

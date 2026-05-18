@@ -1,5 +1,5 @@
-import { auth } from "@/lib/auth/auth";
 import { prisma } from "@/lib/db/client";
+import { requirePageSession, requirePagePermission } from "@/lib/auth/get-session";
 import { can } from "@/lib/auth/permissions";
 import { redirect } from "next/navigation";
 import { ContactsClient } from "./contacts-client";
@@ -9,9 +9,8 @@ export default async function ContactsPage({
 }: {
   searchParams: Promise<{ q?: string; page?: string }>;
 }) {
-  const session = await auth();
-  if (!session) redirect("/login");
-  if (!can(session.user.role, "read", "contacts")) redirect("/dashboard");
+  const session = await requirePageSession();
+  requirePagePermission(session, "read", "contacts");
 
   const params = await searchParams;
   const search = params.q ?? "";
@@ -19,7 +18,7 @@ export default async function ContactsPage({
   const limit = 20;
 
   const where = {
-    tenantId: session.user.tenantId,
+    tenantId: session.tenantId,
     ...(search
       ? {
           OR: [
@@ -50,7 +49,7 @@ export default async function ContactsPage({
     }),
     prisma.contact.count({ where }),
     prisma.tag.findMany({
-      where: { tenantId: session.user.tenantId },
+      where: { tenantId: session.tenantId },
       orderBy: { name: "asc" },
       select: { id: true, name: true, color: true },
     }),
@@ -68,9 +67,9 @@ export default async function ContactsPage({
       total={total}
       page={page}
       search={search}
-      canCreate={can(session.user.role, "create", "contacts")}
-      canEdit={can(session.user.role, "update", "contacts")}
-      canDelete={can(session.user.role, "delete", "contacts")}
+      canCreate={can(session.role, "create", "contacts")}
+      canEdit={can(session.role, "update", "contacts")}
+      canDelete={can(session.role, "delete", "contacts")}
     />
   );
 }

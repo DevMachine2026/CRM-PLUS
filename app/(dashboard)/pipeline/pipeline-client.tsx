@@ -1,5 +1,7 @@
 "use client";
 
+import { apiFetch } from "@/lib/api/client-fetch";
+
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Pencil, Trash2, Loader2, ChevronDown, ChevronRight, GitBranch, GripVertical, Search } from "lucide-react";
@@ -91,7 +93,7 @@ export function PipelineClient({ pipelines, canCreate, canEdit, canDelete }: Pro
     try {
       const url = editPipeline ? `/api/pipelines/${editPipeline.id}` : "/api/pipelines";
       const method = editPipeline ? "PATCH" : "POST";
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -110,7 +112,7 @@ export function PipelineClient({ pipelines, canCreate, canEdit, canDelete }: Pro
 
   async function handleDeletePipeline(id: string, name: string) {
     if (!confirm(`Excluir o pipeline "${name}"? Todas as etapas serão removidas.`)) return;
-    await fetch(`/api/pipelines/${id}`, { method: "DELETE" });
+    await apiFetch(`/api/pipelines/${id}`, { method: "DELETE" });
     startTransition(() => router.refresh());
   }
 
@@ -144,7 +146,7 @@ export function PipelineClient({ pipelines, canCreate, canEdit, canDelete }: Pro
         ? `/api/pipelines/${pipelineId}/stages/${stage.id}`
         : `/api/pipelines/${pipelineId}/stages`;
       const method = stage ? "PATCH" : "POST";
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: stageForm.name, order, probability }),
@@ -159,7 +161,7 @@ export function PipelineClient({ pipelines, canCreate, canEdit, canDelete }: Pro
 
   async function handleDeleteStage(pipelineId: string, stageId: string, name: string) {
     if (!confirm(`Excluir a etapa "${name}"?`)) return;
-    await fetch(`/api/pipelines/${pipelineId}/stages/${stageId}`, { method: "DELETE" });
+    await apiFetch(`/api/pipelines/${pipelineId}/stages/${stageId}`, { method: "DELETE" });
     startTransition(() => router.refresh());
   }
 

@@ -1,18 +1,19 @@
 /**
- * Shared inbound-message processor for simulated webhooks.
+ * Shared inbound-message processor for WhatsApp / Instagram webhooks.
  *
- * Tenant routing: callers must supply `tenantId` extracted from the request
- * (query param `?tenantId=` for simulation; production would derive it from
- * a webhook secret or phone_number_id mapping).
- *
- * Idempotency note: production would store `externalMessageId` (wamid / mid)
- * on the Message row to reject duplicates. Omitted here as this is a simulation.
+ * Tenant routing: callers must supply `tenantId` (from integration lookup).
+ * Idempotency: duplicate `externalMessageId` per tenant is ignored.
  */
 
 import { prisma } from "@/lib/db/client";
+import { classifyLead } from "@/lib/ai/actions/classify-lead";
 import { summarizeConversation } from "@/lib/ai/actions/summarize-conversation";
 import { detectIntent }           from "@/lib/ai/actions/detect-intent";
 import { suggestNextAction }      from "@/lib/ai/actions/suggest-next-action";
+import {
+  emitContactCreated,
+  emitConversationCreated,
+} from "@/lib/automations/emit";
 
 export interface InboundPayload {
   tenantId:           string;
@@ -31,6 +32,7 @@ export interface InboundResult {
   messageId:           string;
   contactCreated:      boolean;
   conversationCreated: boolean;
+  duplicate?:          boolean;
   intent?:             string;
 }
 
@@ -43,6 +45,28 @@ export async function processInboundMessage(
   // ── 1. Verify tenant ────────────────────────────────────────────────────────
   const tenant = await prisma.tenant.findUnique({ where: { id: tenantId } });
   if (!tenant) throw new Error(`Tenant not found: ${tenantId}`);
+
+  // ── 1b. Idempotency — skip duplicate Meta message IDs ───────────────────────
+  if (payload.externalMessageId) {
+    const existingMsg = await prisma.message.findFirst({
+      where: { tenantId, externalId: payload.externalMessageId },
+      select: {
+        id: true,
+        conversationId: true,
+        conversation: { select: { contactId: true } },
+      },
+    });
+    if (existingMsg) {
+      return {
+        contactId:           existingMsg.conversation.contactId ?? "",
+        conversationId:      existingMsg.conversationId,
+        messageId:           existingMsg.id,
+        contactCreated:      false,
+        conversationCreated: false,
+        duplicate:           true,
+      };
+    }
+  }
 
   // ── 2. Find or create contact ────────────────────────────────────────────────
   let contactCreated = false;
@@ -112,6 +136,29 @@ export async function processInboundMessage(
       },
     });
     conversationCreated = true;
+    emitConversationCreated(tenantId, {
+      id:        conversation.id,
+      contactId: contact.id,
+      channel,
+      status:    conversation.status,
+    });
+  }
+
+  if (contactCreated) {
+    emitContactCreated(tenantId, {
+      id:     contact.id,
+      name:   contact.name,
+      email:  contact.email,
+      phone:  contact.phone,
+      status: contact.status,
+    });
+    classifyLead({
+      contactId: contact.id,
+      tenantId,
+      name:      contact.name,
+      email:     contact.email,
+      phone:     contact.phone,
+    }).catch(() => {});
   }
 
   // ── 4. Save message ─────────────────────────────────────────────────────────
@@ -124,6 +171,7 @@ export async function processInboundMessage(
       senderId:       contact.id,
       content,
       sentAt,
+      externalId:     payload.externalMessageId ?? null,
     },
   });
 

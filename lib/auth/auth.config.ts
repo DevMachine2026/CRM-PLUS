@@ -1,4 +1,5 @@
 import type { NextAuthConfig } from "next-auth";
+import { NextResponse } from "next/server";
 
 /**
  * Edge-compatible auth config — no Prisma, no Node.js modules.
@@ -22,12 +23,23 @@ export const authConfig: NextAuthConfig = {
         "/reset-password",
         "/api/auth",
         "/api/webhooks",
-        "/api/demo",
       ];
       const isPublic = publicPaths.some((p) => pathname.startsWith(p));
       if (isPublic) return true;
 
-      return !!auth?.user;
+      // Demo seed apenas fora de produção
+      if (pathname.startsWith("/api/demo") && process.env.NODE_ENV !== "production") {
+        return true;
+      }
+
+      if (auth?.user?.tenantId) return true;
+
+      const login = new URL("/login", request.nextUrl.origin);
+      login.searchParams.set("reason", "session_expired");
+      if (pathname !== "/login" && !pathname.startsWith("/api/")) {
+        login.searchParams.set("callbackUrl", pathname);
+      }
+      return NextResponse.redirect(login);
     },
   },
   providers: [],

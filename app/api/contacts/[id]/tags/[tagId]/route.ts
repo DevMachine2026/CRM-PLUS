@@ -17,6 +17,9 @@ export async function DELETE(
   const contact = await prisma.contact.findFirst({ where: { id: contactId, tenantId: session.tenantId } });
   if (!contact) return NextResponse.json({ error: "Contato não encontrado." }, { status: 404 });
 
+  const tag = await prisma.tag.findFirst({ where: { id: tagId, tenantId: session.tenantId } });
+  if (!tag) return NextResponse.json({ error: "Tag não encontrada." }, { status: 404 });
+
   await prisma.contactTag.deleteMany({ where: { contactId, tagId } });
 
   return NextResponse.json({ data: { contactId, tagId } });

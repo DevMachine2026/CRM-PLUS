@@ -1,5 +1,7 @@
 "use client";
 
+import { apiFetch } from "@/lib/api/client-fetch";
+
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import {
@@ -132,7 +134,7 @@ function ChannelCard({
     }
 
     try {
-      const res  = await fetch("/api/integrations", {
+      const res  = await apiFetch("/api/integrations", {
         method:  "PUT",
         headers: { "Content-Type": "application/json" },
         body:    JSON.stringify({ channelType: channel, name: "Principal", isActive: active, credentials }),
@@ -152,7 +154,7 @@ function ChannelCard({
     if (!confirm(`Remover integração ${label}?`)) return;
     setDeleting(true);
     try {
-      const res  = await fetch("/api/integrations", {
+      const res  = await apiFetch("/api/integrations", {
         method:  "DELETE",
         headers: { "Content-Type": "application/json" },
         body:    JSON.stringify({ channelType: channel, name: "Principal" }),
@@ -168,7 +170,7 @@ function ChannelCard({
 
   async function handleToggle(checked: boolean) {
     setActive(checked);
-    await fetch("/api/integrations", {
+    await apiFetch("/api/integrations", {
       method:  "PUT",
       headers: { "Content-Type": "application/json" },
       body:    JSON.stringify({
@@ -336,7 +338,7 @@ export function IntegrationsClient({
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
-      const res  = await fetch("/api/integrations");
+      const res  = await apiFetch("/api/integrations");
       const json = await res.json();
       if (res.ok) setIntegrations(json.data ?? []);
     } finally {

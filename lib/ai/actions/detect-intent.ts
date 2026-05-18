@@ -201,7 +201,7 @@ export async function detectIntent(
   // ── Persist ──────────────────────────────────────────────────────────────────
   await prisma.$transaction([
     prisma.conversation.update({
-      where: { id: input.conversationId },
+      where: { id: input.conversationId, tenantId: input.tenantId },
       data:  { detectedIntent: intent },
     }),
     prisma.aiLog.create({

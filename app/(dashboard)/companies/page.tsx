@@ -1,5 +1,5 @@
-import { auth } from "@/lib/auth/auth";
 import { prisma } from "@/lib/db/client";
+import { requirePageSession, requirePagePermission } from "@/lib/auth/get-session";
 import { can } from "@/lib/auth/permissions";
 import { redirect } from "next/navigation";
 import { CompaniesClient } from "./companies-client";
@@ -9,9 +9,8 @@ export default async function CompaniesPage({
 }: {
   searchParams: Promise<{ q?: string; page?: string }>;
 }) {
-  const session = await auth();
-  if (!session) redirect("/login");
-  if (!can(session.user.role, "read", "companies")) redirect("/dashboard");
+  const session = await requirePageSession();
+  requirePagePermission(session, "read", "companies");
 
   const params = await searchParams;
   const search = params.q ?? "";
@@ -19,7 +18,7 @@ export default async function CompaniesPage({
   const limit = 20;
 
   const where = {
-    tenantId: session.user.tenantId,
+    tenantId: session.tenantId,
     ...(search
       ? {
           OR: [
@@ -56,9 +55,9 @@ export default async function CompaniesPage({
       total={total}
       page={page}
       search={search}
-      canCreate={can(session.user.role, "create", "companies")}
-      canEdit={can(session.user.role, "update", "companies")}
-      canDelete={can(session.user.role, "delete", "companies")}
+      canCreate={can(session.role, "create", "companies")}
+      canEdit={can(session.role, "update", "companies")}
+      canDelete={can(session.role, "delete", "companies")}
     />
   );
 }

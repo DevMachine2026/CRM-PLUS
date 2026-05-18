@@ -1,5 +1,5 @@
-import { auth } from "@/lib/auth/auth";
 import { prisma } from "@/lib/db/client";
+import { requirePageSession, requirePagePermission } from "@/lib/auth/get-session";
 import { can } from "@/lib/auth/permissions";
 import { redirect } from "next/navigation";
 import { ReportsClient } from "./reports-client";
@@ -10,11 +10,10 @@ type UserRow     = { user_id: string; user_name: string; count: string; total: s
 type FunnelRow   = { stage_id: string; stage_name: string; stage_order: string; open_count: string; won_count: string; lost_count: string };
 
 export default async function ReportsPage() {
-  const session = await auth();
-  if (!session) redirect("/login");
-  if (!can(session.user.role, "read", "opportunities")) redirect("/dashboard");
+  const session = await requirePageSession();
+  requirePagePermission(session, "read", "opportunities");
 
-  const tenantId = session.user.tenantId;
+  const tenantId = session.tenantId;
 
   const [byMonth, byProduct, byUser, byStage] = await Promise.all([
     // Won opps grouped by month (last 12 months)

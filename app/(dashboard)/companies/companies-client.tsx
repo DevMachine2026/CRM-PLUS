@@ -1,5 +1,7 @@
 "use client";
 
+import { apiFetch } from "@/lib/api/client-fetch";
+
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Search, Pencil, Trash2, Loader2, Building2, Users } from "lucide-react";
@@ -87,7 +89,7 @@ export function CompaniesClient({ companies, total, page, search, canCreate, can
     try {
       const url = editCompany ? `/api/companies/${editCompany.id}` : "/api/companies";
       const method = editCompany ? "PATCH" : "POST";
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -112,7 +114,7 @@ export function CompaniesClient({ companies, total, page, search, canCreate, can
 
   async function handleDelete(id: string, name: string) {
     if (!confirm(`Excluir "${name}"? Os contatos vinculados serão desvinculados.`)) return;
-    await fetch(`/api/companies/${id}`, { method: "DELETE" });
+    await apiFetch(`/api/companies/${id}`, { method: "DELETE" });
     startTransition(() => router.refresh());
   }
 

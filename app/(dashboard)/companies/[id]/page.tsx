@@ -1,5 +1,5 @@
-import { auth } from "@/lib/auth/auth";
 import { prisma } from "@/lib/db/client";
+import { requirePageSession, requirePagePermission } from "@/lib/auth/get-session";
 import { can } from "@/lib/auth/permissions";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
@@ -32,14 +32,13 @@ const INV_LABEL: Record<string, string> = {
 };
 
 export default async function CompanyDetailPage({ params }: Props) {
-  const session = await auth();
-  if (!session) redirect("/login");
-  if (!can(session.user.role, "read", "companies")) redirect("/dashboard");
+  const session = await requirePageSession();
+  requirePagePermission(session, "read", "companies");
 
   const { id } = await params;
 
   const company = await prisma.company.findFirst({
-    where: { id, tenantId: session.user.tenantId },
+    where: { id, tenantId: session.tenantId },
     select: {
       id: true, name: true, domain: true, phone: true, address: true, notes: true,
       createdAt: true,
@@ -206,7 +205,7 @@ export default async function CompanyDetailPage({ params }: Props) {
       </Card>
 
       {/* Invoices */}
-      {can(session.user.role, "read", "billing") && (
+      {can(session.role, "read", "billing") && (
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-base">

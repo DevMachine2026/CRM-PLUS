@@ -1,5 +1,7 @@
 "use client";
 
+import { apiFetch } from "@/lib/api/client-fetch";
+
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Search, Pencil, Trash2, Loader2 } from "lucide-react";
@@ -148,7 +150,7 @@ export function ProductsClient({
     try {
       const url = editProduct ? `/api/products/${editProduct.id}` : "/api/products";
       const method = editProduct ? "PATCH" : "POST";
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -173,7 +175,7 @@ export function ProductsClient({
 
   async function handleDelete(id: string, name: string) {
     if (!confirm(`Excluir "${name}"?`)) return;
-    await fetch(`/api/products/${id}`, { method: "DELETE" });
+    await apiFetch(`/api/products/${id}`, { method: "DELETE" });
     startTransition(() => router.refresh());
   }
 

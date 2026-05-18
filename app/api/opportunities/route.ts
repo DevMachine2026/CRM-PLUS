@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db/client";
-import { getSession, unauthorized, forbidden } from "@/lib/auth/get-session";
+import { getSession, unauthorized, forbidden} from "@/lib/auth/get-session";
 import { can } from "@/lib/auth/permissions";
+import { emitOpportunityCreated } from "@/lib/automations/emit";
 import type { OpportunityStatus } from "@/lib/generated/prisma/enums";
 
 const createSchema = z.object({
@@ -119,6 +120,15 @@ export async function POST(req: NextRequest) {
       createdAt: true,
       stage: { select: { id: true, name: true } },
     },
+  });
+
+  emitOpportunityCreated(session.tenantId, {
+    id:        opportunity.id,
+    title:     opportunity.title,
+    status:    opportunity.status,
+    stageId:   parsed.data.stageId,
+    contactId: parsed.data.contactId ?? null,
+    value:     opportunity.value,
   });
 
   return NextResponse.json({ data: opportunity }, { status: 201 });

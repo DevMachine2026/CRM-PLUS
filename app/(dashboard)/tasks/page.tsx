@@ -1,5 +1,5 @@
-import { auth } from "@/lib/auth/auth";
 import { prisma } from "@/lib/db/client";
+import { requirePageSession, requirePagePermission } from "@/lib/auth/get-session";
 import { can } from "@/lib/auth/permissions";
 import { redirect } from "next/navigation";
 import { TasksClient } from "./tasks-client";
@@ -25,11 +25,10 @@ export default async function TasksPage({
     page?: string;
   }>;
 }) {
-  const session = await auth();
-  if (!session) redirect("/login");
-  if (!can(session.user.role, "read", "tasks")) redirect("/dashboard");
+  const session = await requirePageSession();
+  requirePagePermission(session, "read", "tasks");
 
-  const tenantId = session.user.tenantId;
+  const tenantId = session.tenantId;
   const p = await searchParams;
   const statusFilter   = asStatus(p.status);
   const priorityFilter = asPriority(p.priority);
@@ -76,9 +75,9 @@ export default async function TasksPage({
     counts.map((c) => [c.status, c._count._all])
   ) as Record<string, number>;
 
-  const canUpdate = can(session.user.role, "update", "tasks");
-  const canDelete = can(session.user.role, "delete", "tasks");
-  const canCreate = can(session.user.role, "create", "tasks");
+  const canUpdate = can(session.role, "update", "tasks");
+  const canDelete = can(session.role, "delete", "tasks");
+  const canCreate = can(session.role, "create", "tasks");
 
   return (
     <TasksClient

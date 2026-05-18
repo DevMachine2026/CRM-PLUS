@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/lib/api/client-fetch";
 import { useState, useTransition } from "react";
 import {
   FileText, Building2, User, Calendar, CheckCircle2,
@@ -109,7 +110,7 @@ export function InvoiceDetail({ invoice, canUpdate, canDelete }: Props) {
     setSaving(true);
     setError(null);
 
-    const res = await fetch(`/api/invoices/${invoice.id}`, {
+    const res = await apiFetch(`/api/invoices/${invoice.id}`, {
       method:  "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -132,7 +133,7 @@ export function InvoiceDetail({ invoice, canUpdate, canDelete }: Props) {
   }
 
   async function handleDelete() {
-    const res = await fetch(`/api/invoices/${invoice.id}`, { method: "DELETE" });
+    const res = await apiFetch(`/api/invoices/${invoice.id}`, { method: "DELETE" });
 
     if (!res.ok) {
       const json = await res.json().catch(() => ({}));

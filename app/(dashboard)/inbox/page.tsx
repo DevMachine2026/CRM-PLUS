@@ -1,5 +1,5 @@
-import { auth } from "@/lib/auth/auth";
 import { prisma } from "@/lib/db/client";
+import { requirePageSession, requirePagePermission } from "@/lib/auth/get-session";
 import { can } from "@/lib/auth/permissions";
 import { redirect } from "next/navigation";
 import { InboxClient } from "./inbox-client";
@@ -13,11 +13,10 @@ export default async function InboxPage({
 }: {
   searchParams: Promise<{ status?: string; channel?: string; convId?: string }>;
 }) {
-  const session = await auth();
-  if (!session) redirect("/login");
-  if (!can(session.user.role, "read", "conversations")) redirect("/dashboard");
+  const session = await requirePageSession();
+  requirePagePermission(session, "read", "conversations");
 
-  const tenantId = session.user.tenantId;
+  const tenantId = session.tenantId;
   const p = await searchParams;
 
   const statusFilter: ConversationStatus | undefined =
@@ -100,8 +99,8 @@ export default async function InboxPage({
   }
 
   const sc = Object.fromEntries(statusCounts.map((c) => [c.status, c._count._all])) as Record<string, number>;
-  const canCreate = can(session.user.role, "create", "conversations");
-  const canUpdate = can(session.user.role, "update", "conversations");
+  const canCreate = can(session.role, "create", "conversations");
+  const canUpdate = can(session.role, "update", "conversations");
 
   // JSON.parse/stringify converts Date → ISO string at runtime; cast to satisfy TS
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -113,7 +112,7 @@ export default async function InboxPage({
       contacts={contacts}
       statusCounts={sc}
       activeConversation={activeConversation ? s(activeConversation) : null}
-      currentUserId={session.user.id}
+      currentUserId={session.id}
       canCreate={canCreate}
       canUpdate={canUpdate}
     />

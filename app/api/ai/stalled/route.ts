@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSession, unauthorized, forbidden } from "@/lib/auth/get-session";
+import { getSession, unauthorized, forbidden} from "@/lib/auth/get-session";
 import { can } from "@/lib/auth/permissions";
 import { detectStalledLeads } from "@/lib/ai/actions/detect-stalled-leads";
 import { prisma } from "@/lib/db/client";

@@ -1,22 +1,21 @@
-import { auth } from "@/lib/auth/auth";
 import { prisma } from "@/lib/db/client";
+import { requirePageSession, requirePagePermission } from "@/lib/auth/get-session";
 import { can } from "@/lib/auth/permissions";
 import { redirect } from "next/navigation";
 import { SettingsClient } from "./settings-client";
 
 export default async function SettingsPage() {
-  const session = await auth();
-  if (!session) redirect("/login");
-  if (!can(session.user.role, "read", "settings")) redirect("/dashboard");
+  const session = await requirePageSession();
+  requirePagePermission(session, "read", "settings");
 
-  const tenantId = session.user.tenantId;
+  const tenantId = session.tenantId;
 
   const [tenant, users] = await Promise.all([
     prisma.tenant.findUnique({
       where: { id: tenantId },
       select: { id: true, name: true, slug: true, plan: true, status: true, createdAt: true },
     }),
-    can(session.user.role, "read", "team")
+    can(session.role, "read", "team")
       ? prisma.user.findMany({
           where:   { tenantId },
           orderBy: [{ role: "asc" }, { name: "asc" }],
@@ -38,12 +37,12 @@ export default async function SettingsPage() {
         lastLoginAt: u.lastLoginAt?.toISOString() ?? null,
         createdAt:   u.createdAt.toISOString(),
       }))}
-      currentUserId={session.user.id}
-      canUpdateSettings={can(session.user.role, "update", "settings")}
-      canReadTeam={can(session.user.role, "read", "team")}
-      canCreateTeam={can(session.user.role, "create", "team")}
-      canUpdateTeam={can(session.user.role, "update", "team")}
-      canDeleteTeam={can(session.user.role, "delete", "team")}
+      currentUserId={session.id}
+      canUpdateSettings={can(session.role, "update", "settings")}
+      canReadTeam={can(session.role, "read", "team")}
+      canCreateTeam={can(session.role, "create", "team")}
+      canUpdateTeam={can(session.role, "update", "team")}
+      canDeleteTeam={can(session.role, "delete", "team")}
     />
   );
 }

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db/client";
-import { getSession, unauthorized, forbidden } from "@/lib/auth/get-session";
+import { getSession, unauthorized, forbidden, tenantWhere } from "@/lib/auth/get-session";
+
 import { can } from "@/lib/auth/permissions";
 import type { TaskStatus, TaskPriority } from "@/lib/generated/prisma/enums";
 
@@ -45,7 +46,7 @@ export async function PATCH(
   if (parsed.data.dueAt          !== undefined) data.dueAt          = parsed.data.dueAt ? new Date(parsed.data.dueAt) : null;
 
   const task = await prisma.task.update({
-    where: { id },
+    where: tenantWhere(session, id),
     data,
     select: {
       id: true, title: true, description: true, status: true,
@@ -72,6 +73,6 @@ export async function DELETE(
   const existing = await prisma.task.findFirst({ where: { id, tenantId: session.tenantId } });
   if (!existing) return NextResponse.json({ error: "Não encontrado." }, { status: 404 });
 
-  await prisma.task.delete({ where: { id } });
+  await prisma.task.delete({ where: tenantWhere(session, id) });
   return NextResponse.json({ data: { id } });
 }

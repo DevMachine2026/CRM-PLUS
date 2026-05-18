@@ -1,9 +1,9 @@
 # SDD — Software Design Document
 # CRM PLUS
 
-**Versão:** 1.0.0  
+**Versão:** 1.0.2  
 **Data:** 2026-05-18  
-**Status:** ✅ Implementação concluída
+**Status:** ✅ Implementação concluída (automações + idempotência de webhooks + hardening multi-tenant)
 
 ---
 
@@ -693,10 +693,12 @@ sender_id       UUID                          -- user_id se sender_type = user
 content         TEXT
 type            VARCHAR(20) DEFAULT 'text'    -- text, image, audio, video, document, note
 media_url       TEXT
-external_id     VARCHAR(255)                  -- ID da mensagem na plataforma externa
+external_id     VARCHAR(255)                  -- ID da mensagem na plataforma externa (wamid / mid)
 status          VARCHAR(20) DEFAULT 'sent'    -- sent, delivered, read, failed
 is_internal     BOOLEAN DEFAULT false         -- true = nota interna
 created_at      TIMESTAMPTZ DEFAULT now()
+
+UNIQUE (tenant_id, external_id)               -- idempotência de webhooks (NULL permitido em mensagens manuais)
 ```
 
 #### activities
@@ -863,22 +865,47 @@ created_at      TIMESTAMPTZ DEFAULT now()
 O isolamento de dados entre empresas é garantido por:
 
 1. **tenant_id em toda tabela** — toda query inclui `WHERE tenant_id = $currentTenantId`
-2. **Middleware de sessão** — o `tenant_id` é extraído da sessão NextAuth em todas as API routes
-3. **Helper `db.ts`** — função utilitária `withTenant(tenantId)` que retorna o cliente Prisma pré-filtrado
-4. **Row-Level Security (RLS)** — opcional no PostgreSQL, como segunda camada de proteção
+2. **Sessão como única fonte de tenant** — `tenantId` vem **somente** do JWT/sessão Auth.js; nunca de query, body ou headers do cliente
+3. **`tenantWhere(session, id)`** — em PATCH/DELETE por ID, o `where` do Prisma é sempre `{ id, tenantId }` (ver `lib/auth/get-session.ts`)
+4. **Proxy de auth** — `proxy.ts` + `lib/auth/auth.config.ts` protegem rotas do dashboard; webhooks e cron usam segredos próprios
+5. **Row-Level Security (RLS)** — opcional no PostgreSQL, como segunda camada de proteção
 
 ### 4.3 Autenticação e Autorização
 
-**Autenticação (NextAuth.js):**
+**Autenticação (Auth.js v5):**
 - Provider: Credentials (e-mail/senha)
-- Sessão: JWT com `{ userId, tenantId, role }`
-- Middleware Next.js protege todas as rotas `/app/(dashboard)/*`
-- Rotas públicas: `/login`, `/register`, `/api/webhooks/*`
+- Sessão: JWT com `{ id, tenantId, tenantSlug, role, name, email }`
+- `proxy.ts` protege `/app/(dashboard)/*` e APIs autenticadas
+- Rotas públicas: `/login`, `/register`, `/api/webhooks/*`, `/api/auth/*`
+- `/api/demo/*` — bloqueado em produção (`NODE_ENV === "production"`)
+
+**Helpers centralizados (`lib/auth/get-session.ts`):**
+
+| Helper | Uso |
+|--------|-----|
+| `getSession()` | API routes — retorna `SessionUser` ou `null` |
+| `requireSession()` / `requirePermission()` | API — 401/403 JSON padronizado |
+| `tenantWhere(session, id)` | Prisma `update`/`delete` por ID |
+| `requirePageSession()` | SSR — redirect `/login?reason=session_expired` |
+| `requirePagePermission()` | SSR — redirect `/dashboard?reason=forbidden` |
+| `handleApiAuthResponse()` | Client — redirect em 401/403 |
+
+**Cliente (`lib/api/client-fetch.ts`):**
+- `apiFetch()` — envolve `fetch` e chama `handleApiAuthResponse` antes de parsear JSON
+- Usado em todos os `*-client.tsx` do dashboard e formulários autenticados
+
+**UX de sessão:**
+- `components/auth-alert-banner.tsx` — exibe aviso quando `?reason=session_expired` ou `?reason=forbidden`
+- Login exibe banner quando redirecionado por sessão expirada
+
+**Webhooks — resolução de tenant (`lib/webhooks/resolve-tenant.ts`):**
+- **Produção:** tenant identificado pelas credenciais cadastradas em Integrações (scan de `integrations`)
+- **Desenvolvimento:** `?tenantId=<UUID>` permitido com validação de UUID; ignorado em produção
 
 **Autorização (RBAC):**
-- Helper `can(user, action, resource)` — verifica se o usuário pode executar a ação
+- Helper `can(role, action, resource)` — verifica se o usuário pode executar a ação
 - Permissões definidas em `/lib/auth/permissions.ts`
-- Verificação no servidor (API routes) e no cliente (esconder elementos de UI)
+- Verificação no servidor (API routes + SSR) e no cliente (esconder elementos de UI)
 
 ### 4.4 Camada de IA
 
@@ -1069,38 +1096,36 @@ crm-plus/
 │
 ├── lib/
 │   ├── auth/
-│   │   ├── auth.ts                  ← NextAuth config
-│   │   ├── permissions.ts           ← RBAC: can(user, action, resource)
-│   │   └── middleware.ts            ← proteção de rotas
+│   │   ├── auth.ts                  ← Auth.js config (Node)
+│   │   ├── auth.config.ts           ← rotas públicas, callbacks JWT
+│   │   ├── get-session.ts           ← sessão, tenantWhere, require*, handleApiAuthResponse
+│   │   └── permissions.ts           ← RBAC: can(role, action, resource)
+│   ├── api/
+│   │   └── client-fetch.ts          ← apiFetch() para componentes client
 │   ├── db/
-│   │   ├── client.ts                ← Prisma client singleton
-│   │   └── with-tenant.ts           ← helper para queries com tenant_id
+│   │   └── client.ts                ← Prisma client singleton
 │   ├── ai/
-│   │   ├── index.ts                 ← interface AIProvider + factory
-│   │   ├── providers/
-│   │   │   ├── claude.ts
-│   │   │   ├── openai.ts
-│   │   │   └── gemini.ts
-│   │   └── actions/
-│   │       ├── summarize-conversation.ts
-│   │       ├── classify-lead.ts
-│   │       ├── suggest-reply.ts
-│   │       ├── detect-stage-advance.ts
-│   │       ├── auto-tag.ts
-│   │       ├── create-task-from-message.ts
-│   │       └── generate-follow-up.ts
-│   ├── integrations/
-│   │   ├── whatsapp/
-│   │   │   ├── client.ts
-│   │   │   └── webhook-handler.ts
-│   │   └── instagram/
-│   │       ├── client.ts
-│   │       └── webhook-handler.ts
+│   │   ├── provider.ts              ← aiComplete() — Claude / Gemini / mock (principal)
+│   │   ├── index.ts                 ← legado (@deprecated — usar provider.ts)
+│   │   ├── providers/               ← adapters legados
+│   │   └── actions/                 ← classify-lead, summarize, detect-intent, follow-up, etc.
+│   ├── channels/
+│   │   ├── whatsapp.ts
+│   │   ├── instagram.ts
+│   │   └── send-message.ts
+│   ├── webhooks/
+│   │   ├── process-inbound.ts       ← contato + conversa + mensagem + IA + automações
+│   │   ├── resolve-tenant.ts
+│   │   └── verify-signature.ts
+│   ├── tenant/
+│   │   └── setup.ts                 ← pipeline + tags + automações padrão
 │   ├── billing/
-│   │   └── generate-invoice.ts      ← lógica de geração automática
+│   │   └── generate-invoice.ts
 │   ├── automations/
-│   │   ├── engine.ts                ← avaliador de triggers/condições/ações
-│   │   └── action-handlers.ts       ← implementação de cada ação
+│   │   ├── engine.ts                ← runAutomations()
+│   │   ├── emit.ts                  ← dispara triggers nos eventos de domínio
+│   │   ├── action-handlers.ts
+│   │   └── types.ts
 │   └── utils/
 │       ├── format.ts                ← formatação de moeda, data, telefone
 │       ├── validations.ts           ← schemas Zod reutilizáveis
@@ -1259,18 +1284,29 @@ POST /api/webhooks/whatsapp
    └─ Busca conversation por contact_id + channel + status != 'closed'
 
    ↓
+[Idempotência: se external_id já existe no tenant → retornar sem duplicar]
+
+   ↓
 [Salvar mensagem]
    │
-   └─ messages.external_id = message.id da plataforma
+   └─ messages.external_id = wamid / mid da plataforma
 
    ↓
 [Atualizar conversation.last_message_at]
 
    ↓
-[Disparar automações com trigger = 'new_message']
+[Se contato novo → emit contact_created + classifyLead]
+[Se conversa nova → emit conversation_created]
+
+   ↓
+[IA em background: summarize + detectIntent (+ suggestNextAction se sinal de compra)]
+
+   ↓
+[Automações ativas do tenant via lib/automations/emit.ts]
    │
-   ├─ Avaliar condições
-   └─ Executar ações (responder, criar tarefa, aplicar tag, etc.)
+   ├─ contact_created → create_activity (padrão)
+   ├─ conversation_created → create_task (padrão)
+   └─ Avaliar condições + executar ações configuradas
 
    ↓
 [Atualizar webhook_logs (status: processed)]
@@ -1279,38 +1315,44 @@ POST /api/webhooks/whatsapp
 [Notificar vendedor responsável via real-time (preparado)]
 ```
 
-### 7.3 Fluxo: Automação com IA
+### 7.3 Fluxo: Motor de Automações (implementado)
 
 ```
-[Trigger: nova mensagem de contato]
+[Evento de domínio — ex: POST /api/contacts, webhook inbound, PATCH oportunidade]
 
    ↓
-[Motor de automação avalia todas as automações ativas do tenant]
+[lib/automations/emit.ts → runAutomations (fire-and-forget)]
+
+   ↓
+[Carrega automations ativas do tenant com trigger.type correspondente]
+
+   ↓
+[Para cada automação]
    │
-   └─ Filtra por trigger_type = 'new_message'
+   ├─ Avalia conditions (JSON) contra payload.data
+   ├─ Se falhar → automation_logs status = skipped
+   └─ Se passar → executa actions via action-handlers.ts:
+         create_task | create_activity | add_tag | update_contact_status
+         update_opportunity_stage | send_whatsapp | send_instagram
 
    ↓
-[Para cada automação correspondente]
-   │
-   ├─ Avalia conditions (ex: "canal = whatsapp AND lead_score < 30")
-   └─ Executa actions em ordem:
-
-      ├─ classify_lead → chama /lib/ai/actions/classify-lead.ts
-      │     └─ Atualiza contacts.lead_score, aplica tags
-      │
-      ├─ suggest_reply → chama /lib/ai/actions/suggest-reply.ts
-      │     └─ Salva sugestão para exibir ao vendedor
-      │
-      ├─ create_task → chama /lib/ai/actions/create-task-from-message.ts
-      │     └─ Cria task vinculada ao contato
-      │
-      └─ move_stage → chama /lib/ai/actions/detect-stage-advance.ts
-            └─ Se detectou avanço → move opportunity para próxima etapa
-
-   ↓
-[Salvar em automation_logs]
-[Salvar em ai_logs]
+[automation_logs + increment run_count / last_run_at]
 ```
+
+**Triggers conectados (v1.0.1):**
+
+| Trigger | Origem |
+|---------|--------|
+| `contact_created` | API contatos, webhook (contato novo) |
+| `contact_status_changed` | PATCH contato |
+| `conversation_created` | API conversas, webhook (conversa nova) |
+| `opportunity_created` | POST oportunidade |
+| `opportunity_status_changed` | PATCH oportunidade (won/lost/open) |
+| `opportunity_stage_changed` | PATCH oportunidade (stageId) |
+| `task_created` | POST tarefa (manual/ai) |
+| `revenue_status_changed` | PATCH receita |
+
+**IA paralela (não passa pelo motor de automações):** `classifyLead`, `summarizeConversation`, `detectIntent`, crons `follow-up` / `stalled` — registrados em `ai_logs`.
 
 ### 7.4 Fluxo: Redistribuição de Leads
 
@@ -1336,13 +1378,32 @@ PATCH /api/opportunities/[id] { assigned_to: newUserId }
 
 ## 8. Automações e Regras de IA
 
-### 8.1 Triggers Disponíveis
+### 8.0 Triggers implementados no código (`lib/automations/types.ts`)
+
+| Trigger | Quando dispara |
+|---------|----------------|
+| `contact_created` | Contato criado (API ou webhook) |
+| `contact_status_changed` | Status do contato alterado |
+| `conversation_created` | Conversa aberta (API ou webhook) |
+| `opportunity_created` | Oportunidade criada |
+| `opportunity_status_changed` | Status open/won/lost |
+| `opportunity_stage_changed` | Etapa do pipeline alterada |
+| `task_created` | Tarefa criada via API |
+| `revenue_status_changed` | Status da receita alterado |
+
+**Automações padrão** (criadas em `lib/tenant/setup.ts`):
+
+1. `contact_created` → `create_activity` ("Contato classificado pela IA")
+2. `conversation_created` → `create_task` (follow-up em 3 dias)
+3. `opportunity_created` → `create_activity` ("Oportunidade aberta")
+
+### 8.1 Triggers planejados (roadmap — ainda não no emit)
 
 | Trigger | Quando dispara | Config disponível |
 |---------|---------------|-------------------|
 | `new_message` | Nova mensagem recebida | canal, palavras-chave |
-| `new_contact` | Novo contato criado | origem, canal |
-| `stage_changed` | Card movido de etapa | pipeline, etapa de origem, etapa destino |
+| `new_contact` | *(alias de contact_created)* | origem, canal |
+| `stage_changed` | *(alias de opportunity_stage_changed)* | pipeline, etapa de origem, etapa destino |
 | `opportunity_won` | Oportunidade marcada como ganha | pipeline |
 | `opportunity_lost` | Oportunidade marcada como perdida | motivo |
 | `task_due` | Tarefa vence | horas antes do vencimento |
@@ -1565,6 +1626,7 @@ Documento técnico completo (este arquivo).
 **Entregas:**
 - [x] Schema: `automations`, `automation_logs`
 - [x] Motor de automações: trigger → condições → ações
+- [x] `lib/automations/emit.ts` — triggers conectados às APIs e webhooks
 - [x] Automações padrão ativas por tenant (provisionamento automático no registro)
 - [x] **IA: `generate-follow-up`** — por inatividade, IA gera mensagem personalizada
 - [x] Follow-up automático via cron job (`/api/ai/follow-up`)
@@ -1589,6 +1651,8 @@ Documento técnico completo (este arquivo).
 - [x] Instagram Messaging API: receber mensagens via webhook (HMAC verificado)
 - [x] Instagram: enviar mensagens (`lib/channels/instagram.ts`)
 - [x] Identificação automática de contato por telefone/Instagram ID
+- [x] Idempotência de mensagens (`UNIQUE tenant_id + external_id` em `messages`)
+- [x] `process-inbound.ts` dispara automações + `classifyLead` em contatos novos
 - [x] Configuração de integração na interface (Settings > Integrações)
 - [x] Lookup automático de tenant por `phone_number_id`/`pageId` (`lib/webhooks/resolve-tenant.ts`)
 - [x] API de integrações com credenciais mascaradas (`GET`/`PUT`/`DELETE /api/integrations`)
@@ -1663,9 +1727,10 @@ Documento técnico completo (este arquivo).
 1. Schema: automations, automation_logs + migration
 2. Motor de automações: `engine.ts` (trigger → avaliar condições → executar ações)
 3. `action-handlers.ts` (implementar cada ação do motor)
-4. API: automations CRUD
-5. UI: builder de automações
-6. Seed de automações padrão para novos tenants
+4. `emit.ts` — conectar triggers às APIs e webhooks ✅ (v1.0.1)
+5. API: automations CRUD
+6. UI: builder de automações
+7. Seed de automações padrão para novos tenants
 7. **IA: implementar `generate-follow-up.ts`**
 8. **Automação padrão: "inatividade > 3 dias → gerar follow-up → agendar envio"**
 9. **IA: implementar detecção de gargalo (leads parados > threshold)**
@@ -1734,7 +1799,8 @@ EMAIL_FROM=noreply@seudominio.com
 - **Nomenclatura:** camelCase para variáveis/funções, PascalCase para componentes e tipos, UPPER_SNAKE_CASE para constantes e env vars
 - **API Routes:** sempre retornar `{ data, error, meta }` como envelope padrão
 - **Erros:** usar `NextResponse.json({ error: 'Mensagem' }, { status: 4xx })` com mensagens em português
-- **Queries Prisma:** sempre incluir `tenant_id` como filtro; usar `select` explícito para evitar vazamento de campos sensíveis
+- **Queries Prisma:** sempre incluir `tenant_id` como filtro; em mutações por ID usar `tenantWhere(session, id)`; usar `select` explícito para evitar vazamento de campos sensíveis
+- **Tenant no cliente:** nunca aceitar `tenantId` do body/query em APIs autenticadas; webhooks resolvem tenant por integração (prod) ou `?tenantId` só em dev
 - **Validação:** Zod no servidor (API Route) e no cliente (React Hook Form + Zod resolver)
 - **Datas:** armazenar sempre em UTC; exibir convertido para timezone do tenant
 - **Moeda:** armazenar em centavos (integer) ou DECIMAL(12,2); exibir formatado em BRL

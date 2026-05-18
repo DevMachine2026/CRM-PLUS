@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db/client";
-import { getSession, unauthorized, forbidden } from "@/lib/auth/get-session";
+import { getSession, unauthorized, forbidden, tenantWhere } from "@/lib/auth/get-session";
+
 import { can } from "@/lib/auth/permissions";
 import type { InvoiceStatus } from "@/lib/generated/prisma/enums";
 
@@ -84,7 +85,7 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
         : undefined;
 
   const updated = await prisma.invoice.update({
-    where: { id },
+    where: tenantWhere(session, id),
     data: {
       ...(d.status !== undefined ? { status: d.status as InvoiceStatus } : {}),
       ...(d.notes !== undefined  ? { notes: d.notes } : {}),
@@ -120,6 +121,6 @@ export async function DELETE(_req: NextRequest, { params }: RouteContext) {
     );
   }
 
-  await prisma.invoice.delete({ where: { id } });
+  await prisma.invoice.delete({ where: tenantWhere(session, id) });
   return new NextResponse(null, { status: 204 });
 }

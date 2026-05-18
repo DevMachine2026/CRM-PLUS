@@ -1,5 +1,7 @@
 "use client";
 
+import { apiFetch } from "@/lib/api/client-fetch";
+
 import { useState, useTransition, useRef, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -176,7 +178,7 @@ export function InboxClient({
   async function selectConversation(conv: ConvSummary) {
     setLoadingMsgs(true);
     try {
-      const res  = await fetch(`/api/conversations/${conv.id}`);
+      const res  = await apiFetch(`/api/conversations/${conv.id}`);
       const json = await res.json();
       setActive(json.data);
       const p = new URLSearchParams(sp.toString());
@@ -191,7 +193,7 @@ export function InboxClient({
     if (!active || !msgContent.trim()) return;
     setSending(true);
     try {
-      const res  = await fetch(`/api/conversations/${active.id}/messages`, {
+      const res  = await apiFetch(`/api/conversations/${active.id}/messages`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content: msgContent.trim(), direction: "outbound" }),
       });
@@ -211,7 +213,7 @@ export function InboxClient({
 
   async function updateStatus(status: string) {
     if (!active || !canUpdate) return;
-    const res = await fetch(`/api/conversations/${active.id}`, {
+    const res = await apiFetch(`/api/conversations/${active.id}`, {
       method: "PATCH", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status }),
     });
@@ -227,7 +229,7 @@ export function InboxClient({
     if (!active) return;
     setLoadingSumm(true);
     try {
-      const res  = await fetch(`/api/conversations/${active.id}/summarize`, { method: "POST" });
+      const res  = await apiFetch(`/api/conversations/${active.id}/summarize`, { method: "POST" });
       const json = await res.json();
       if (res.ok) setAiSummary(json.data);
     } finally {
@@ -239,7 +241,7 @@ export function InboxClient({
     if (!active) return;
     setLoadingInt(true);
     try {
-      const res  = await fetch(`/api/conversations/${active.id}/detect-intent`, { method: "POST" });
+      const res  = await apiFetch(`/api/conversations/${active.id}/detect-intent`, { method: "POST" });
       const json = await res.json();
       if (res.ok) setAiIntent(json.data);
     } finally {
@@ -251,7 +253,7 @@ export function InboxClient({
     if (!active) return;
     setLoadingReply(true); setAiReply(null); setReplyUsed(null);
     try {
-      const res  = await fetch(`/api/conversations/${active.id}/suggest-reply`, { method: "POST" });
+      const res  = await apiFetch(`/api/conversations/${active.id}/suggest-reply`, { method: "POST" });
       const json = await res.json();
       if (res.ok) setAiReply(json.data);
     } finally {
@@ -263,7 +265,7 @@ export function InboxClient({
     setLoadingSuggestions(true);
     setSuggestions(null);
     try {
-      const res = await fetch(`/api/conversations/${conversationId}/suggest-reply`, { method: "POST" });
+      const res = await apiFetch(`/api/conversations/${conversationId}/suggest-reply`, { method: "POST" });
       if (!res.ok) return;
       const json = await res.json();
       if (json.data?.suggestion) {
@@ -285,7 +287,7 @@ export function InboxClient({
 
   async function handleCreate() {
     setCreating(true); setCreateError("");
-    const res  = await fetch("/api/conversations", {
+    const res  = await apiFetch("/api/conversations", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ contactId: newContactId || null, channel: newChannel, subject: newSubject || null }),
     });

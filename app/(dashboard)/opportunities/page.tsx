@@ -1,5 +1,5 @@
-import { auth } from "@/lib/auth/auth";
 import { prisma } from "@/lib/db/client";
+import { requirePageSession, requirePagePermission } from "@/lib/auth/get-session";
 import { can } from "@/lib/auth/permissions";
 import { redirect } from "next/navigation";
 import { ensureDefaultPipeline } from "@/lib/db/ensure-default-pipeline";
@@ -10,11 +10,10 @@ export default async function OpportunitiesPage({
 }: {
   searchParams: Promise<{ q?: string; page?: string; status?: string; pipelineId?: string }>;
 }) {
-  const session = await auth();
-  if (!session) redirect("/login");
-  if (!can(session.user.role, "read", "opportunities")) redirect("/dashboard");
+  const session = await requirePageSession();
+  requirePagePermission(session, "read", "opportunities");
 
-  const tenantId = session.user.tenantId;
+  const tenantId = session.tenantId;
   await ensureDefaultPipeline(tenantId);
 
   const params = await searchParams;
@@ -110,9 +109,9 @@ export default async function OpportunitiesPage({
       companies={companies}
       users={users}
       allProducts={allProducts}
-      canCreate={can(session.user.role, "create", "opportunities")}
-      canEdit={can(session.user.role, "update", "opportunities")}
-      canDelete={can(session.user.role, "delete", "opportunities")}
+      canCreate={can(session.role, "create", "opportunities")}
+      canEdit={can(session.role, "update", "opportunities")}
+      canDelete={can(session.role, "delete", "opportunities")}
     />
   );
 }

@@ -1,5 +1,7 @@
 "use client";
 
+import { apiFetch } from "@/lib/api/client-fetch";
+
 import { useState } from "react";
 import {
   Plus, Pencil, Trash2, Loader2, UserCheck, UserX, Shield, Users,
@@ -196,7 +198,7 @@ export function TeamClient({ users: initialUsers, currentUserId, canCreate, canU
     : users;
 
   async function handleCreate(form: MemberForm): Promise<string | null> {
-    const res  = await fetch("/api/team", {
+    const res  = await apiFetch("/api/team", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: form.name, email: form.email, password: form.password, role: form.role, phone: form.phone || undefined }),
     });
@@ -208,7 +210,7 @@ export function TeamClient({ users: initialUsers, currentUserId, canCreate, canU
 
   async function handleEdit(form: MemberForm, id?: string): Promise<string | null> {
     if (!id) return "ID inválido.";
-    const res  = await fetch(`/api/team/${id}`, {
+    const res  = await apiFetch(`/api/team/${id}`, {
       method: "PATCH", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: form.name, phone: form.phone || null, role: form.role }),
     });
@@ -219,7 +221,7 @@ export function TeamClient({ users: initialUsers, currentUserId, canCreate, canU
   }
 
   async function handleToggleActive(user: TeamUser) {
-    const res  = await fetch(`/api/team/${user.id}`, {
+    const res  = await apiFetch(`/api/team/${user.id}`, {
       method: "PATCH", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ isActive: !user.isActive }),
     });
@@ -229,7 +231,7 @@ export function TeamClient({ users: initialUsers, currentUserId, canCreate, canU
   }
 
   async function handleDelete(id: string): Promise<string | null> {
-    const res  = await fetch(`/api/team/${id}`, { method: "DELETE" });
+    const res  = await apiFetch(`/api/team/${id}`, { method: "DELETE" });
     const json = await res.json();
     if (!res.ok) return json.error ?? "Erro ao remover.";
     setUsers((prev) => prev.filter((u) => u.id !== id));

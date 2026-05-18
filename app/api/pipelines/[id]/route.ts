@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db/client";
-import { getSession, unauthorized, forbidden } from "@/lib/auth/get-session";
+import { getSession, unauthorized, forbidden, tenantWhere } from "@/lib/auth/get-session";
+
 import { can } from "@/lib/auth/permissions";
 
 const updateSchema = z.object({
@@ -62,7 +63,7 @@ export async function PATCH(
     });
   }
 
-  const pipeline = await prisma.pipeline.update({ where: { id }, data: parsed.data });
+  const pipeline = await prisma.pipeline.update({ where: tenantWhere(session, id), data: parsed.data });
   return NextResponse.json({ data: pipeline });
 }
 
@@ -79,6 +80,6 @@ export async function DELETE(
   const existing = await findPipeline(id, session.tenantId);
   if (!existing) return NextResponse.json({ error: "Não encontrado." }, { status: 404 });
 
-  await prisma.pipeline.delete({ where: { id } });
+  await prisma.pipeline.delete({ where: tenantWhere(session, id) });
   return NextResponse.json({ data: { id } });
 }

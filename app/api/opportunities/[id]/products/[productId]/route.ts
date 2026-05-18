@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db/client";
-import { getSession, unauthorized, forbidden } from "@/lib/auth/get-session";
+import { getSession, unauthorized, forbidden} from "@/lib/auth/get-session";
 import { can } from "@/lib/auth/permissions";
 
 const updateSchema = z.object({
@@ -9,14 +9,14 @@ const updateSchema = z.object({
   unitPrice: z.number().min(0).optional(),
 });
 
-async function recalcOpportunityValue(opportunityId: string) {
+async function recalcOpportunityValue(opportunityId: string, tenantId: string) {
   const items = await prisma.opportunityProduct.findMany({
-    where: { opportunityId },
+    where: { opportunityId, tenantId },
     select: { totalPrice: true },
   });
   const total = items.reduce((sum, i) => sum + Number(i.totalPrice), 0);
   await prisma.opportunity.update({
-    where: { id: opportunityId },
+    where: { id: opportunityId, tenantId },
     data: { value: total },
   });
 }
@@ -68,7 +68,7 @@ export async function PATCH(
     },
   });
 
-  await recalcOpportunityValue(opportunityId);
+  await recalcOpportunityValue(opportunityId, session.tenantId);
 
   return NextResponse.json({ data: item });
 }
@@ -91,7 +91,7 @@ export async function DELETE(
   if (!existing) return NextResponse.json({ error: "Item não encontrado." }, { status: 404 });
 
   await prisma.opportunityProduct.delete({ where: { id: existing.id } });
-  await recalcOpportunityValue(opportunityId);
+  await recalcOpportunityValue(opportunityId, session.tenantId);
 
   return NextResponse.json({ data: { opportunityId, productId } });
 }

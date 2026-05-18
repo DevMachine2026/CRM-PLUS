@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db/client";
-import { getSession, unauthorized, forbidden } from "@/lib/auth/get-session";
+import { getSession, unauthorized, forbidden, tenantWhere } from "@/lib/auth/get-session";
+
 import { can } from "@/lib/auth/permissions";
 
 const updateSchema = z.object({
@@ -55,7 +56,7 @@ export async function PATCH(
   }
 
   const product = await prisma.product.update({
-    where: { id },
+    where: tenantWhere(session, id),
     data: parsed.data,
   });
 
@@ -75,6 +76,6 @@ export async function DELETE(
   const existing = await findProduct(id, session.tenantId);
   if (!existing) return NextResponse.json({ error: "Não encontrado." }, { status: 404 });
 
-  await prisma.product.delete({ where: { id } });
+  await prisma.product.delete({ where: tenantWhere(session, id) });
   return NextResponse.json({ data: { id } });
 }

@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db/client";
-import { getSession, unauthorized, forbidden } from "@/lib/auth/get-session";
+import { getSession, unauthorized, forbidden} from "@/lib/auth/get-session";
 import { can } from "@/lib/auth/permissions";
+import { emitConversationCreated } from "@/lib/automations/emit";
 import type { ConversationStatus, ConversationChannel } from "@/lib/generated/prisma/enums";
 
 const VALID_STATUSES:  ConversationStatus[]  = ["open", "pending", "resolved"];
@@ -113,6 +114,13 @@ export async function POST(req: NextRequest) {
       contact:      { select: { id: true, name: true, email: true } },
       assignedUser: { select: { id: true, name: true } },
     },
+  });
+
+  emitConversationCreated(session.tenantId, {
+    id:        conversation.id,
+    contactId: d.contactId ?? null,
+    channel:   conversation.channel,
+    status:    conversation.status,
   });
 
   return NextResponse.json({ data: conversation }, { status: 201 });

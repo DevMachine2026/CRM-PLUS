@@ -1,18 +1,16 @@
-import { auth } from "@/lib/auth/auth";
 import { prisma } from "@/lib/db/client";
+import { requirePageSession, requirePagePermission } from "@/lib/auth/get-session";
 import { can } from "@/lib/auth/permissions";
-import { redirect } from "next/navigation";
 import { IntegrationsClient } from "./integrations-client";
 
 export const metadata = { title: "Integrações — CRM PLUS" };
 
 export default async function IntegrationsPage() {
-  const session = await auth();
-  if (!session) redirect("/login");
-  if (!can(session.user.role, "read", "integrations")) redirect("/settings");
+  const session = await requirePageSession();
+  requirePagePermission(session, "read", "integrations", "/settings?reason=forbidden");
 
-  const tenantId  = session.user.tenantId;
-  const canEdit   = can(session.user.role, "update", "integrations");
+  const tenantId  = session.tenantId;
+  const canEdit   = can(session.role, "update", "integrations");
 
   // Resolve base URL — Vercel sets VERCEL_URL, fallback to NEXTAUTH_URL then localhost
   const baseUrl =

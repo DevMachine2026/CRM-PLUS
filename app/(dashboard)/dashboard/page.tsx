@@ -1,6 +1,6 @@
-import { auth } from "@/lib/auth/auth";
 import { prisma } from "@/lib/db/client";
 import { redirect } from "next/navigation";
+import { requirePageSession, requirePagePermission } from "@/lib/auth/get-session";
 import { can } from "@/lib/auth/permissions";
 import { detectStalledLeads } from "@/lib/ai/actions/detect-stalled-leads";
 import { unstable_cache } from "next/cache";
@@ -35,10 +35,8 @@ function fmtDate(d: Date | string | null) {
 }
 
 export default async function DashboardPage() {
-  const session = await auth();
-  if (!session) redirect("/login");
-
-  const tenantId  = session.user.tenantId;
+  const session = await requirePageSession();
+  const tenantId  = session.tenantId;
   const now       = new Date();
   const todayEnd  = new Date(now);
   todayEnd.setHours(23, 59, 59, 999);
@@ -46,10 +44,10 @@ export default async function DashboardPage() {
   const todayStart = new Date(now);
   todayStart.setHours(0, 0, 0, 0);
 
-  const canReadTasks   = can(session.user.role, "read", "tasks");
-  const canReadBilling = can(session.user.role, "read", "billing");
-  const canReadOpps    = can(session.user.role, "read", "opportunities");
-  const canReadConvs   = can(session.user.role, "read", "conversations");
+  const canReadTasks   = can(session.role, "read", "tasks");
+  const canReadBilling = can(session.role, "read", "billing");
+  const canReadOpps    = can(session.role, "read", "opportunities");
+  const canReadConvs   = can(session.role, "read", "conversations");
 
   // ── Core counts ──────────────────────────────────────────────────────────────
   const [
@@ -227,7 +225,7 @@ export default async function DashboardPage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight">
-          Bom dia, {session.user.name?.split(" ")[0]}
+          Bom dia, {session.name?.split(" ")[0]}
         </h1>
         <p className="text-muted-foreground text-sm">Aqui está o resumo do seu dia comercial.</p>
       </div>

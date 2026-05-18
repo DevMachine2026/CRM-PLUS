@@ -11,11 +11,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ callbackUrl?: string; error?: string; demo?: string; registered?: string; reset?: string }>;
+  searchParams: Promise<{
+    callbackUrl?: string;
+    error?: string;
+    reason?: string;
+    demo?: string;
+    registered?: string;
+    reset?: string;
+  }>;
 }) {
   const params = await searchParams;
   const callbackUrl = params.callbackUrl ?? "/dashboard";
   const error       = params.error;
+  const reason      = params.reason;
   const isDemo      = params.demo === "1";
   const registered  = params.registered === "true";
   const resetOk     = params.reset === "true";
@@ -42,6 +50,12 @@ export default async function LoginPage({
         {resetOk && (
           <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
             Senha redefinida com sucesso! Entre com sua nova senha.
+          </div>
+        )}
+
+        {reason === "session_expired" && (
+          <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
+            Sua sessão expirou. Entre novamente para continuar.
           </div>
         )}
 

@@ -133,7 +133,7 @@ export async function summarizeConversation(
   // ── Persist ──────────────────────────────────────────────────────────────────
   await prisma.$transaction([
     prisma.conversation.update({
-      where: { id: input.conversationId },
+      where: { id: input.conversationId, tenantId: input.tenantId },
       data:  { summaryText: summary },
     }),
     prisma.aiLog.create({

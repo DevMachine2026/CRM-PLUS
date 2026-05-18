@@ -1,5 +1,7 @@
 "use client";
 
+import { apiFetch } from "@/lib/api/client-fetch";
+
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Search, Pencil, Trash2, Loader2, TrendingUp, Trophy, XCircle, Package, LayoutList, Kanban } from "lucide-react";
@@ -224,7 +226,7 @@ export function OpportunitiesClient({
     try {
       const url = editOpp ? `/api/opportunities/${editOpp.id}` : "/api/opportunities";
       const method = editOpp ? "PATCH" : "POST";
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -256,12 +258,12 @@ export function OpportunitiesClient({
 
   async function handleDelete(id: string, title: string) {
     if (!confirm(`Excluir "${title}"?`)) return;
-    await fetch(`/api/opportunities/${id}`, { method: "DELETE" });
+    await apiFetch(`/api/opportunities/${id}`, { method: "DELETE" });
     startTransition(() => router.refresh());
   }
 
   async function quickStatus(id: string, status: OppStatus) {
-    await fetch(`/api/opportunities/${id}`, {
+    await apiFetch(`/api/opportunities/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status }),
@@ -270,7 +272,7 @@ export function OpportunitiesClient({
   }
 
   async function moveStage(oppId: string, stageId: string) {
-    await fetch(`/api/opportunities/${oppId}`, {
+    await apiFetch(`/api/opportunities/${oppId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ stageId }),
@@ -301,7 +303,7 @@ export function OpportunitiesClient({
     try {
       const body: Record<string, unknown> = { productId: addProductId, quantity: qty };
       if (addUnitPrice) body.unitPrice = parseFloat(addUnitPrice.replace(",", "."));
-      await fetch(`/api/opportunities/${productDialogOpp.id}/products`, {
+      await apiFetch(`/api/opportunities/${productDialogOpp.id}/products`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -322,7 +324,7 @@ export function OpportunitiesClient({
     try {
       const body: Record<string, unknown> = { quantity: qty };
       if (editUnitPrice) body.unitPrice = parseFloat(editUnitPrice.replace(",", "."));
-      await fetch(`/api/opportunities/${oppId}/products/${productId}`, {
+      await apiFetch(`/api/opportunities/${oppId}/products/${productId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -336,7 +338,7 @@ export function OpportunitiesClient({
 
   async function handleRemoveProduct(oppId: string, productId: string, name: string) {
     if (!confirm(`Remover "${name}" desta oportunidade?`)) return;
-    await fetch(`/api/opportunities/${oppId}/products/${productId}`, { method: "DELETE" });
+    await apiFetch(`/api/opportunities/${oppId}/products/${productId}`, { method: "DELETE" });
     startTransition(() => router.refresh());
   }
 

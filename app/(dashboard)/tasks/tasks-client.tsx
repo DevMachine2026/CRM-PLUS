@@ -1,5 +1,7 @@
 "use client";
 
+import { apiFetch } from "@/lib/api/client-fetch";
+
 import { useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -109,7 +111,7 @@ export function TasksClient({
   }
 
   async function patchTask(id: string, body: object) {
-    const res = await fetch(`/api/tasks/${id}`, {
+    const res = await apiFetch(`/api/tasks/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -128,7 +130,7 @@ export function TasksClient({
   }
 
   async function deleteTask(id: string) {
-    await fetch(`/api/tasks/${id}`, { method: "DELETE" });
+    await apiFetch(`/api/tasks/${id}`, { method: "DELETE" });
     startTransition(() => router.refresh());
   }
 
@@ -160,7 +162,7 @@ export function TasksClient({
   async function handleCreate() {
     if (!newTitle.trim()) { setCreateError("Título obrigatório."); return; }
     setIsCreating(true); setCreateError("");
-    const res = await fetch("/api/tasks", {
+    const res = await apiFetch("/api/tasks", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

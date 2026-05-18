@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db/client";
-import { getSession, unauthorized, forbidden } from "@/lib/auth/get-session";
+import { getSession, unauthorized, forbidden, tenantWhere } from "@/lib/auth/get-session";
+
 import { can } from "@/lib/auth/permissions";
 
 const ASSIGNABLE_ROLES = ["owner", "manager", "salesperson", "attendant", "financial", "viewer"] as const;
@@ -57,7 +58,7 @@ export async function PATCH(
     return NextResponse.json({ error: "Você não pode desativar sua própria conta." }, { status: 400 });
 
   const user = await prisma.user.update({
-    where: { id },
+    where: tenantWhere(session, id),
     data:  {
       ...(parsed.data.name     !== undefined ? { name:     parsed.data.name }     : {}),
       ...(parsed.data.phone    !== undefined ? { phone:    parsed.data.phone }    : {}),
@@ -101,6 +102,6 @@ export async function DELETE(
       );
   }
 
-  await prisma.user.delete({ where: { id } });
+  await prisma.user.delete({ where: tenantWhere(session, id) });
   return NextResponse.json({ success: true });
 }

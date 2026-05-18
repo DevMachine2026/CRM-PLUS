@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db/client";
-import { getSession, unauthorized, forbidden } from "@/lib/auth/get-session";
+import { getSession, unauthorized, forbidden, tenantWhere } from "@/lib/auth/get-session";
+
 import { can } from "@/lib/auth/permissions";
+import { emitRevenueStatusChanged } from "@/lib/automations/emit";
 
 const updateSchema = z.object({
   status: z.enum(["pending", "paid", "cancelled"]).optional(),
@@ -62,7 +64,7 @@ export async function PATCH(
   }
 
   const revenue = await prisma.revenue.update({
-    where: { id },
+    where: tenantWhere(session, id),
     data,
     select: {
       id: true,
@@ -73,11 +75,22 @@ export async function PATCH(
       dueAt: true,
       createdAt: true,
       updatedAt: true,
+      opportunityId: true,
       opportunity: { select: { id: true, title: true } },
       contact: { select: { id: true, name: true, email: true } },
       company: { select: { id: true, name: true } },
     },
   });
+
+  if (parsed.data.status && parsed.data.status !== existing.status) {
+    emitRevenueStatusChanged(
+      session.tenantId,
+      id,
+      existing.status,
+      parsed.data.status,
+      revenue.opportunityId
+    );
+  }
 
   return NextResponse.json({ data: revenue });
 }

@@ -1,5 +1,5 @@
-import { auth } from "@/lib/auth/auth";
 import { prisma } from "@/lib/db/client";
+import { requirePageSession, requirePagePermission } from "@/lib/auth/get-session";
 import { can } from "@/lib/auth/permissions";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
@@ -38,14 +38,13 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 export default async function ConversationPage({ params }: Props) {
-  const session = await auth();
-  if (!session) redirect("/login");
-  if (!can(session.user.role, "read", "conversations")) redirect("/dashboard");
+  const session = await requirePageSession();
+  requirePagePermission(session, "read", "conversations");
 
   const { id } = await params;
 
   const conv = await prisma.conversation.findFirst({
-    where: { id, tenantId: session.user.tenantId },
+    where: { id, tenantId: session.tenantId },
     select: {
       id: true, channel: true, status: true, subject: true,
       summaryText: true, detectedIntent: true,

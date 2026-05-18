@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db/client";
-import { getSession, unauthorized, forbidden } from "@/lib/auth/get-session";
+import { getSession, unauthorized, forbidden, tenantWhere } from "@/lib/auth/get-session";
+
 import { can } from "@/lib/auth/permissions";
+import { emitContactStatusChanged } from "@/lib/automations/emit";
 
 const updateSchema = z.object({
   name: z.string().min(1).max(255).optional(),
@@ -54,9 +56,18 @@ export async function PATCH(
   }
 
   const contact = await prisma.contact.update({
-    where: { id },
+    where: tenantWhere(session, id),
     data: parsed.data,
   });
+
+  if (parsed.data.status && parsed.data.status !== existing.status) {
+    emitContactStatusChanged(
+      session.tenantId,
+      id,
+      existing.status,
+      parsed.data.status
+    );
+  }
 
   return NextResponse.json({ data: contact });
 }
@@ -74,6 +85,6 @@ export async function DELETE(
   const existing = await findContact(id, session.tenantId);
   if (!existing) return NextResponse.json({ error: "Não encontrado." }, { status: 404 });
 
-  await prisma.contact.delete({ where: { id } });
+  await prisma.contact.delete({ where: tenantWhere(session, id) });
   return NextResponse.json({ data: { id } });
 }

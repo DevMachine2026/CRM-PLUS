@@ -78,6 +78,11 @@ async function handleSendInstagram(
   }
 }
 
+function resolveContactId(payload: TriggerPayload): string | null {
+  if (payload.entityType === "contact") return payload.entityId;
+  return (payload.data.contactId as string | undefined) ?? null;
+}
+
 async function handleCreateTask(
   action: CreateTaskAction,
   payload: TriggerPayload
@@ -87,8 +92,7 @@ async function handleCreateTask(
       ? new Date(Date.now() + action.dueDays * 86_400_000)
       : null;
 
-    const contactId =
-      payload.entityType === "contact" ? payload.entityId : (payload.data.contactId as string | undefined) ?? null;
+    const contactId = resolveContactId(payload);
 
     const opportunityId =
       payload.entityType === "opportunity" ? payload.entityId : null;
@@ -174,10 +178,7 @@ async function handleCreateActivity(
   payload: TriggerPayload
 ): Promise<ActionResult> {
   try {
-    const contactId =
-      payload.entityType === "contact"
-        ? payload.entityId
-        : (payload.data.contactId as string | undefined) ?? null;
+    const contactId = resolveContactId(payload);
 
     const opportunityId =
       payload.entityType === "opportunity" ? payload.entityId : null;

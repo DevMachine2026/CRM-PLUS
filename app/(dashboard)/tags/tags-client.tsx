@@ -1,5 +1,7 @@
 "use client";
 
+import { apiFetch } from "@/lib/api/client-fetch";
+
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Pencil, Trash2, Loader2, Tag as TagIcon, Search } from "lucide-react";
@@ -87,7 +89,7 @@ export function TagsClient({ tags, canCreate, canEdit, canDelete }: Props) {
     try {
       const url = editTag ? `/api/tags/${editTag.id}` : "/api/tags";
       const method = editTag ? "PATCH" : "POST";
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: form.name.trim(), color: form.color }),
@@ -106,7 +108,7 @@ export function TagsClient({ tags, canCreate, canEdit, canDelete }: Props) {
 
   async function handleDelete(id: string, name: string) {
     if (!confirm(`Excluir a tag "${name}"? Ela será removida de todos os contatos.`)) return;
-    await fetch(`/api/tags/${id}`, { method: "DELETE" });
+    await apiFetch(`/api/tags/${id}`, { method: "DELETE" });
     startTransition(() => router.refresh());
   }
 

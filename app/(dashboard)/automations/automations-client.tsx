@@ -1,5 +1,7 @@
 "use client";
 
+import { apiFetch } from "@/lib/api/client-fetch";
+
 import { useState, useTransition } from "react";
 import {
   Zap, Plus, Pencil, Trash2, Loader2, CheckCircle2,
@@ -314,7 +316,7 @@ export function AutomationsClient({ automations, logs, stages, canCreate, canEdi
     try {
       const url = editingId ? `/api/automations/${editingId}` : "/api/automations";
       const method = editingId ? "PATCH" : "POST";
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -336,7 +338,7 @@ export function AutomationsClient({ automations, logs, stages, canCreate, canEdi
   }
 
   async function handleToggle(id: string, currentActive: boolean) {
-    await fetch(`/api/automations/${id}`, {
+    await apiFetch(`/api/automations/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ isActive: !currentActive }),
@@ -345,7 +347,7 @@ export function AutomationsClient({ automations, logs, stages, canCreate, canEdi
   }
 
   async function handleDelete(id: string) {
-    await fetch(`/api/automations/${id}`, { method: "DELETE" });
+    await apiFetch(`/api/automations/${id}`, { method: "DELETE" });
     setDeletingId(null);
     startTransition(() => router.refresh());
   }

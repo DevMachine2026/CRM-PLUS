@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db/client";
-import { getSession, unauthorized, forbidden } from "@/lib/auth/get-session";
+import { getSession, unauthorized, forbidden} from "@/lib/auth/get-session";
+
 import { can } from "@/lib/auth/permissions";
 
 const updateStageSchema = z.object({
@@ -39,7 +40,7 @@ export async function PATCH(
   }
 
   const stage = await prisma.pipelineStage.update({
-    where: { id: stageId },
+    where: { id: stageId, tenantId: session.tenantId },
     data: parsed.data,
   });
 
@@ -59,6 +60,6 @@ export async function DELETE(
   const existing = await findStage(stageId, pipelineId, session.tenantId);
   if (!existing) return NextResponse.json({ error: "Etapa não encontrada." }, { status: 404 });
 
-  await prisma.pipelineStage.delete({ where: { id: stageId } });
+  await prisma.pipelineStage.delete({ where: { id: stageId, tenantId: session.tenantId } });
   return NextResponse.json({ data: { id: stageId } });
 }

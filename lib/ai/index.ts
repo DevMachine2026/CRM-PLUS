@@ -1,3 +1,7 @@
+/**
+ * @deprecated Use `aiComplete` from `@/lib/ai/provider` instead.
+ * Kept for backward compatibility with older docs/specs.
+ */
 export interface AIOptions {
   maxTokens?: number;
   temperature?: number;

@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/lib/api/client-fetch";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -36,7 +37,7 @@ export default function NewContactPage() {
     setSaving(true); setError("");
 
     try {
-      const res  = await fetch("/api/contacts", {
+      const res  = await apiFetch("/api/contacts", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
         body:    JSON.stringify({

@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db/client";
-import { getSession, unauthorized, forbidden } from "@/lib/auth/get-session";
+import { getSession, unauthorized, forbidden} from "@/lib/auth/get-session";
 import { can } from "@/lib/auth/permissions";
 import { classifyLead } from "@/lib/ai/actions/classify-lead";
 import { suggestNextAction } from "@/lib/ai/actions/suggest-next-action";
+import { emitContactCreated } from "@/lib/automations/emit";
 
 const createSchema = z.object({
   name: z.string().min(1).max(255),
@@ -86,6 +87,14 @@ export async function POST(req: NextRequest) {
       phone: phone || null,
       status: status ?? "lead",
     },
+  });
+
+  emitContactCreated(session.tenantId, {
+    id: contact.id,
+    name: contact.name,
+    email: contact.email,
+    phone: contact.phone,
+    status: contact.status,
   });
 
   // Fire-and-forget: classify → if hot/warm, suggest next action

@@ -60,3 +60,15 @@ Nosso diferencial competitivo não é ter "mais botões" ou "mais gráficos". No
 3. **Dados 100% reais:** Como é a IA que atualiza os status baseada na conversa real, o gestor tem um funil de vendas verdadeiro, sem depender da disciplina do vendedor.
 
 O CRM PLUS não é apenas uma ferramenta para organizar vendas. É um assistente inteligente que escala a capacidade da equipe comercial sem aumentar a folha de pagamento.
+
+---
+
+## Documentação técnica
+
+| Documento | Conteúdo |
+|-----------|----------|
+| [README.md](./README.md) | Setup, stack, arquitetura resumida |
+| [SDD.md](./SDD.md) | Design completo do sistema |
+| [GUIA-DE-TESTES.md](./GUIA-DE-TESTES.md) | Fluxo de validação local (incl. automações e webhooks) |
+
+*Atualizado em 2026-05-18 — v1.0.2: hardening multi-tenant (API `tenantWhere`, SSR `requirePage*`, cliente `apiFetch`, webhooks sem spoof de tenant em produção). v1.0.1: automações conectadas + idempotência de webhooks.*

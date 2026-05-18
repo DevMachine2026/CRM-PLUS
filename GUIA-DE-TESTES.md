@@ -3,7 +3,7 @@
 > **Ambiente**: Next.js 16 + PostgreSQL (Supabase) + IA mock  
 > **Stack local**: Node.js 20+, npm, banco já provisionado no Supabase  
 > **Porta padrão**: `http://localhost:3000`  
-> **Versão**: 1.0.0 — 2026-05-18
+> **Versão**: 1.0.2 — 2026-05-18
 
 ---
 
@@ -39,7 +39,7 @@ As variáveis de IA (`ANTHROPIC_API_KEY`, etc.) são **opcionais** — o sistema
 ### Iniciar o servidor
 
 ```bash
-cd "CRM PLUS/crm-plus"
+cd /mnt/hd/CRM-PLUS   # ou o caminho do seu clone
 npm run dev
 ```
 
@@ -113,11 +113,19 @@ Após login você cai no `/dashboard`. A barra lateral tem:
 3. Salve e confirme que o contato aparece na lista
 4. Clique no ícone de edição (lápis) → altere algum campo → salve
 5. Use a busca (campo de texto) para filtrar por nome, e-mail ou telefone
-6. **IA automática**: ao criar um contato, a função `classifyLead` roda em background e classifica o lead (hot/warm/cold). Veja o resultado em `/dashboard` → "Ações da IA hoje"
+6. **IA automática**: ao criar um contato, `classifyLead` roda em background (hot/warm/cold). Veja em `/dashboard` → "Ações da IA hoje"
+7. **Automação automática**: o trigger `contact_created` dispara a automação padrão → atividade "Contato classificado pela IA" em **Automações** (log de execução)
 
 **O que verificar no Supabase**:
 ```sql
 SELECT id, name, email, phone, status, external_id FROM contacts ORDER BY created_at DESC LIMIT 5;
+
+-- Log da automação "Classificar lead ao criar contato"
+SELECT al.status, al.actions_run, al.created_at, a.name
+FROM automation_logs al
+JOIN automations a ON a.id = al.automation_id
+WHERE al.entity_type = 'contact'
+ORDER BY al.created_at DESC LIMIT 5;
 ```
 
 ---
@@ -439,6 +447,44 @@ curl -X POST "http://localhost:3000/api/webhooks/whatsapp?tenantId=$TENANT_ID" \
 
 Deve aparecer na **mesma conversa** (sem criar nova) e atualizar `lastMessageAt`.
 
+#### Idempotência (mensagem duplicada)
+
+Reenvie o **mesmo** payload do primeiro curl (`wamid.teste001`):
+
+```bash
+curl -X POST "http://localhost:3000/api/webhooks/whatsapp?tenantId=$TENANT_ID" \
+  -H "Content-Type: application/json" \
+  -d '{ ... mesmo JSON com "id": "wamid.teste001" ... }'
+```
+
+**Esperado:**
+
+- Resposta `200` com `duplicate: true` no resultado (ou `processed: 0` se já existir)
+- **Nenhuma** mensagem duplicada na inbox
+- Contagem de mensagens no banco permanece igual:
+
+```sql
+SELECT COUNT(*) FROM messages
+WHERE tenant_id = '<id>' AND external_id = 'wamid.teste001';
+-- deve retornar 1
+```
+
+#### Automações no primeiro webhook
+
+Na **primeira** mensagem de um número novo:
+
+| Automação padrão | Trigger | Efeito |
+|------------------|---------|--------|
+| Classificar lead ao criar contato | `contact_created` | Atividade registrada |
+| Criar tarefa de retorno após inatividade | `conversation_created` | Tarefa "Follow-up: verificar interesse" em `/tasks` (`source = automation`) |
+
+```sql
+SELECT al.status, a.name, al.actions_run
+FROM automation_logs al
+JOIN automations a ON a.id = al.automation_id
+ORDER BY al.created_at DESC LIMIT 10;
+```
+
 ---
 
 ### 4.12 Webhook Simulado — Instagram
@@ -502,7 +548,25 @@ curl -X POST "http://localhost:3000/api/webhooks/instagram?tenantId=$TENANT_ID" 
 
 ---
 
-### 4.13 Verificação de Webhook (GET)
+### 4.13 Motor de Automações
+
+**Interface**: `/automations`
+
+1. Confirme as **3 automações padrão** criadas no registro (ativas)
+2. Crie um contato em `/contacts` → verifique novo log em **Automações** (`contact_created`)
+3. Crie uma conversa em `/inbox` (+) → log `conversation_created` + tarefa de follow-up se a automação estiver ativa
+4. Crie uma oportunidade → log `opportunity_created` + atividade "Oportunidade aberta"
+5. Edite status de um contato → log `contact_status_changed`
+6. Mova card no Kanban ou altere estágio → log `opportunity_stage_changed`
+7. Marque oportunidade como Ganho → receita em `/billing` + log `opportunity_status_changed`
+
+**Triggers implementados** (`lib/automations/emit.ts`):
+
+`contact_created` · `contact_status_changed` · `conversation_created` · `opportunity_created` · `opportunity_status_changed` · `opportunity_stage_changed` · `task_created` · `revenue_status_changed`
+
+---
+
+### 4.14 Verificação de Webhook (GET)
 
 Os endpoints também respondem ao desafio de verificação do Meta:
 
@@ -654,6 +718,28 @@ Para Instagram: `object` deve ser exatamente `"instagram"`.
 
 ---
 
+### Mensagem duplicada no inbox (mesmo wamid/mid)
+
+**Sintoma**: a mesma mensagem aparece duas vezes  
+**Causa**: reenvio do webhook com o mesmo `id`/`mid` antes da correção de idempotência  
+**Solução**: garanta `npx prisma db push` aplicado (índice único `tenant_id + external_id` em `messages`). Reenvios do mesmo ID são ignorados em `lib/webhooks/process-inbound.ts`.
+
+---
+
+### Automação não executou
+
+**Sintoma**: contato criado mas `/automations` sem log novo  
+**Verificação**:
+
+```sql
+SELECT is_active, trigger, run_count, last_run_at FROM automations WHERE tenant_id = '<id>';
+SELECT * FROM automation_logs ORDER BY created_at DESC LIMIT 5;
+```
+
+**Causas comuns**: automação desativada na UI; tenant criado antes do provisionamento — rode `POST /api/settings/setup` (autenticado) para re-seed pipeline/tags/automações.
+
+---
+
 ### Inbox vazia após webhook
 
 **Sintoma**: webhook retornou sucesso mas a conversa não aparece na inbox  
@@ -697,7 +783,70 @@ Todos os módulos estão funcionais:
 
 ---
 
-## 7. Sequência de Teste Recomendada (Fluxo Completo)
+## 7. Segurança e isolamento multi-tenant (v1.0.2)
+
+### 7.1 Sessão expirada (SSR)
+
+1. Faça login normalmente.
+2. No DevTools → **Application** → **Cookies**, apague `authjs.session-token` (ou equivalente).
+3. Recarregue qualquer página do dashboard (ex. `/contacts`).
+
+**Esperado:** redirect para `/login?reason=session_expired` e banner azul na tela de login.
+
+### 7.2 Sem permissão (RBAC)
+
+1. Crie um usuário com role `viewer` em **Settings → Equipe** (se ainda não existir).
+2. Faça login como viewer e acesse `/team` ou `/settings/integrations` (se bloqueado para o perfil).
+
+**Esperado:** redirect para `/dashboard?reason=forbidden` (ou `/settings?reason=forbidden` em integrações) e banner âmbar no topo do dashboard.
+
+### 7.3 API — tenant isolado
+
+Com duas empresas (dois tenants) e dois usuários admin:
+
+```bash
+# Logado como tenant A — copie o cookie de sessão do browser
+curl -s -o /dev/null -w "%{http_code}" \
+  -X PATCH "http://localhost:3000/api/contacts/<ID-DO-TENANT-B>" \
+  -H "Cookie: authjs.session-token=..." \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Hack"}'
+```
+
+**Esperado:** `404` (registro não encontrado no tenant da sessão), nunca `200` alterando dado de outro tenant.
+
+### 7.4 Cliente — `apiFetch` em 401
+
+1. Com sessão válida, abra `/contacts` e o DevTools → **Network**.
+2. Apague o cookie de sessão **sem** recarregar a página.
+3. Clique em **Editar** em um contato e salve.
+
+**Esperado:** redirect para login com `reason=session_expired` (sem tela branca ou JSON de erro cru).
+
+### 7.5 Webhook — spoof de tenant em produção
+
+Em `NODE_ENV=production` (ou deploy Vercel):
+
+```bash
+curl -X POST "https://seu-dominio.com/api/webhooks/whatsapp?tenantId=<UUID-ALEATORIO>" \
+  -H "Content-Type: application/json" -d '{}'
+```
+
+**Esperado:** tenant **não** resolvido só pelo query param; mensagem só entra se as credenciais do payload baterem com uma integração cadastrada.
+
+Em **dev**, `?tenantId=<UUID>` continua válido para testes locais (ver seção 5).
+
+### 7.6 Demo seed bloqueado em produção
+
+```bash
+curl -X POST "https://seu-dominio.com/api/demo/seed"
+```
+
+**Esperado:** `404` em produção.
+
+---
+
+## 8. Sequência de Teste Recomendada (Fluxo Completo)
 
 Para validar todo o sistema de uma vez, siga esta ordem:
 
@@ -724,13 +873,15 @@ Para validar todo o sistema de uma vez, siga esta ordem:
                        → Enviar mensagem manual
 13. /tasks           → verificar tarefas criadas pela IA
 14. /dashboard       → verificar KPIs atualizados + "Ações da IA hoje"
-15. /settings/integrations → preencher credenciais WhatsApp e Instagram
+15. /automations      → confirmar logs após contato, conversa e oportunidade
+16. /settings/integrations → preencher credenciais WhatsApp e Instagram
                        → testar webhook sem ?tenantId (resolução automática)
+17. Webhook duplicado → reenviar mesmo wamid → confirmar idempotência
 ```
 
 ---
 
-## 8. Obter Credenciais de Integração
+## 9. Obter Credenciais de Integração
 
 ### WhatsApp
 
@@ -756,4 +907,4 @@ openssl rand -base64 32
 
 ---
 
-*Última atualização: 2026-05-18 | CRM PLUS v1.0.0*
+*Última atualização: 2026-05-18 | CRM PLUS v1.0.2*
