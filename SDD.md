@@ -888,7 +888,7 @@ O isolamento de dados entre empresas é garantido por:
 | `tenantWhere(session, id)` | Prisma `update`/`delete` por ID |
 | `requirePageSession()` | SSR — redirect `/login?reason=session_expired` |
 | `requirePagePermission()` | SSR — redirect `/dashboard?reason=forbidden` |
-| `handleApiAuthResponse()` | Client — redirect em 401/403 |
+| `handleApiAuthResponse()` | Client — `lib/auth/handle-api-auth-response.ts` (sem importar Prisma) |
 
 **Cliente (`lib/api/client-fetch.ts`):**
 - `apiFetch()` — envolve `fetch` e chama `handleApiAuthResponse` antes de parsear JSON

@@ -1,6 +1,6 @@
 "use client";
 
-import { handleApiAuthResponse } from "@/lib/auth/get-session";
+import { handleApiAuthResponse } from "@/lib/auth/handle-api-auth-response";
 
 /** Disparado quando a sessão expirou ou o usuário não tem permissão (redirect em andamento). */
 export class ApiAuthRedirectError extends Error {
