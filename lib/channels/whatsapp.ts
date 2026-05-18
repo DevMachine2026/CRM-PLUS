@@ -22,7 +22,7 @@ export interface WASendResult {
   deliveryError?: string;
 }
 
-function getConfig(): WhatsAppConfig | null {
+function getEnvConfig(): WhatsAppConfig | null {
   const accessToken   = process.env.WHATSAPP_ACCESS_TOKEN;
   const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
   if (!accessToken || !phoneNumberId) return null;
@@ -33,12 +33,14 @@ function getConfig(): WhatsAppConfig | null {
  * Sends a text message via WhatsApp Cloud API.
  * @param to  Recipient phone in E.164 format (e.g. "5511999998888")
  * @param text Message body
+ * @param config Optional tenant credentials; falls back to env when omitted
  */
 export async function sendWhatsAppMessage(
   to:   string,
-  text: string
+  text: string,
+  config?: WhatsAppConfig | null,
 ): Promise<WASendResult> {
-  const cfg = getConfig();
+  const cfg = config ?? getEnvConfig();
 
   if (!cfg) {
     return { externalId: null, externalStatus: "simulated" };

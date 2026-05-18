@@ -42,6 +42,7 @@ import { processInboundMessage } from "@/lib/webhooks/process-inbound";
 import { isSignatureRequired, getWebhookSecret, verifySignature } from "@/lib/webhooks/verify-signature";
 import { checkRateLimit, WEBHOOK_LIMIT } from "@/lib/rate-limit";
 import { resolveWhatsAppTenant } from "@/lib/webhooks/resolve-tenant";
+import { isValidWebhookVerifyToken } from "@/lib/integrations/verify-webhook-token";
 
 // ── Meta GET verification challenge ─────────────────────────────────────────
 export async function GET(req: NextRequest) {
@@ -51,9 +52,8 @@ export async function GET(req: NextRequest) {
   const challenge = searchParams.get("hub.challenge");
 
   if (mode === "subscribe" && challenge) {
-    const expectedToken = process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN;
-    // When env var is set, enforce token match; otherwise accept any (dev/sim)
-    if (expectedToken && token !== expectedToken) {
+    const valid = await isValidWebhookVerifyToken("whatsapp", token);
+    if (!valid) {
       return NextResponse.json({ error: "Invalid verify token." }, { status: 403 });
     }
     return new NextResponse(challenge, { status: 200 });

@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db/client";
 import { aiComplete, parseAIJson } from "@/lib/ai/provider";
+import { getTenantAiSystemPrompt } from "@/lib/ai/tenant-prompt";
 
 export type IntentType =
   | "interest"
@@ -127,8 +128,9 @@ export async function detectIntent(
   ];
 
   try {
+    const system = await getTenantAiSystemPrompt(input.tenantId, SYSTEM_PROMPT);
     const result = await aiComplete({
-      system:    SYSTEM_PROMPT,
+      system,
       user:      buildUserPrompt([...messages].reverse()),
       maxTokens: 200,
     });

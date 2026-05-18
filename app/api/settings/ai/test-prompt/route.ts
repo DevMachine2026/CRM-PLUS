@@ -6,20 +6,22 @@ import {
   TONE_LABELS,
   type TenantAiSettings,
 } from "@/lib/ai/tenant-settings";
+import { buildTenantSystemPrompt } from "@/lib/ai/tenant-prompt";
 
 function buildSimulatedReply(settings: TenantAiSettings): string {
   const tone = settings.agentTone
     ? TONE_LABELS[settings.agentTone]
     : "Profissional";
-  const ctx = settings.companyContext?.trim()
-    ? `\n\nContexto: ${settings.companyContext.trim()}`
-    : "";
+  const persona = buildTenantSystemPrompt(
+    settings,
+    "Responda em uma frase de boas-vindas a um lead que acabou de entrar em contato.",
+  );
 
   return (
-    `Olá! Sou ${settings.agentName}, assistente comercial (tom ${tone}). ` +
-    `Recebi sua mensagem e posso ajudar com informações sobre nossos produtos e próximos passos no funil.` +
-    ctx +
-    `\n\n[Simulação — nenhuma mensagem real foi enviada ao cliente.]`
+    `Olá! Sou ${settings.agentName} (tom ${tone}). ` +
+    `Recebi sua mensagem e posso ajudar com informações sobre nossos produtos e próximos passos no funil.\n\n` +
+    `[Simulação alinhada ao prompt do tenant — nenhuma mensagem real foi enviada.]\n\n` +
+    `---\nPrévia do system prompt:\n${persona.slice(0, 280)}…`
   );
 }
 

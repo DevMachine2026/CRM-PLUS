@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db/client";
 import { aiComplete, parseAIJson } from "@/lib/ai/provider";
+import { getTenantAiSystemPrompt } from "@/lib/ai/tenant-prompt";
 
 export interface ClassifyLeadInput {
   contactId:       string;
@@ -95,8 +96,9 @@ export async function classifyLead(input: ClassifyLeadInput): Promise<ClassifyLe
   let outputTokens  = 0;
 
   try {
+    const system = await getTenantAiSystemPrompt(input.tenantId, SYSTEM_PROMPT);
     const aiResult = await aiComplete({
-      system:    SYSTEM_PROMPT,
+      system,
       user:      buildPrompt(input),
       maxTokens: 250,
       tier:      "fast",

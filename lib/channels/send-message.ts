@@ -1,38 +1,52 @@
 import { sendWhatsAppMessage } from "./whatsapp";
 import { sendInstagramMessage } from "./instagram";
+import {
+  loadWhatsAppCredentials,
+  loadInstagramCredentials,
+} from "@/lib/integrations/credentials";
 
 export interface OutboundPayload {
-  channel:        "whatsapp" | "instagram" | "manual" | "email";
-  content:        string;
-  recipientPhone?: string;   // E.164 — required for whatsapp
-  recipientPsid?:  string;   // Instagram PSID — required for instagram
+  tenantId: string;
+  channel: "whatsapp" | "instagram" | "manual" | "email";
+  content: string;
+  recipientPhone?: string;
+  recipientPsid?: string;
 }
 
 export interface ChannelSendResult {
-  externalId:     string | null;
-  externalStatus: string;  // sent | failed | simulated | skipped
+  externalId: string | null;
+  externalStatus: string;
   deliveryError?: string;
 }
 
 export async function sendChannelMessage(
-  payload: OutboundPayload
+  payload: OutboundPayload,
 ): Promise<ChannelSendResult> {
-  const { channel, content } = payload;
+  const { channel, content, tenantId } = payload;
 
   if (channel === "whatsapp") {
     if (!payload.recipientPhone) {
-      return { externalId: null, externalStatus: "failed", deliveryError: "recipientPhone required for whatsapp" };
+      return {
+        externalId: null,
+        externalStatus: "failed",
+        deliveryError: "recipientPhone required for whatsapp",
+      };
     }
-    return sendWhatsAppMessage(payload.recipientPhone, content);
+    const cfg = await loadWhatsAppCredentials(tenantId);
+    return sendWhatsAppMessage(payload.recipientPhone, content, cfg);
   }
 
   if (channel === "instagram") {
     if (!payload.recipientPsid) {
-      return { externalId: null, externalStatus: "failed", deliveryError: "recipientPsid required for instagram" };
+      return {
+        externalId: null,
+        externalStatus: "failed",
+        deliveryError: "recipientPsid required for instagram",
+      };
     }
-    return sendInstagramMessage(payload.recipientPsid, content);
+    const cfg = await loadInstagramCredentials(tenantId);
+    return sendInstagramMessage(payload.recipientPsid, content, cfg);
   }
 
-  // manual / email / unknown — no external send
   return { externalId: null, externalStatus: "skipped" };
 }

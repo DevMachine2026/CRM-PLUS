@@ -34,7 +34,7 @@ const WHATSAPP_FIELDS: Record<string, FieldHelp> = {
   verifyToken: {
     label: "Verify Token (webhook)",
     placeholder: "Crie uma senha forte (ex.: crm_plus_verify_2024)",
-    help: "Texto secreto que você define aqui e repete igual ao cadastrar o webhook no app Meta (campo Verify Token).",
+    help: "Texto secreto que você define aqui e repete igual no app Meta. O CRM valida este token automaticamente na verificação GET do webhook (hub.verify_token).",
     docUrl: "https://developers.facebook.com/docs/graph-api/webhooks/getting-started#verification-requests",
     docLabel: "Verificação do webhook",
   },
@@ -59,7 +59,7 @@ const INSTAGRAM_FIELDS: Record<string, FieldHelp> = {
   verifyToken: {
     label: "Verify Token (webhook)",
     placeholder: "Mesmo valor usado no painel Meta",
-    help: "Deve ser idêntico ao Verify Token configurado na assinatura do webhook do app.",
+    help: "Deve ser idêntico ao Verify Token no painel Meta. Usado na verificação automática do endpoint de webhook deste tenant.",
     docUrl: "https://developers.facebook.com/docs/graph-api/webhooks/getting-started#verification-requests",
     docLabel: "Verificação do webhook",
   },

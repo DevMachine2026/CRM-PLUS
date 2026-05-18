@@ -96,6 +96,7 @@ export async function POST(
   if (direction === "outbound" && conv.channel !== "manual") {
     const channel = conv.channel as "whatsapp" | "instagram" | "email";
     const sendResult = await sendChannelMessage({
+      tenantId:        session.tenantId,
       channel,
       content:         parsed.data.content,
       recipientPhone:  conv.contact?.phone  ?? undefined,

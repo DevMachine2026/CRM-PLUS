@@ -22,7 +22,7 @@ export interface IGSendResult {
   deliveryError?: string;
 }
 
-function getConfig(): InstagramConfig | null {
+function getEnvConfig(): InstagramConfig | null {
   const accessToken = process.env.INSTAGRAM_ACCESS_TOKEN;
   const pageId      = process.env.INSTAGRAM_PAGE_ID;
   if (!accessToken || !pageId) return null;
@@ -33,12 +33,14 @@ function getConfig(): InstagramConfig | null {
  * Sends a text message via Instagram Messaging API.
  * @param recipientPsid  Page-Scoped User ID of the recipient
  * @param text           Message body
+ * @param config Optional tenant credentials; falls back to env when omitted
  */
 export async function sendInstagramMessage(
   recipientPsid: string,
-  text:          string
+  text:          string,
+  config?: InstagramConfig | null,
 ): Promise<IGSendResult> {
-  const cfg = getConfig();
+  const cfg = config ?? getEnvConfig();
 
   if (!cfg) {
     return { externalId: null, externalStatus: "simulated" };

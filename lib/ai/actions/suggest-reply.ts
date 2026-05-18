@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db/client";
 import { aiComplete, parseAIJson } from "@/lib/ai/provider";
+import { getTenantAiSystemPrompt } from "@/lib/ai/tenant-prompt";
 
 export interface SuggestReplyInput {
   conversationId: string;
@@ -101,8 +102,9 @@ export async function suggestReply(
   const orderedMessages = [...messages].reverse(); // chronological for prompt
 
   try {
+    const system = await getTenantAiSystemPrompt(input.tenantId, SYSTEM_PROMPT);
     const result = await aiComplete({
-      system:    SYSTEM_PROMPT,
+      system,
       user:      buildUserPrompt(orderedMessages, input.contactName),
       maxTokens: 300,
     });

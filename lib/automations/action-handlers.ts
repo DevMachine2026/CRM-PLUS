@@ -35,6 +35,7 @@ async function handleSendWhatsApp(
     }
 
     const result = await sendChannelMessage({
+      tenantId: payload.tenantId,
       channel: "whatsapp",
       content: action.message,
       recipientPhone: contact.phone,
@@ -65,6 +66,7 @@ async function handleSendInstagram(
     }
 
     const result = await sendChannelMessage({
+      tenantId: payload.tenantId,
       channel: "instagram",
       content: action.message,
       recipientPsid: contact.externalId,
