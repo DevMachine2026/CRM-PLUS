@@ -75,7 +75,10 @@ export default async function InboxPage({
     detectedIntent: string | null; summaryText: string | null;
     contact: { id: string; name: string; email: string | null } | null;
     assignedUser: { id: string; name: string } | null;
-    messages: { id: string; content: string; direction: string; senderType: string; sentAt: Date }[];
+    messages: {
+      id: string; content: string; direction: string; senderType: string;
+      type: string; sentAt: Date; externalStatus: string | null; deliveryError: string | null;
+    }[];
   } | null = null;
 
   if (p.convId) {
@@ -90,8 +93,9 @@ export default async function InboxPage({
         messages: {
           orderBy: { sentAt: "asc" },
           select: {
-            id: true, content: true, direction: true,
+            id: true, content: true, direction: true, type: true,
             senderType: true, sentAt: true,
+            externalStatus: true, deliveryError: true,
           },
         },
       },

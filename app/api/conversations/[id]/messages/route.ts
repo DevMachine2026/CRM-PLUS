@@ -30,9 +30,9 @@ export async function GET(
     where:   { conversationId: id, tenantId: session.tenantId },
     orderBy: { sentAt: "asc" },
     select: {
-      id: true, content: true, direction: true,
+      id: true, content: true, direction: true, type: true,
       senderType: true, senderId: true,
-      externalId: true, externalStatus: true,
+      externalId: true, externalStatus: true, deliveryError: true,
       sentAt: true, createdAt: true,
     },
   });
@@ -123,7 +123,12 @@ export async function POST(
     }
 
     return NextResponse.json({
-      data: { ...message, externalId: sendResult.externalId, externalStatus: sendResult.externalStatus },
+      data: {
+        ...message,
+        externalId:     sendResult.externalId,
+        externalStatus: sendResult.externalStatus,
+        deliveryError:  sendResult.deliveryError ?? null,
+      },
     }, { status: 201 });
   }
 

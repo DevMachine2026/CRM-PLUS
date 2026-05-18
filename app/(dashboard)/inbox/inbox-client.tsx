@@ -2,7 +2,7 @@
 
 import { apiFetch } from "@/lib/api/client-fetch";
 
-import { useState, useTransition, useRef, useEffect } from "react";
+import { useState, useTransition, useRef, useEffect, useOptimistic } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   MessageSquare, Plus, Send, Loader2, Bot,
@@ -23,13 +23,10 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { MessageBubble } from "@/components/inbox/message-bubble";
+import { type ConvMessage, normalizeMessage } from "@/lib/inbox/message-types";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-
-type ConvMessage = {
-  id: string; content: string; direction: string;
-  senderType: string; sentAt: string;
-};
 
 type ConvSummary = {
   id: string; channel: string; status: string; subject: string | null;
@@ -93,10 +90,6 @@ function fmtTime(iso: string | null) {
     return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
   return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
 }
-function fmtMsgTime(iso: string) {
-  return new Date(iso).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
-}
-
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function InboxClient({
@@ -108,12 +101,22 @@ export function InboxClient({
   const [isPending, startTransition] = useTransition();
 
   const [conversations, setConversations] = useState<ConvSummary[]>(initialConvs);
-  const [active,        setActive]        = useState<ActiveConv | null>(initialActive);
-  const [loadingMsgs,   setLoadingMsgs]   = useState(false);
+  const [active, setActive] = useState<ActiveConv | null>(
+    initialActive
+      ? { ...initialActive, messages: initialActive.messages.map(normalizeMessage) }
+      : null,
+  );
+  const [loadingMsgs, setLoadingMsgs] = useState(false);
+
+  const baseMessages = active?.messages ?? [];
+  const [displayMessages, addOptimisticMessage] = useOptimistic(
+    baseMessages,
+    (state, newMsg: ConvMessage) => [...state, newMsg],
+  );
 
   // Message input
   const [msgContent, setMsgContent] = useState("");
-  const [sending,    setSending]    = useState(false);
+  const [isSending,  setIsSending]  = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // AI panel
@@ -143,7 +146,7 @@ export function InboxClient({
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [active?.messages.length]);
+  }, [displayMessages.length, isSending]);
 
   // Reset AI state when switching conversations; pre-fill from server data
   useEffect(() => {
@@ -180,7 +183,10 @@ export function InboxClient({
     try {
       const res  = await apiFetch(`/api/conversations/${conv.id}`);
       const json = await res.json();
-      setActive(json.data);
+      setActive({
+        ...json.data,
+        messages: (json.data.messages ?? []).map(normalizeMessage),
+      });
       const p = new URLSearchParams(sp.toString());
       p.set("convId", conv.id);
       router.replace(`?${p.toString()}`, { scroll: false });
@@ -189,26 +195,80 @@ export function InboxClient({
     }
   }
 
-  async function sendMessage() {
-    if (!active || !msgContent.trim()) return;
-    setSending(true);
-    try {
-      const res  = await apiFetch(`/api/conversations/${active.id}/messages`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: msgContent.trim(), direction: "outbound" }),
-      });
-      const json = await res.json();
-      if (!res.ok) return;
-      const newMsg: ConvMessage = json.data;
-      setActive((prev) => prev ? { ...prev, messages: [...prev.messages, newMsg] } : prev);
-      setMsgContent("");
-      setConversations((prev) => prev.map((c) => c.id === active.id
-        ? { ...c, lastMessageAt: newMsg.sentAt, messages: [{ content: newMsg.content, direction: newMsg.direction, sentAt: newMsg.sentAt }] }
-        : c
-      ));
-    } finally {
-      setSending(false);
-    }
+  function patchConversationPreview(msg: ConvMessage) {
+    if (!active) return;
+    setConversations((prev) => prev.map((c) => c.id === active.id
+      ? { ...c, lastMessageAt: msg.sentAt, messages: [{ content: msg.content, direction: msg.direction, sentAt: msg.sentAt }] }
+      : c,
+    ));
+  }
+
+  function sendMessage(contentOverride?: string) {
+    const text = (contentOverride ?? msgContent).trim();
+    if (!active || !text) return;
+
+    const tempId = `pending-${Date.now()}`;
+    const optimisticMsg: ConvMessage = {
+      id: tempId,
+      content: text,
+      direction: "outbound",
+      senderType: "user",
+      sentAt: new Date().toISOString(),
+      type: "text",
+      pending: true,
+      externalStatus: "sending",
+    };
+
+    if (!contentOverride) setMsgContent("");
+    setIsSending(true);
+
+    startTransition(async () => {
+      addOptimisticMessage(optimisticMsg);
+      try {
+        const res = await apiFetch(`/api/conversations/${active.id}/messages`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content: text, direction: "outbound" }),
+        });
+        const json = await res.json();
+        if (!res.ok) {
+          const failed: ConvMessage = {
+            ...optimisticMsg,
+            pending: false,
+            failed: true,
+            externalStatus: "failed",
+            deliveryError: json.error ?? "Erro ao enviar.",
+          };
+          setActive((prev) => prev ? { ...prev, messages: [...prev.messages, failed] } : prev);
+          return;
+        }
+        const confirmed = normalizeMessage(json.data);
+        setActive((prev) => prev ? {
+          ...prev,
+          messages: [...prev.messages.filter((m) => m.id !== tempId && !m.pending), confirmed],
+        } : prev);
+        patchConversationPreview(confirmed);
+      } catch {
+        const failed: ConvMessage = {
+          ...optimisticMsg,
+          pending: false,
+          failed: true,
+          externalStatus: "failed",
+          deliveryError: "Erro de conexão.",
+        };
+        setActive((prev) => prev ? { ...prev, messages: [...prev.messages, failed] } : prev);
+      } finally {
+        setIsSending(false);
+      }
+    });
+  }
+
+  function retryMessage(msg: ConvMessage) {
+    setActive((prev) => prev
+      ? { ...prev, messages: prev.messages.filter((m) => m.id !== msg.id) }
+      : prev,
+    );
+    sendMessage(msg.content);
   }
 
   async function updateStatus(status: string) {
@@ -461,6 +521,11 @@ export function InboxClient({
                         <Mail className="w-3 h-3" />{active.contact.email}
                       </span>
                     )}
+                    {isSending && (
+                      <span className="flex items-center gap-1 text-xs text-muted-foreground animate-pulse">
+                        <Clock className="w-3 h-3" /> Enviando...
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -513,38 +578,18 @@ export function InboxClient({
 
               {/* Messages */}
               <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-muted/20">
-                {active.messages.length === 0 && (
+                {displayMessages.length === 0 && !isSending && (
                   <p className="text-center text-xs text-muted-foreground py-6">
                     Nenhuma mensagem ainda. Escreva a primeira.
                   </p>
                 )}
-                {active.messages.map((msg) => {
-                  const isOut = msg.direction === "outbound";
-                  const isBot = msg.senderType === "bot";
-                  return (
-                    <div key={msg.id} className={cn("flex gap-2", isOut ? "justify-end" : "justify-start")}>
-                      {!isOut && (
-                        <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center shrink-0 mt-0.5">
-                          {isBot
-                            ? <Bot className="w-3.5 h-3.5 text-purple-600" />
-                            : <User className="w-3.5 h-3.5 text-slate-500" />}
-                        </div>
-                      )}
-                      <div className={cn(
-                        "max-w-[70%] rounded-2xl px-4 py-2 text-sm shadow-sm",
-                        isOut
-                          ? "bg-primary text-primary-foreground rounded-tr-sm"
-                          : "bg-background border rounded-tl-sm"
-                      )}>
-                        <p className="leading-relaxed whitespace-pre-wrap break-words">{msg.content}</p>
-                        <p className={cn("text-[10px] mt-1 text-right",
-                          isOut ? "text-primary-foreground/70" : "text-muted-foreground")}>
-                          {fmtMsgTime(msg.sentAt)}{isBot && " · IA"}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
+                {displayMessages.map((msg) => (
+                  <MessageBubble
+                    key={msg.id}
+                    msg={msg}
+                    onRetry={msg.failed ? retryMessage : undefined}
+                  />
+                ))}
                 <div ref={messagesEndRef} />
               </div>
 
@@ -586,9 +631,9 @@ export function InboxClient({
                       if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
                     }}
                   />
-                  <Button size="icon" disabled={!msgContent.trim() || sending}
-                    onClick={sendMessage} className="h-11 w-11 shrink-0">
-                    {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                  <Button size="icon" disabled={!msgContent.trim() || isSending}
+                    onClick={() => sendMessage()} className="h-11 w-11 shrink-0">
+                    {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                   </Button>
                 </div>
                 {/* AI Suggestions */}

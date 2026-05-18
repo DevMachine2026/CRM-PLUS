@@ -37,8 +37,9 @@ export async function GET(
       messages: {
         orderBy: { sentAt: "asc" },
         select: {
-          id: true, content: true, direction: true,
+          id: true, content: true, direction: true, type: true,
           senderType: true, senderId: true, sentAt: true,
+          externalStatus: true, deliveryError: true,
         },
       },
     },
