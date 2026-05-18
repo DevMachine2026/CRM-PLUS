@@ -6,6 +6,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Search, Pencil, Trash2, Loader2, TrendingUp, Trophy, XCircle, Package, LayoutList, Kanban } from "lucide-react";
 import { KanbanBoard } from "./kanban-board";
+import type { KanbanOpportunity } from "@/lib/kanban/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -58,20 +59,7 @@ interface OppProduct {
   product: { id: string; name: string; category: string | null };
 }
 
-interface Opportunity {
-  id: string;
-  title: string;
-  value: unknown;
-  status: OppStatus;
-  expectedCloseAt: Date | null;
-  closedAt: Date | null;
-  createdAt: Date;
-  contact: { id: string; name: string } | null;
-  company: { id: string; name: string } | null;
-  stage: { id: string; name: string; probability: number };
-  assignedUser: { id: string; name: string } | null;
-  products: OppProduct[];
-}
+type Opportunity = Omit<KanbanOpportunity, "products"> & { products: OppProduct[] };
 
 interface CatalogProduct {
   id: string;
@@ -160,6 +148,9 @@ export function OpportunitiesClient({
   const [editUnitPrice, setEditUnitPrice] = useState("");
 
   const defaultPipeline = pipelines.find((p) => p.isDefault) ?? pipelines[0];
+  const activePipeline = pipelineFilter
+    ? pipelines.find((p) => p.id === pipelineFilter) ?? defaultPipeline
+    : defaultPipeline;
   const selectedPipelineStages = pipelines.find((p) => p.id === form.pipelineId)?.stages ?? [];
 
   function buildParams(overrides: Record<string, string> = {}) {
@@ -271,13 +262,19 @@ export function OpportunitiesClient({
     startTransition(() => router.refresh());
   }
 
-  async function moveStage(oppId: string, stageId: string) {
-    await apiFetch(`/api/opportunities/${oppId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ stageId }),
-    });
-    startTransition(() => router.refresh());
+  async function moveStage(oppId: string, stageId: string): Promise<boolean> {
+    try {
+      const res = await apiFetch(`/api/opportunities/${oppId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stageId }),
+      });
+      if (!res.ok) return false;
+      startTransition(() => router.refresh());
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   function openProductDialog(o: Opportunity) {
@@ -420,7 +417,8 @@ export function OpportunitiesClient({
       {view === "kanban" && (
         <KanbanBoard
           opportunities={opportunities}
-          stages={defaultPipeline?.stages ?? []}
+          stages={activePipeline?.stages ?? []}
+          isLoading={isPending}
           canEdit={canEdit}
           canCreate={canCreate}
           onMoveStage={moveStage}

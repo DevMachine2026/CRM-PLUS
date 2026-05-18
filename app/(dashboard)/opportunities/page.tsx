@@ -4,6 +4,7 @@ import { can } from "@/lib/auth/permissions";
 import { redirect } from "next/navigation";
 import { ensureDefaultPipeline } from "@/lib/db/ensure-default-pipeline";
 import { OpportunitiesClient } from "./opportunities-client";
+import { mapOpportunityForKanban } from "@/lib/kanban/map-opportunity";
 
 export default async function OpportunitiesPage({
   searchParams,
@@ -44,10 +45,24 @@ export default async function OpportunitiesPage({
         expectedCloseAt: true,
         closedAt: true,
         createdAt: true,
-        contact: { select: { id: true, name: true } },
+        updatedAt: true,
+        contact: {
+          select: {
+            id: true,
+            name: true,
+            updatedAt: true,
+            tags: { select: { tag: { select: { id: true, name: true, color: true } } } },
+            conversations: {
+              orderBy: { lastMessageAt: "desc" },
+              take: 1,
+              select: { channel: true, lastMessageAt: true },
+            },
+          },
+        },
         company: { select: { id: true, name: true } },
         stage: { select: { id: true, name: true, probability: true } },
         assignedUser: { select: { id: true, name: true } },
+        tags: { select: { tag: { select: { id: true, name: true, color: true } } } },
         products: {
           orderBy: { createdAt: "asc" as const },
           select: {
@@ -96,9 +111,11 @@ export default async function OpportunitiesPage({
     }),
   ]);
 
+  const kanbanOpportunities = opportunities.map(mapOpportunityForKanban);
+
   return (
     <OpportunitiesClient
-      opportunities={opportunities}
+      opportunities={kanbanOpportunities}
       total={total}
       page={page}
       search={search}
