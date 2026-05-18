@@ -5,8 +5,18 @@ import { apiFetch } from "@/lib/api/client-fetch";
 import { useState, useTransition } from "react";
 import {
   Zap, Plus, Pencil, Trash2, Loader2, CheckCircle2,
-  XCircle, Clock, Activity, ChevronRight, X,
+  XCircle, Activity, ChevronRight, X, Bot,
 } from "lucide-react";
+import {
+  AutomationLogTimeline,
+  type AutomationLogView,
+} from "@/components/automations/automation-log-timeline";
+import {
+  AiActivityPanel,
+  type AiLogView,
+} from "@/components/automations/ai-activity-panel";
+import type { AutomationTrigger } from "@/lib/automations/types";
+import type { ActionsRunRaw } from "@/lib/automations/log-timeline";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,7 +28,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "next/navigation";
 import type {
   TriggerType, ActionType, ActionConfig, Condition, ConditionOperator,
-  AutomationTrigger,
 } from "@/lib/automations/types";
 import {
   TRIGGER_LABELS, ACTION_LABELS, CONDITION_OPERATOR_LABELS,
@@ -39,22 +48,14 @@ type Automation = {
   createdAt: string;
 };
 
-type AutomationLog = {
-  id: string;
-  entityType: string | null;
-  entityId: string | null;
-  status: string;
-  error: string | null;
-  actionsRun: unknown;
-  createdAt: string;
-  automation: { id: string; name: string } | null;
-};
+type AutomationLog = AutomationLogView;
 
 type Stage = { id: string; name: string; pipelineName: string };
 
 type Props = {
   automations: Automation[];
   logs: AutomationLog[];
+  aiLogs: AiLogView[];
   stages: Stage[];
   canCreate: boolean;
   canEdit: boolean;
@@ -79,12 +80,6 @@ const CONDITION_OPERATORS: ConditionOperator[] = [
   "eq", "neq", "gt", "lt", "gte", "lte",
   "contains", "not_contains", "is_empty", "is_not_empty",
 ];
-
-const STATUS_COLORS: Record<string, string> = {
-  success: "text-green-600",
-  failed: "text-red-500",
-  skipped: "text-yellow-500",
-};
 
 function timeAgo(iso: string) {
   const diff = Date.now() - new Date(iso).getTime();
@@ -256,9 +251,12 @@ function ActionEditor({
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export function AutomationsClient({ automations, logs, stages, canCreate, canEdit, canDelete }: Props) {
+export function AutomationsClient({
+  automations, logs, aiLogs, stages, canCreate, canEdit, canDelete,
+}: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [logTab, setLogTab] = useState<"automations" | "ai">("automations");
 
   // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -528,46 +526,64 @@ export function AutomationsClient({ automations, logs, stages, canCreate, canEdi
 
         {/* Execution log */}
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
               <Activity className="h-4 w-4 text-blue-500" />
-              Histórico de execuções
+              Painel de execução
             </CardTitle>
+            <div className="flex gap-1 mt-3 border-b -mb-px">
+              <button
+                type="button"
+                onClick={() => setLogTab("automations")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border-b-2 transition-colors ${
+                  logTab === "automations"
+                    ? "border-primary text-foreground"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Zap className="h-3.5 w-3.5" />
+                Automações ({logs.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setLogTab("ai")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border-b-2 transition-colors ${
+                  logTab === "ai"
+                    ? "border-primary text-foreground"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Bot className="h-3.5 w-3.5" />
+                IA ({aiLogs.length})
+              </button>
+            </div>
           </CardHeader>
           <CardContent>
-            {logs.length === 0 ? (
+            {logTab === "automations" ? (
+            logs.length === 0 ? (
               <p className="text-sm text-muted-foreground py-6 text-center">
                 Nenhuma execução registrada ainda.
               </p>
             ) : (
-              <div className="divide-y">
-                {logs.map((log) => {
-                  const actionsRun = log.actionsRun as string[];
-                  return (
-                    <div key={log.id} className="flex items-start gap-3 py-2.5">
-                      <div className={`mt-0.5 shrink-0 ${STATUS_COLORS[log.status] ?? "text-muted-foreground"}`}>
-                        {log.status === "success" && <CheckCircle2 className="h-4 w-4" />}
-                        {log.status === "failed"  && <XCircle className="h-4 w-4" />}
-                        {log.status === "skipped" && <Clock className="h-4 w-4" />}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-medium truncate">
-                          {log.automation?.name ?? "Automação removida"}
-                        </p>
-                        {actionsRun.length > 0 && (
-                          <p className="text-[11px] text-muted-foreground truncate">
-                            {actionsRun.map((t) => ACTION_LABELS[t as ActionType] ?? t).join(", ")}
-                          </p>
-                        )}
-                        {log.error && (
-                          <p className="text-[11px] text-red-500 truncate">{log.error}</p>
-                        )}
-                        <p className="text-[11px] text-muted-foreground mt-0.5">{timeAgo(log.createdAt)}</p>
-                      </div>
-                    </div>
-                  );
-                })}
+              <div className="space-y-3 max-h-[520px] overflow-y-auto pr-1">
+                {logs.map((log) => (
+                  <div key={log.id}>
+                    <AutomationLogTimeline
+                      log={{
+                        ...log,
+                        actionsRun: log.actionsRun as ActionsRunRaw,
+                        trigger: log.trigger as AutomationTrigger | null | undefined,
+                      }}
+                    />
+                    <p className="text-[10px] text-muted-foreground text-right mt-1 px-1">
+                      {timeAgo(log.createdAt)}
+                    </p>
+                  </div>
+                ))}
               </div>
+            )
+            ) : (
+              <AiActivityPanel logs={aiLogs} />
             )}
           </CardContent>
         </Card>

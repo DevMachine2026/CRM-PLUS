@@ -16,6 +16,8 @@ export interface ActionResult {
   type: string;
   success: boolean;
   error?: string;
+  /** Texto amigável para timeline de logs */
+  detail?: string;
 }
 
 async function handleSendWhatsApp(
@@ -42,7 +44,7 @@ async function handleSendWhatsApp(
       return { type: action.type, success: false, error: result.deliveryError };
     }
 
-    return { type: action.type, success: true };
+    return { type: action.type, success: true, detail: "Mensagem WhatsApp enviada" };
   } catch (err) {
     return { type: action.type, success: false, error: String(err) };
   }
@@ -72,7 +74,7 @@ async function handleSendInstagram(
       return { type: action.type, success: false, error: result.deliveryError };
     }
 
-    return { type: action.type, success: true };
+    return { type: action.type, success: true, detail: "Mensagem Instagram enviada" };
   } catch (err) {
     return { type: action.type, success: false, error: String(err) };
   }
@@ -110,7 +112,11 @@ async function handleCreateTask(
       },
     });
 
-    return { type: action.type, success: true };
+    return {
+      type: action.type,
+      success: true,
+      detail: `Follow-up agendado: ${action.title}`,
+    };
   } catch (err) {
     return { type: action.type, success: false, error: String(err) };
   }
@@ -135,7 +141,7 @@ async function handleUpdateContactStatus(
       data: { status: action.status },
     });
 
-    return { type: action.type, success: true };
+    return { type: action.type, success: true, detail: `Status atualizado para ${action.status}` };
   } catch (err) {
     return { type: action.type, success: false, error: String(err) };
   }
@@ -167,7 +173,7 @@ async function handleAddTag(
       update: {},
     });
 
-    return { type: action.type, success: true };
+    return { type: action.type, success: true, detail: `Tag "${action.tagName}" aplicada` };
   } catch (err) {
     return { type: action.type, success: false, error: String(err) };
   }
@@ -194,7 +200,7 @@ async function handleCreateActivity(
       },
     });
 
-    return { type: action.type, success: true };
+    return { type: action.type, success: true, detail: `Atividade registrada: ${action.title}` };
   } catch (err) {
     return { type: action.type, success: false, error: String(err) };
   }
@@ -225,7 +231,7 @@ async function handleUpdateOpportunityStage(
       data: { stageId: action.stageId },
     });
 
-    return { type: action.type, success: true };
+    return { type: action.type, success: true, detail: `Movido para etapa ${stage.name}` };
   } catch (err) {
     return { type: action.type, success: false, error: String(err) };
   }

@@ -3,6 +3,7 @@ import { requirePageSession, requirePagePermission } from "@/lib/auth/get-sessio
 import { can } from "@/lib/auth/permissions";
 import { redirect } from "next/navigation";
 import { SettingsClient } from "./settings-client";
+import { parseTenantAiSettings } from "@/lib/ai/tenant-settings";
 
 export default async function SettingsPage() {
   const session = await requirePageSession();
@@ -13,7 +14,7 @@ export default async function SettingsPage() {
   const [tenant, users] = await Promise.all([
     prisma.tenant.findUnique({
       where: { id: tenantId },
-      select: { id: true, name: true, slug: true, plan: true, status: true, createdAt: true },
+      select: { id: true, name: true, slug: true, plan: true, status: true, settings: true, createdAt: true },
     }),
     can(session.role, "read", "team")
       ? prisma.user.findMany({
@@ -32,6 +33,7 @@ export default async function SettingsPage() {
   return (
     <SettingsClient
       tenant={{ ...tenant, createdAt: tenant.createdAt.toISOString() }}
+      aiSettings={parseTenantAiSettings(tenant.settings)}
       users={users.map((u) => ({
         ...u,
         lastLoginAt: u.lastLoginAt?.toISOString() ?? null,

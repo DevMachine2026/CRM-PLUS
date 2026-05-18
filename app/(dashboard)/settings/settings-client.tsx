@@ -24,6 +24,8 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { AiAgentConfig } from "@/components/settings/ai-agent-config";
+import type { TenantAiSettings } from "@/lib/ai/tenant-settings";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -40,6 +42,7 @@ type TeamUser = {
 
 type Props = {
   tenant:             Tenant;
+  aiSettings:         TenantAiSettings;
   users:              TeamUser[];
   currentUserId:      string;
   canUpdateSettings:  boolean;
@@ -235,7 +238,7 @@ function DeleteDialog({
 // ── Main component ─────────────────────────────────────────────────────────────
 
 export function SettingsClient({
-  tenant, users: initialUsers, currentUserId,
+  tenant, aiSettings, users: initialUsers, currentUserId,
   canUpdateSettings, canReadTeam, canCreateTeam, canUpdateTeam, canDeleteTeam,
 }: Props) {
   const [tab, setTab] = useState<"empresa" | "equipe">("empresa");
@@ -375,6 +378,7 @@ export function SettingsClient({
 
       {/* ── Empresa tab ──────────────────────────────────────────────────────── */}
       {tab === "empresa" && (
+        <>
         <Card>
           <CardHeader>
             <CardTitle>Dados da Empresa</CardTitle>
@@ -461,6 +465,9 @@ export function SettingsClient({
             )}
           </CardContent>
         </Card>
+
+        <AiAgentConfig initial={aiSettings} canEdit={canUpdateSettings} />
+        </>
       )}
 
       {/* ── Equipe tab ───────────────────────────────────────────────────────── */}

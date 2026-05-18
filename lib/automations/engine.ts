@@ -6,7 +6,10 @@ import type {
   ConditionOperator,
   AutomationTrigger,
   ActionConfig,
+  TriggerType,
 } from "./types";
+import { TRIGGER_LABELS } from "./types";
+import type { AutomationLogStep } from "./log-timeline";
 
 // ─── Condition evaluation ─────────────────────────────────────────────────────
 
@@ -77,6 +80,46 @@ export async function runAutomations(payload: TriggerPayload): Promise<void> {
   );
 }
 
+function buildLogSteps(
+  triggerType: TriggerType,
+  results: ActionResult[],
+  status: string,
+): AutomationLogStep[] {
+  const steps: AutomationLogStep[] = [
+    {
+      kind: "trigger",
+      title: "Gatilho disparado",
+      detail: TRIGGER_LABELS[triggerType] ?? triggerType,
+      status: "neutral",
+    },
+  ];
+
+  for (const r of results) {
+    steps.push({
+      kind: "action",
+      title: "Ação executada",
+      detail: r.detail ?? r.type,
+      status: r.success ? "success" : "failed",
+      actionType: r.type as AutomationLogStep["actionType"],
+    });
+  }
+
+  if (status === "skipped") {
+    steps.push({
+      kind: "outcome",
+      title: "Ignorado",
+      detail: "Condições do filtro não foram atendidas",
+      status: "neutral",
+    });
+  } else if (status === "failed") {
+    steps.push({ kind: "outcome", title: "Falhou", status: "failed" });
+  } else {
+    steps.push({ kind: "outcome", title: "Sucesso", status: "success" });
+  }
+
+  return steps;
+}
+
 async function runSingleAutomation(
   automationId: string,
   payload: TriggerPayload,
@@ -86,6 +129,7 @@ async function runSingleAutomation(
   const conditionsMet = evaluateConditions(conditions, payload.data);
 
   if (!conditionsMet) {
+    const steps = buildLogSteps(payload.type, [], "skipped");
     await prisma.automationLog.create({
       data: {
         automationId,
@@ -93,7 +137,7 @@ async function runSingleAutomation(
         entityType: payload.entityType,
         entityId: payload.entityId,
         status: "skipped",
-        actionsRun: [],
+        actionsRun: steps as object,
       },
     });
     return;
@@ -107,7 +151,8 @@ async function runSingleAutomation(
   }
 
   const failed = results.filter((r) => !r.success);
-  const status = failed.length === results.length ? "failed" : "success";
+  const status = failed.length === results.length && results.length > 0 ? "failed" : "success";
+  const steps = buildLogSteps(payload.type, results, status);
 
   await prisma.$transaction([
     prisma.automationLog.create({
@@ -118,7 +163,7 @@ async function runSingleAutomation(
         entityId: payload.entityId,
         status,
         error: failed.length > 0 ? failed.map((f) => `${f.type}: ${f.error}`).join("; ") : null,
-        actionsRun: results.map((r) => r.type),
+        actionsRun: steps as object,
       },
     }),
     prisma.automation.update({
