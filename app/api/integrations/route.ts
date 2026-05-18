@@ -73,6 +73,31 @@ export async function PUT(req: NextRequest) {
 
   const { channelType, name, isActive, credentials } = parsed.data;
 
+  const existing = await prisma.integration.findUnique({
+    where: {
+      tenantId_channelType_name: {
+        tenantId:    session.tenantId,
+        channelType: channelType as "whatsapp" | "instagram",
+        name,
+      },
+    },
+    select: { credentials: true },
+  });
+
+  const prevCreds = (existing?.credentials ?? {}) as Record<string, string>;
+  const mergedCreds = { ...prevCreds };
+  for (const [k, v] of Object.entries(credentials)) {
+    if (v.trim()) mergedCreds[k] = v.trim();
+  }
+
+  const baseUrl =
+    process.env.NEXTAUTH_URL?.replace(/\/$/, "") ??
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null);
+  const webhookUrl =
+    baseUrl != null
+      ? `${baseUrl}/api/webhooks/${channelType}`
+      : undefined;
+
   // Upsert by (tenantId, channelType, name)
   const integration = await prisma.integration.upsert({
     where: {
@@ -83,14 +108,16 @@ export async function PUT(req: NextRequest) {
       },
     },
     update: {
-      credentials: credentials as Record<string, string>,
+      credentials: mergedCreds,
+      ...(webhookUrl ? { webhookUrl } : {}),
       ...(isActive !== undefined ? { isActive } : {}),
     },
     create: {
       tenantId:    session.tenantId,
       channelType: channelType as "whatsapp" | "instagram",
       name,
-      credentials: credentials as Record<string, string>,
+      credentials: mergedCreds,
+      webhookUrl:  webhookUrl ?? null,
       isActive:    isActive ?? true,
     },
     select: { id: true, channelType: true, name: true, isActive: true, updatedAt: true },

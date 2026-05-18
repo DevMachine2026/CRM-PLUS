@@ -1,148 +1,385 @@
 "use client";
 
 import { apiFetch } from "@/lib/api/client-fetch";
-
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import Link from "next/link";
 import {
   ArrowLeft, Smartphone, Camera, CheckCircle2, AlertCircle,
   ExternalLink, Save, Loader2, Trash2, Eye, EyeOff, Copy, Check,
-  ToggleLeft, ToggleRight,
+  ToggleLeft, ToggleRight, HelpCircle, Plug, Link2,
 } from "lucide-react";
-import { Button }   from "@/components/ui/button";
-import { Input }    from "@/components/ui/input";
-import { Label }    from "@/components/ui/label";
-import { Badge }    from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import {
   Card, CardContent, CardDescription, CardHeader, CardTitle,
 } from "@/components/ui/card";
+import {
+  Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
+import {
+  getFieldHelp,
+  getChannelFieldKeys,
+  type IntegrationChannel,
+  type MetaFieldKey,
+} from "@/lib/integrations/meta-field-help";
+import {
+  getIntegrationConnectionStatus,
+  STATUS_LABELS,
+  type IntegrationConnectionStatus,
+} from "@/lib/integrations/status";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
-type IntegrationData = {
-  id:             string;
-  channelType:    "whatsapp" | "instagram";
-  name:           string;
-  isActive:       boolean;
-  webhookUrl:     string | null;
+export type IntegrationData = {
+  id: string;
+  channelType: IntegrationChannel;
+  name: string;
+  isActive: boolean;
+  webhookUrl: string | null;
   configuredKeys: string[];
-  updatedAt:      string;
+  updatedAt: string;
 };
 
-type ChannelForm = {
-  phoneNumberId?: string;  // WhatsApp
-  accessToken:    string;
-  verifyToken:    string;
-  pageId?:        string;  // Instagram
-};
+type ChannelForm = Record<MetaFieldKey, string>;
 
-function emptyForm(): ChannelForm {
-  return { phoneNumberId: "", accessToken: "", verifyToken: "", pageId: "" };
+function emptyForm(channel: IntegrationChannel): ChannelForm {
+  const keys = getChannelFieldKeys(channel);
+  return Object.fromEntries(keys.map((k) => [k, ""])) as ChannelForm;
 }
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+// ── Copy webhook ─────────────────────────────────────────────────────────────
 
-function CopyButton({ text }: { text: string }) {
+function WebhookCopyButton({ url }: { url: string }) {
   const [copied, setCopied] = useState(false);
-  function copy() {
-    navigator.clipboard.writeText(text).then(() => {
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(url);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      /* ignore */
+    }
   }
+
   return (
-    <button
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
       onClick={copy}
-      className="ml-1 text-muted-foreground hover:text-foreground transition-colors"
-      title="Copiar"
+      className={cn(
+        "shrink-0 gap-1.5 transition-colors",
+        copied && "border-green-300 bg-green-50 text-green-800 hover:bg-green-50",
+      )}
     >
-      {copied ? <Check className="h-3.5 w-3.5 text-green-600" /> : <Copy className="h-3.5 w-3.5" />}
-    </button>
+      {copied ? (
+        <>
+          <Check className="h-4 w-4" />
+          Copiado!
+        </>
+      ) : (
+        <>
+          <Copy className="h-4 w-4" />
+          Copiar URL de Webhook
+        </>
+      )}
+    </Button>
   );
 }
 
-function SecretInput({ label, value, onChange, placeholder }: {
-  label: string; value: string;
+// ── Field helper ─────────────────────────────────────────────────────────────
+
+function FieldLabelWithHelp({
+  channel,
+  fieldKey,
+}: {
+  channel: IntegrationChannel;
+  fieldKey: MetaFieldKey;
+}) {
+  const meta = getFieldHelp(channel, fieldKey);
+  if (!meta) return null;
+
+  return (
+    <div className="flex items-center gap-1.5">
+      <Label className="text-sm">{meta.label}</Label>
+      <Tooltip>
+        <TooltipTrigger
+          type="button"
+          className="text-muted-foreground hover:text-foreground rounded-full p-0.5"
+          aria-label={`Ajuda: ${meta.label}`}
+        >
+          <HelpCircle className="h-3.5 w-3.5" />
+        </TooltipTrigger>
+        <TooltipContent side="top" className="max-w-[280px] text-left">
+          <p>{meta.help}</p>
+          {meta.docUrl && (
+            <a
+              href={meta.docUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 inline-flex items-center gap-1 underline font-medium"
+            >
+              {meta.docLabel ?? "Saiba mais"}
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          )}
+        </TooltipContent>
+      </Tooltip>
+    </div>
+  );
+}
+
+function SecretInput({
+  channel,
+  fieldKey,
+  value,
+  onChange,
+}: {
+  channel: IntegrationChannel;
+  fieldKey: MetaFieldKey;
+  value: string;
   onChange: (v: string) => void;
-  placeholder?: string;
 }) {
   const [show, setShow] = useState(false);
+  const meta = getFieldHelp(channel, fieldKey);
+
   return (
-    <div className="space-y-1">
-      <Label>{label}</Label>
+    <div className="space-y-1.5">
+      <FieldLabelWithHelp channel={channel} fieldKey={fieldKey} />
       <div className="relative">
         <Input
           type={show ? "text" : "password"}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          className="pr-9"
+          placeholder={meta?.placeholder}
+          className="pr-10 font-mono text-sm"
+          autoComplete="off"
+          spellCheck={false}
         />
         <button
           type="button"
           onClick={() => setShow((s) => !s)}
           className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+          aria-label={show ? "Ocultar valor" : "Mostrar valor"}
         >
           {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
         </button>
       </div>
+      {meta?.docUrl && (
+        <a
+          href={meta.docUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline"
+        >
+          Onde encontrar o {meta.label}? Clique aqui
+          <ExternalLink className="h-3 w-3" />
+        </a>
+      )}
     </div>
   );
 }
 
-// ── Channel Card ─────────────────────────────────────────────────────────────
+function PlainField({
+  channel,
+  fieldKey,
+  value,
+  onChange,
+}: {
+  channel: IntegrationChannel;
+  fieldKey: MetaFieldKey;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const meta = getFieldHelp(channel, fieldKey);
+
+  return (
+    <div className="space-y-1.5">
+      <FieldLabelWithHelp channel={channel} fieldKey={fieldKey} />
+      <Input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={meta?.placeholder}
+        className="font-mono text-sm"
+        autoComplete="off"
+      />
+      {meta?.docUrl && (
+        <a
+          href={meta.docUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline"
+        >
+          Onde encontrar o {meta.label}? Clique aqui
+          <ExternalLink className="h-3 w-3" />
+        </a>
+      )}
+    </div>
+  );
+}
+
+// ── Status UI ────────────────────────────────────────────────────────────────
+
+function StatusBadge({ status }: { status: IntegrationConnectionStatus }) {
+  if (status === "connected") {
+    return (
+      <Badge className="bg-green-600 hover:bg-green-600 text-white gap-1">
+        <CheckCircle2 className="h-3 w-3" />
+        Conectado
+      </Badge>
+    );
+  }
+  if (status === "partial") {
+    return (
+      <Badge variant="outline" className="border-amber-300 text-amber-800 bg-amber-50 gap-1">
+        <AlertCircle className="h-3 w-3" />
+        Incompleto
+      </Badge>
+    );
+  }
+  return (
+    <Badge variant="outline" className="text-muted-foreground gap-1">
+      <Plug className="h-3 w-3" />
+      Não configurado
+    </Badge>
+  );
+}
+
+function ConnectionStatusPanel({
+  status,
+  channelLabel,
+  configuredKeys,
+  channel,
+}: {
+  status: IntegrationConnectionStatus;
+  channelLabel: string;
+  configuredKeys: string[];
+  channel: IntegrationChannel;
+}) {
+  const meta = STATUS_LABELS[status];
+  const required = getChannelFieldKeys(channel);
+  const missing = required.filter((k) => !configuredKeys.includes(k));
+
+  if (status === "connected") {
+    return (
+      <div className="rounded-lg border border-green-200 bg-green-50/80 px-4 py-3 flex gap-3">
+        <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
+        <div>
+          <p className="text-sm font-medium text-green-900">{channelLabel} conectado</p>
+          <p className="text-xs text-green-800/90 mt-0.5">{meta.description}</p>
+          <p className="text-[11px] text-green-700/80 mt-1">
+            Cole a URL do webhook no app Meta e use o mesmo Verify Token abaixo.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === "partial") {
+    return (
+      <div className="rounded-lg border border-amber-200 bg-amber-50/80 px-4 py-3 flex gap-3">
+        <AlertCircle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+        <div>
+          <p className="text-sm font-medium text-amber-900">Configuração incompleta</p>
+          <p className="text-xs text-amber-800/90 mt-0.5">{meta.description}</p>
+          {missing.length > 0 && (
+            <p className="text-[11px] text-amber-800 mt-1">
+              Faltam: {missing.map((k) => getFieldHelp(channel, k)?.label ?? k).join(", ")}
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-lg border border-dashed bg-muted/30 px-4 py-6 text-center">
+      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted mb-3">
+        <Link2 className="h-6 w-6 text-muted-foreground" />
+      </div>
+      <p className="text-sm font-medium">Conecte o {channelLabel}</p>
+      <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+        {meta.description} Preencha os campos abaixo e salve — em poucos minutos sua equipe
+        recebe mensagens na caixa de entrada.
+      </p>
+    </div>
+  );
+}
+
+// ── Channel card ─────────────────────────────────────────────────────────────
 
 function ChannelCard({
-  channel, label, description, icon: Icon, iconBg, iconColor,
-  webhookUrl, integration, canEdit,
-  fields,
+  channel,
+  label,
+  description,
+  icon: Icon,
+  iconBg,
+  iconColor,
+  webhookUrl,
+  integration,
+  canEdit,
+  onSaved,
 }: {
-  channel:     "whatsapp" | "instagram";
-  label:       string;
+  channel: IntegrationChannel;
+  label: string;
   description: string;
-  icon:        React.ElementType;
-  iconBg:      string;
-  iconColor:   string;
-  webhookUrl:  string;
+  icon: React.ElementType;
+  iconBg: string;
+  iconColor: string;
+  webhookUrl: string;
   integration: IntegrationData | null;
-  canEdit:     boolean;
-  fields:      Array<{
-    key:         keyof ChannelForm;
-    label:       string;
-    secret?:     boolean;
-    placeholder?: string;
-  }>;
+  canEdit: boolean;
+  onSaved: () => void;
 }) {
-  const [form,    setForm]    = useState<ChannelForm>(emptyForm());
-  const [saving,  setSaving]  = useState(false);
+  const [form, setForm] = useState<ChannelForm>(() => emptyForm(channel));
+  const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [ok,      setOk]      = useState(false);
-  const [error,   setError]   = useState("");
-  const [active,  setActive]  = useState(integration?.isActive ?? true);
+  const [ok, setOk] = useState(false);
+  const [error, setError] = useState("");
+  const [active, setActive] = useState(integration?.isActive ?? true);
 
-  const isConfigured = (integration?.configuredKeys.length ?? 0) > 0;
+  const configuredKeys = integration?.configuredKeys ?? [];
+  const status = getIntegrationConnectionStatus(channel, configuredKeys);
+  const fieldKeys = getChannelFieldKeys(channel);
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
-    setSaving(true); setOk(false); setError("");
+    setSaving(true);
+    setOk(false);
+    setError("");
 
-    // Build credentials object — only include non-empty values
     const credentials: Record<string, string> = {};
-    for (const f of fields) {
-      const val = form[f.key] ?? "";
-      if (val.trim()) credentials[f.key] = val.trim();
+    for (const key of fieldKeys) {
+      const val = form[key] ?? "";
+      if (val.trim()) credentials[key] = val.trim();
+    }
+
+    if (Object.keys(credentials).length === 0) {
+      setError("Preencha pelo menos um campo para salvar.");
+      setSaving(false);
+      return;
     }
 
     try {
-      const res  = await apiFetch("/api/integrations", {
-        method:  "PUT",
+      const res = await apiFetch("/api/integrations", {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ channelType: channel, name: "Principal", isActive: active, credentials }),
+        body: JSON.stringify({
+          channelType: channel,
+          name: "Principal",
+          isActive: active,
+          credentials,
+        }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "Erro ao salvar.");
       setOk(true);
-      setForm(emptyForm()); // clear sensitive fields after save
+      setForm(emptyForm(channel));
+      onSaved();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Erro ao salvar.");
     } finally {
@@ -154,13 +391,13 @@ function ChannelCard({
     if (!confirm(`Remover integração ${label}?`)) return;
     setDeleting(true);
     try {
-      const res  = await apiFetch("/api/integrations", {
-        method:  "DELETE",
+      const res = await apiFetch("/api/integrations", {
+        method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ channelType: channel, name: "Principal" }),
+        body: JSON.stringify({ channelType: channel, name: "Principal" }),
       });
       if (!res.ok) throw new Error("Erro ao remover.");
-      window.location.reload();
+      onSaved();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Erro ao remover.");
     } finally {
@@ -171,123 +408,136 @@ function ChannelCard({
   async function handleToggle(checked: boolean) {
     setActive(checked);
     await apiFetch("/api/integrations", {
-      method:  "PUT",
+      method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body:    JSON.stringify({
-        channelType: channel, name: "Principal",
+      body: JSON.stringify({
+        channelType: channel,
+        name: "Principal",
         isActive: checked,
         credentials: {},
       }),
     });
+    onSaved();
   }
 
-  const f = (key: keyof ChannelForm) => (v: string) =>
-    setForm((prev) => ({ ...prev, [key]: v }));
-
   return (
-    <Card>
+    <Card className={cn(status === "connected" && "border-green-200/80")}>
       <CardHeader>
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${iconBg}`}>
-              <Icon className={`h-5 w-5 ${iconColor}`} />
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-lg", iconBg)}>
+              <Icon className={cn("h-5 w-5", iconColor)} />
             </div>
-            <div>
+            <div className="min-w-0">
               <CardTitle className="text-base">{label}</CardTitle>
               <CardDescription>{description}</CardDescription>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            {isConfigured && canEdit && (
+          <div className="flex flex-col items-end gap-2 shrink-0">
+            <StatusBadge status={status} />
+            {status === "connected" && canEdit && (
               <button
                 type="button"
                 onClick={() => handleToggle(!active)}
                 aria-label={active ? "Desativar integração" : "Ativar integração"}
                 className="text-muted-foreground hover:text-foreground transition-colors"
-                title={active ? "Clique para desativar" : "Clique para ativar"}
+                title={active ? "Integração ativa" : "Integração pausada"}
               >
-                {active
-                  ? <ToggleRight className="h-7 w-7 text-green-600" />
-                  : <ToggleLeft  className="h-7 w-7" />}
+                {active ? (
+                  <ToggleRight className="h-7 w-7 text-green-600" />
+                ) : (
+                  <ToggleLeft className="h-7 w-7" />
+                )}
               </button>
             )}
-            <Badge
-              variant="outline"
-              className={`flex items-center gap-1 ${isConfigured ? "text-green-700 border-green-300" : "text-muted-foreground"}`}
-            >
-              {isConfigured
-                ? <><CheckCircle2 className="h-3 w-3" />Configurado</>
-                : <><AlertCircle  className="h-3 w-3" />Configurar</>}
-            </Badge>
           </div>
         </div>
       </CardHeader>
 
       <CardContent className="space-y-5">
-        {/* Webhook URL */}
-        <div className="space-y-1.5">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Webhook URL</p>
-          <div className="flex items-center gap-2">
-            <code className="flex-1 rounded border bg-muted/60 px-3 py-2 text-xs font-mono break-all">
-              {webhookUrl}
-            </code>
-            <CopyButton text={webhookUrl} />
+        <ConnectionStatusPanel
+          status={status}
+          channelLabel={label}
+          configuredKeys={configuredKeys}
+          channel={channel}
+        />
+
+        <div className="space-y-2 rounded-lg border bg-muted/20 p-3">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            Webhook (Meta)
+          </p>
+          <code className="block rounded border bg-background px-3 py-2 text-xs font-mono break-all">
+            {webhookUrl}
+          </code>
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            <WebhookCopyButton url={webhookUrl} />
+            <span className="text-[11px] text-muted-foreground">
+              Cole esta URL em Configuração do webhook no app Meta.
+            </span>
           </div>
         </div>
 
-        {/* Configured keys info */}
-        {isConfigured && (
-          <div className="flex flex-wrap gap-1.5">
-            <span className="text-xs text-muted-foreground">Campos configurados:</span>
-            {integration!.configuredKeys.map((k) => (
-              <Badge key={k} variant="secondary" className="text-xs font-mono">{k}</Badge>
+        {configuredKeys.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 items-center">
+            <span className="text-xs text-muted-foreground">Salvos no servidor:</span>
+            {configuredKeys.map((k) => (
+              <Badge key={k} variant="secondary" className="text-xs font-mono">
+                {getFieldHelp(channel, k as MetaFieldKey)?.label ?? k}
+              </Badge>
             ))}
           </div>
         )}
 
-        {/* Credentials form */}
         {canEdit && (
-          <form onSubmit={handleSave} className="space-y-3 border-t pt-4">
-            <p className="text-sm font-medium">
-              {isConfigured ? "Atualizar credenciais" : "Inserir credenciais"}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Os valores são armazenados de forma segura. Preencha apenas os campos que deseja atualizar.
-            </p>
+          <form onSubmit={handleSave} className="space-y-4 border-t pt-4">
+            <div>
+              <p className="text-sm font-medium">
+                {status === "empty" ? "Credenciais do Meta" : "Atualizar credenciais"}
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Tokens não são exibidos após salvar. Preencha só o que deseja alterar.
+              </p>
+            </div>
 
-            {fields.map((field) =>
-              field.secret ? (
+            {fieldKeys.map((key) =>
+              getFieldHelp(channel, key)?.secret ? (
                 <SecretInput
-                  key={field.key}
-                  label={field.label}
-                  value={form[field.key] ?? ""}
-                  onChange={f(field.key)}
-                  placeholder={field.placeholder ?? ""}
+                  key={key}
+                  channel={channel}
+                  fieldKey={key}
+                  value={form[key] ?? ""}
+                  onChange={(v) => setForm((prev) => ({ ...prev, [key]: v }))}
                 />
               ) : (
-                <div key={field.key} className="space-y-1">
-                  <Label>{field.label}</Label>
-                  <Input
-                    value={form[field.key] ?? ""}
-                    onChange={(e) => f(field.key)(e.target.value)}
-                    placeholder={field.placeholder}
-                  />
-                </div>
-              )
+                <PlainField
+                  key={key}
+                  channel={channel}
+                  fieldKey={key}
+                  value={form[key] ?? ""}
+                  onChange={(v) => setForm((prev) => ({ ...prev, [key]: v }))}
+                />
+              ),
             )}
 
             {error && <p className="text-xs text-destructive">{error}</p>}
-            {ok    && <p className="text-xs text-green-600">Credenciais salvas com sucesso!</p>}
+            {ok && (
+              <p className="text-xs text-green-600 flex items-center gap-1">
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                Credenciais salvas com sucesso!
+              </p>
+            )}
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Button type="submit" size="sm" disabled={saving}>
-                {saving
-                  ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
-                  : <Save    className="mr-1.5 h-4 w-4" />}
-                Salvar
+                {saving ? (
+                  <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="mr-1.5 h-4 w-4" />
+                )}
+                Salvar credenciais
               </Button>
 
-              {isConfigured && (
+              {status !== "empty" && (
                 <Button
                   type="button"
                   variant="ghost"
@@ -296,17 +546,18 @@ function ChannelCard({
                   onClick={handleDelete}
                   disabled={deleting}
                 >
-                  {deleting
-                    ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
-                    : <Trash2  className="mr-1.5 h-4 w-4" />}
-                  Remover integração
+                  {deleting ? (
+                    <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="mr-1.5 h-4 w-4" />
+                  )}
+                  Remover
                 </Button>
               )}
             </div>
           </form>
         )}
 
-        {/* Meta dev link */}
         <a
           href="https://developers.facebook.com/apps"
           target="_blank"
@@ -321,16 +572,57 @@ function ChannelCard({
   );
 }
 
-// ── Main component ────────────────────────────────────────────────────────────
+// ── Overview ─────────────────────────────────────────────────────────────────
+
+function IntegrationsOverview({
+  whatsappStatus,
+  instagramStatus,
+}: {
+  whatsappStatus: IntegrationConnectionStatus;
+  instagramStatus: IntegrationConnectionStatus;
+}) {
+  const connectedCount =
+    (whatsappStatus === "connected" ? 1 : 0) +
+    (instagramStatus === "connected" ? 1 : 0);
+
+  return (
+    <Card className="bg-muted/20">
+      <CardContent className="flex flex-wrap items-center justify-between gap-4 p-4">
+        <div>
+          <p className="text-sm font-medium">Status das integrações</p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {connectedCount === 2
+              ? "WhatsApp e Instagram prontos para receber mensagens."
+              : connectedCount === 1
+                ? "Um canal conectado. Configure o outro para omnichannel completo."
+                : "Nenhum canal conectado ainda — comece pelo WhatsApp ou Instagram."}
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <div className="flex items-center gap-2 rounded-md border bg-background px-3 py-1.5">
+            <Smartphone className="h-4 w-4 text-green-600" />
+            <StatusBadge status={whatsappStatus} />
+          </div>
+          <div className="flex items-center gap-2 rounded-md border bg-background px-3 py-1.5">
+            <Camera className="h-4 w-4 text-pink-600" />
+            <StatusBadge status={instagramStatus} />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ── Main ─────────────────────────────────────────────────────────────────────
 
 export function IntegrationsClient({
   baseUrl,
   initialIntegrations,
   canEdit,
 }: {
-  baseUrl:              string;
-  initialIntegrations:  IntegrationData[];
-  canEdit:              boolean;
+  baseUrl: string;
+  initialIntegrations: IntegrationData[];
+  canEdit: boolean;
 }) {
   const [integrations, setIntegrations] = useState<IntegrationData[]>(initialIntegrations);
   const [loading, setLoading] = useState(false);
@@ -338,7 +630,7 @@ export function IntegrationsClient({
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
-      const res  = await apiFetch("/api/integrations");
+      const res = await apiFetch("/api/integrations");
       const json = await res.json();
       if (res.ok) setIntegrations(json.data ?? []);
     } finally {
@@ -346,82 +638,83 @@ export function IntegrationsClient({
     }
   }, []);
 
-  useEffect(() => { refresh(); }, [refresh]);
-
   const wa = integrations.find((i) => i.channelType === "whatsapp") ?? null;
   const ig = integrations.find((i) => i.channelType === "instagram") ?? null;
 
+  const waStatus = getIntegrationConnectionStatus("whatsapp", wa?.configuredKeys ?? []);
+  const igStatus = getIntegrationConnectionStatus("instagram", ig?.configuredKeys ?? []);
+
   return (
-    <div className="p-6 max-w-3xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <Link href="/settings">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="h-4 w-4 mr-1" /> Configurações
-          </Button>
-        </Link>
-      </div>
-
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Integrações</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Configure os canais de comunicação externos para receber e enviar mensagens automaticamente.
-          </p>
+    <TooltipProvider delay={200}>
+      <div className="p-6 max-w-3xl mx-auto space-y-6">
+        <div className="flex items-center gap-3">
+          <Link href="/settings">
+            <Button variant="ghost" size="sm">
+              <ArrowLeft className="h-4 w-4 mr-1" /> Configurações
+            </Button>
+          </Link>
         </div>
-        {loading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
-      </div>
 
-      {/* WhatsApp */}
-      <ChannelCard
-        channel="whatsapp"
-        label="WhatsApp Business API"
-        description="Meta / WhatsApp Cloud API via webhook"
-        icon={Smartphone}
-        iconBg="bg-green-100"
-        iconColor="text-green-600"
-        webhookUrl={`${baseUrl}/api/webhooks/whatsapp`}
-        integration={wa}
-        canEdit={canEdit}
-        fields={[
-          { key: "phoneNumberId", label: "Phone Number ID",     placeholder: "1234567890" },
-          { key: "accessToken",   label: "Access Token",         secret: true, placeholder: "EAAxxxxxxx" },
-          { key: "verifyToken",   label: "Verify Token (webhook)", placeholder: "seu_token_secreto" },
-        ]}
-      />
-
-      {/* Instagram */}
-      <ChannelCard
-        channel="instagram"
-        label="Instagram Messaging"
-        description="Meta / Instagram Graph API via webhook"
-        icon={Camera}
-        iconBg="bg-pink-100"
-        iconColor="text-pink-600"
-        webhookUrl={`${baseUrl}/api/webhooks/instagram`}
-        integration={ig}
-        canEdit={canEdit}
-        fields={[
-          { key: "pageId",      label: "Page ID (Instagram Business)", placeholder: "123456789" },
-          { key: "accessToken", label: "Access Token",                  secret: true, placeholder: "EAAxxxxxxx" },
-          { key: "verifyToken", label: "Verify Token (webhook)",         placeholder: "seu_token_secreto" },
-        ]}
-      />
-
-      {/* Status note */}
-      <Card className="border-muted bg-muted/20">
-        <CardContent className="flex items-start gap-3 p-4">
-          <CheckCircle2 className="h-4 w-4 mt-0.5 text-green-600 shrink-0" />
-          <div className="text-sm text-muted-foreground">
-            <p>
-              As credenciais são usadas automaticamente para identificar o tenant
-              ao receber mensagens (sem necessidade de <code className="bg-muted rounded px-1">?tenantId</code> na URL).
-              As mensagens recebidas aparecem na{" "}
-              <Link href="/inbox" className="underline text-foreground">caixa de entrada</Link>.
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Integrações</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Conecte WhatsApp e Instagram da Meta sem erro: copie o webhook, cole os tokens e
+              valide o status em um só lugar.
             </p>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+          {loading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground shrink-0" />}
+        </div>
+
+        <IntegrationsOverview whatsappStatus={waStatus} instagramStatus={igStatus} />
+
+        <ChannelCard
+          channel="whatsapp"
+          label="WhatsApp Business API"
+          description="Meta Cloud API — mensagens na caixa de entrada"
+          icon={Smartphone}
+          iconBg="bg-green-100"
+          iconColor="text-green-600"
+          webhookUrl={`${baseUrl}/api/webhooks/whatsapp`}
+          integration={wa}
+          canEdit={canEdit}
+          onSaved={refresh}
+        />
+
+        <ChannelCard
+          channel="instagram"
+          label="Instagram Messaging"
+          description="Meta Graph API — DMs do Instagram Business"
+          icon={Camera}
+          iconBg="bg-pink-100"
+          iconColor="text-pink-600"
+          webhookUrl={`${baseUrl}/api/webhooks/instagram`}
+          integration={ig}
+          canEdit={canEdit}
+          onSaved={refresh}
+        />
+
+        <Card className="border-muted bg-muted/20">
+          <CardContent className="flex items-start gap-3 p-4">
+            <CheckCircle2 className="h-4 w-4 mt-0.5 text-green-600 shrink-0" />
+            <div className="text-sm text-muted-foreground">
+              <p>
+                O <strong className="text-foreground">Phone Number ID</strong> e o{" "}
+                <strong className="text-foreground">Page ID</strong> identificam sua conta na Meta
+                e roteiam mensagens ao tenant certo — sem{" "}
+                <code className="bg-muted rounded px-1">?tenantId</code> na URL.
+              </p>
+              <p className="mt-2">
+                Mensagens recebidas aparecem na{" "}
+                <Link href="/inbox" className="underline text-foreground">
+                  caixa de entrada
+                </Link>
+                .
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </TooltipProvider>
   );
 }
