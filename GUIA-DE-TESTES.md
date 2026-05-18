@@ -3,7 +3,10 @@
 > **Ambiente**: Next.js 16 + PostgreSQL (Supabase) + IA mock  
 > **Stack local**: Node.js 20+, npm, banco já provisionado no Supabase  
 > **Porta padrão**: `http://localhost:3000`  
-> **Versão**: 1.0.2 — 2026-05-18
+> **Versão**: 1.0.3 — 2026-05-18  
+
+> **Apresentação ao contratante:** use o roteiro em **[VISAO-GERAL.md](./VISAO-GERAL.md)** (seção 11).  
+> Este guia é o passo a passo técnico de validação.
 
 ---
 
@@ -97,8 +100,8 @@ Após login você cai no `/dashboard`. A barra lateral tem:
 | `/billing` | Faturamento |
 | `/automations` | Motor de Automações |
 | `/reports` | Relatórios e métricas |
-| `/settings` | Configurações da empresa e equipe |
-| `/settings/integrations` | **Integrações WhatsApp e Instagram** |
+| `/settings` | Configurações, **Agente de IA (Sara)**, link para integrações |
+| `/settings/integrations` | **Integrações WhatsApp e Instagram** (Conectado, copiar webhook) |
 
 ---
 
@@ -560,24 +563,63 @@ curl -X POST "http://localhost:3000/api/webhooks/instagram?tenantId=$TENANT_ID" 
 6. Mova card no Kanban ou altere estágio → log `opportunity_stage_changed`
 7. Marque oportunidade como Ganho → receita em `/billing` + log `opportunity_status_changed`
 
+**Painel de execução (UI v1.0.3):**
+
+- Aba **Automações**: cada log em formato timeline — *Gatilho disparado* → *IA analisou intenção* (se houver `ai_log` no mesmo contato ±5 min) → *Ação executada* → badge Sucesso/Falhou/Ignorado
+- Aba **IA**: últimas entradas de `ai_logs`
+- Logs novos gravam `actionsRun` estruturado no banco (`lib/automations/engine.ts`)
+
 **Triggers implementados** (`lib/automations/emit.ts`):
 
 `contact_created` · `contact_status_changed` · `conversation_created` · `opportunity_created` · `opportunity_status_changed` · `opportunity_stage_changed` · `task_created` · `revenue_status_changed`
 
 ---
 
+### 4.13b Agente de IA (Configurações)
+
+**Interface**: `/settings` → card **Agente de IA**
+
+1. Altere nome (ex. Sara), tom, contexto e prompt do sistema
+2. Saia de um campo inválido → mensagem de validação em tempo real
+3. **Testar Prompt** → simulação sem enviar mensagem real (`POST /api/settings/ai/test-prompt`)
+4. **Salvar agente** → persiste em `tenant.settings.ai`
+5. Em `/inbox`, use **Detectar intenção** / **Sugerir resposta** → comportamento usa o prompt do tenant (`lib/ai/tenant-prompt.ts`)
+
+---
+
+### 4.13c Integrações Meta (UX + runtime)
+
+**Interface**: `/settings/integrations`
+
+1. Verifique card de **status** no topo (WhatsApp + Instagram)
+2. Em canal não configurado: empty state convidativo
+3. Preencha tokens → **Salvar credenciais** → badge **Conectado** (verde)
+4. **Copiar URL de Webhook** → deve mostrar **Copiado!**
+5. Ícone **?** ao lado dos campos → tooltip + link “Onde encontrar…”
+6. Access Token com olho para mostrar/ocultar
+
+**Validação técnica:**
+
+- `GET` webhook com `hub.verify_token` igual ao salvo em Integrações → 200 + challenge (sem depender só do `.env`)
+- Envio outbound na Inbox usa credenciais do tenant (`lib/integrations/credentials.ts`)
+- Atualizar só um campo não apaga os outros (`PUT /api/integrations` faz merge)
+
+---
+
 ### 4.14 Verificação de Webhook (GET)
 
-Os endpoints também respondem ao desafio de verificação do Meta:
+O Meta envia `hub.verify_token` na assinatura do webhook. O CRM aceita:
+
+1. Token igual ao salvo em **Settings → Integrações** (`verifyToken` do tenant), ou  
+2. Variável de ambiente legada (`WHATSAPP_WEBHOOK_VERIFY_TOKEN` / `INSTAGRAM_WEBHOOK_VERIFY_TOKEN`), ou  
+3. Em **dev**, se nenhum token estiver configurado, qualquer valor (simulação).
 
 ```bash
-# WhatsApp
-curl "http://localhost:3000/api/webhooks/whatsapp?hub.mode=subscribe&hub.verify_token=qualquer&hub.challenge=CHALLENGE_TEST"
+# Substitua MEU_TOKEN pelo verifyToken cadastrado na UI
+curl "http://localhost:3000/api/webhooks/whatsapp?hub.mode=subscribe&hub.verify_token=MEU_TOKEN&hub.challenge=CHALLENGE_TEST"
 # Resposta esperada: CHALLENGE_TEST
 
-# Instagram
-curl "http://localhost:3000/api/webhooks/instagram?hub.mode=subscribe&hub.verify_token=qualquer&hub.challenge=CHALLENGE_TEST"
-# Resposta esperada: CHALLENGE_TEST
+curl "http://localhost:3000/api/webhooks/instagram?hub.mode=subscribe&hub.verify_token=MEU_TOKEN&hub.challenge=CHALLENGE_TEST"
 ```
 
 ---
@@ -873,10 +915,11 @@ Para validar todo o sistema de uma vez, siga esta ordem:
                        → Enviar mensagem manual
 13. /tasks           → verificar tarefas criadas pela IA
 14. /dashboard       → verificar KPIs atualizados + "Ações da IA hoje"
-15. /automations      → confirmar logs após contato, conversa e oportunidade
-16. /settings/integrations → preencher credenciais WhatsApp e Instagram
+15. /automations      → timeline (gatilho → IA → ação) + aba IA
+16. /settings         → Agente de IA: testar prompt + salvar
+17. /settings/integrations → Conectado + copiar webhook + verify token
                        → testar webhook sem ?tenantId (resolução automática)
-17. Webhook duplicado → reenviar mesmo wamid → confirmar idempotência
+18. Webhook duplicado → reenviar mesmo wamid → confirmar idempotência
 ```
 
 ---
@@ -907,4 +950,4 @@ openssl rand -base64 32
 
 ---
 
-*Última atualização: 2026-05-18 | CRM PLUS v1.0.2*
+*Última atualização: 2026-05-18 | CRM PLUS v1.0.3*

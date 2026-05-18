@@ -1,9 +1,12 @@
 # SDD — Software Design Document
 # CRM PLUS
 
-**Versão:** 1.0.2  
+**Versão:** 1.0.3  
 **Data:** 2026-05-18  
-**Status:** ✅ Implementação concluída (automações + idempotência de webhooks + hardening multi-tenant)
+**Status:** ✅ Implementação concluída (integrações Meta por tenant, IA com `settings.ai`, timeline de automações)
+
+> **Apresentação e capacitação comercial:** leia primeiro **[VISAO-GERAL.md](./VISAO-GERAL.md)** (funcionalidades, fluxos, roteiro de demo).  
+> **Validação técnica:** [GUIA-DE-TESTES.md](./GUIA-DE-TESTES.md) · **Setup:** [README.md](./README.md)
 
 ---
 
@@ -103,20 +106,17 @@ Empresas de pequeno e médio porte com times de vendas e atendimento que querem 
 
 | Camada | Tecnologia |
 |--------|-----------|
-| Frontend | Next.js 14 (App Router) + TypeScript + Tailwind CSS |
-| UI Components | shadcn/ui + Radix UI |
+| Frontend | Next.js 16 (App Router) + TypeScript + Tailwind CSS |
+| UI Components | shadcn/ui + Base UI |
 | Backend | Next.js API Routes (Route Handlers) |
-| ORM | Prisma |
-| Banco de Dados | PostgreSQL |
-| Autenticação | NextAuth.js (Auth.js v5) |
-| Real-time | Preparado para Socket.io / Supabase Realtime |
-| Filas / Jobs | Preparado para BullMQ + Redis |
-| IA | Camada abstrata: Claude (Anthropic) / OpenAI / Gemini |
+| ORM | Prisma 7 |
+| Banco de Dados | PostgreSQL (Supabase) |
+| Autenticação | Auth.js (NextAuth v5) |
+| IA | `lib/ai/provider.ts` — Claude / Gemini / Mock; persona em `tenant.settings.ai` |
+| Integrações | `integrations` (JSON credentials por tenant); `lib/integrations/*` |
+| Automações | `lib/automations/engine.ts` + logs estruturados em `automation_logs` |
 | Validação | Zod |
-| Forms | React Hook Form + Zod |
-| Estado global | Zustand |
-| Fetch / Cache | TanStack Query (React Query) |
-| Deploy | A definir: Vercel + Railway / Supabase |
+| Deploy | Vercel (+ cron) |
 
 ---
 

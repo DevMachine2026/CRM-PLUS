@@ -8,13 +8,24 @@
 
 ---
 
+## Documentação — por onde começar
+
+| Você é… | Leia primeiro |
+|---------|----------------|
+| **Gestor / apresentação ao contratante** | **[VISAO-GERAL.md](./VISAO-GERAL.md)** — funcionalidades, fluxos, roteiro de demo |
+| **Desenvolvedor / QA** | [GUIA-DE-TESTES.md](./GUIA-DE-TESTES.md) — validação módulo a módulo |
+| **Arquiteto / produto técnico** | [SDD.md](./SDD.md) — design completo do sistema |
+
+---
+
 ## O que é
 
 O CRM PLUS não é um CRM onde o vendedor alimenta o sistema. **O sistema alimenta o vendedor.**
 
 - Leads nascem automaticamente via webhook (WhatsApp / Instagram)
-- IA classifica, resume e sugere ações sem intervenção manual
-- Automações disparam follow-ups por inatividade
+- IA classifica, resume e sugere ações — com agente configurável por empresa
+- Automações disparam follow-ups e registram o que fizeram (timeline visível)
+- Integrações Meta por tenant: tokens, webhook e badge **Conectado**
 - O vendedor valida e fecha — o resto é automático
 
 ---
@@ -32,23 +43,25 @@ O CRM PLUS não é um CRM onde o vendedor alimenta o sistema. **O sistema alimen
 
 ---
 
-## Funcionalidades
+## Funcionalidades (resumo)
 
 | Módulo | Status |
 |--------|--------|
-| Auth (login, registro, roles) | ✅ Completo |
-| Contatos, Empresas, Produtos, Tags | ✅ Completo |
-| Pipeline Kanban com drag & drop | ✅ Completo |
-| Oportunidades + itens de produto | ✅ Completo |
-| Faturamento (receitas automáticas) | ✅ Completo |
-| Inbox unificada (WA + IG + email) | ✅ Completo |
-| Painel de IA (resumo, intenção, sugestão) | ✅ Completo |
-| Engine de Automações (triggers conectados) | ✅ Completo |
-| Hardening multi-tenant (API + SSR + client) | ✅ Completo |
-| Webhooks WhatsApp + Instagram (HMAC + idempotência) | ✅ Completo |
-| Cron jobs (stalled leads + follow-up) | ✅ Completo |
-| Provisionamento automático de tenant | ✅ Completo |
-| Settings > Integrações (save de credenciais) | ✅ Completo |
+| Auth (login, registro, roles) | ✅ |
+| Contatos, Empresas, Produtos, Tags | ✅ |
+| Pipeline Kanban (drag otimista, tags, inatividade) | ✅ |
+| Oportunidades + itens de produto | ✅ |
+| Faturamento (receitas automáticas) | ✅ |
+| Inbox unificada (envio otimista, status de entrega) | ✅ |
+| Painel de IA (resumo, intenção, sugestão) + agente configurável | ✅ |
+| Automações (engine + timeline de logs + painel IA) | ✅ |
+| Integrações Meta (UX + credenciais por tenant no runtime) | ✅ |
+| Hardening multi-tenant (API + SSR + client) | ✅ |
+| Webhooks (HMAC + idempotência + verify token por tenant) | ✅ |
+| Cron jobs (stalled leads + follow-up) | ✅ |
+| Provisionamento automático de tenant | ✅ |
+
+Detalhes de cada módulo: **[VISAO-GERAL.md](./VISAO-GERAL.md)**.
 
 ---
 
@@ -68,97 +81,51 @@ npm install
 ### 3. Configurar `.env.local`
 
 ```env
-# Banco
 DATABASE_URL="postgresql://postgres:postgres@127.0.0.1:54322/postgres"
-
-# Auth
 NEXTAUTH_SECRET="gere-com-openssl-rand-base64-32"
 AUTH_SECRET="mesmo-valor-do-nextauth-secret"
 NEXTAUTH_URL="http://localhost:3000"
-
-# IA (opcional — usa mock sem chave)
 AI_PROVIDER="mock"
-# AI_PROVIDER="anthropic"
-# ANTHROPIC_API_KEY="sk-ant-..."
-
-# Cron Jobs
 CRON_SECRET="dev-cron-secret-local"
-
-# WhatsApp (opcional para dev)
-WHATSAPP_ACCESS_TOKEN=""
-WHATSAPP_PHONE_NUMBER_ID=""
-WHATSAPP_WEBHOOK_VERIFY_TOKEN=""
-
-# Instagram (opcional para dev)
-INSTAGRAM_ACCESS_TOKEN=""
-INSTAGRAM_PAGE_ID=""
-INSTAGRAM_WEBHOOK_VERIFY_TOKEN=""
 ```
 
-### 4. Aplicar schema no banco
+Integrações Meta: opcional em dev (modo simulado) ou via **Settings → Integrações** após login.
+
+### 4. Banco e servidor
 
 ```bash
 npx prisma db push
-```
-
-### 5. Rodar o servidor
-
-```bash
 npm run dev
 ```
 
-Acesse `http://localhost:3000` — redireciona para `/login`.
+Acesse `http://localhost:3000` → `/login` ou `/register`.
 
 ---
 
 ## Primeiro Acesso
 
-1. Vá em `http://localhost:3000/register`
-2. Crie sua empresa — são gerados automaticamente:
-   - Pipeline principal (5 etapas)
-   - 5 tags padrão
-   - 3 automações de IA ativas
+1. `http://localhost:3000/register` — cria empresa + owner  
+2. Provisionamento automático: pipeline (5 etapas), 5 tags, 3 automações  
+3. **Settings → Integrações** — WhatsApp/Instagram (produção)  
+4. **Settings → Agente de IA** — personalizar prompt e testar antes de salvar  
 
 ---
 
-## Configurar Integrações (WhatsApp / Instagram)
+## Integrações Meta
 
-Acesse **Settings → Integrações** e preencha:
-
-| Canal | Campos necessários |
-|-------|--------------------|
+| Canal | Campos |
+|-------|--------|
 | WhatsApp | Phone Number ID · Access Token · Verify Token |
 | Instagram | Page ID · Access Token · Verify Token |
 
-Obtidos em [developers.facebook.com](https://developers.facebook.com/apps) → seu App → WhatsApp/Instagram.
+Webhook (copiar na tela):
 
-A webhook URL para configurar no Meta:
 ```
 https://seu-dominio.com/api/webhooks/whatsapp
 https://seu-dominio.com/api/webhooks/instagram
 ```
 
----
-
-## Variáveis de Produção (Vercel)
-
-```env
-DATABASE_URL=...
-NEXTAUTH_SECRET=...
-AUTH_SECRET=...
-NEXTAUTH_URL=https://seu-dominio.com
-CRON_SECRET=<openssl rand -base64 32>
-WEBHOOK_SECRET_WHATSAPP=<app_secret_do_meta>
-WEBHOOK_SECRET_INSTAGRAM=<app_secret_do_meta>
-AI_PROVIDER=anthropic
-ANTHROPIC_API_KEY=sk-ant-...
-```
-
----
-
-## Testes
-
-Veja o [GUIA-DE-TESTES.md](./GUIA-DE-TESTES.md) para o fluxo completo de validação.
+Credenciais salvas na UI são usadas para **envio**, **roteamento inbound** e **verificação GET** do webhook.
 
 ---
 
@@ -167,44 +134,13 @@ Veja o [GUIA-DE-TESTES.md](./GUIA-DE-TESTES.md) para o fluxo completo de valida�
 | Camada | Local |
 |--------|--------|
 | UI | `app/(dashboard)/*`, `components/` |
-| APIs REST | `app/api/*` |
-| Auth (edge) | `proxy.ts` + `lib/auth/auth.config.ts` |
-| Auth (Node) | `lib/auth/auth.ts` |
-| IA | `lib/ai/provider.ts` + `lib/ai/actions/*` |
-| Automações | `lib/automations/engine.ts` + `lib/automations/emit.ts` |
-| Webhooks inbound | `lib/webhooks/process-inbound.ts` |
-| Provisionamento tenant | `lib/tenant/setup.ts` |
-
-### Motor de automações
-
-O engine (`runAutomations`) é disparado via `lib/automations/emit.ts` nos eventos:
-
-- `contact_created` / `contact_status_changed`
-- `conversation_created`
-- `opportunity_created` / `opportunity_status_changed` / `opportunity_stage_changed`
-- `task_created`
-- `revenue_status_changed`
-
-Cada tenant novo recebe 3 automações padrão ativas (provisionadas em `lib/tenant/setup.ts`). Logs em `automation_logs` — visíveis em **Automações**.
-
-### Webhooks e idempotência
-
-Mensagens inbound (WhatsApp `wamid` / Instagram `mid`) gravam `messages.external_id`. Duplicatas com o mesmo ID no mesmo tenant são ignoradas (`UNIQUE(tenant_id, external_id)`).
-
-### Segurança multi-tenant (v1.0.2)
-
-| Camada | Implementação |
-|--------|----------------|
-| APIs | `tenantWhere(session, id)` em PATCH/DELETE; `tenantId` só da sessão |
-| SSR | `requirePageSession()` + `requirePagePermission()` em todas as páginas do dashboard |
-| Cliente | `apiFetch()` em `lib/api/client-fetch.ts` — redirect em 401/403 |
-| Webhooks | Produção: tenant por credencial de integração; dev: `?tenantId` com UUID válido |
-| Demo | `POST /api/demo/seed` retorna 404 em produção |
-
-UX: banners em `/login` e no dashboard quando `?reason=session_expired` ou `?reason=forbidden`.
-
-Documento completo: [SDD.md](./SDD.md) · Testes: [GUIA-DE-TESTES.md](./GUIA-DE-TESTES.md)
+| APIs | `app/api/*` |
+| IA | `lib/ai/provider.ts`, `lib/ai/tenant-prompt.ts`, `lib/ai/actions/*` |
+| Automações | `lib/automations/engine.ts`, `emit.ts`, `log-timeline.ts` |
+| Integrações | `lib/integrations/credentials.ts`, `verify-webhook-token.ts` |
+| Webhooks | `lib/webhooks/process-inbound.ts` |
+| Setup tenant | `lib/tenant/setup.ts` |
 
 ---
 
-*Última atualização: 2026-05-18 | CRM PLUS v1.0.2*
+*Última atualização: 2026-05-18 | CRM PLUS v1.0.3*
