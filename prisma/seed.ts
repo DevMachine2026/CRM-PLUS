@@ -1,10 +1,20 @@
+import { config } from "dotenv";
 import { PrismaClient } from "../lib/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 import bcrypt from "bcryptjs";
-import "dotenv/config";
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+config({ path: ".env.local" });
+config();
+
+const databaseUrl = process.env.DATABASE_URL;
+if (!databaseUrl) {
+  throw new Error(
+    "DATABASE_URL não definida. Configure em .env.local ou exporte no terminal.",
+  );
+}
+
+const pool = new Pool({ connectionString: databaseUrl });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
