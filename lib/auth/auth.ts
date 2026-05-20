@@ -18,9 +18,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
+        const email = String(credentials.email).trim().toLowerCase();
+        const password = String(credentials.password);
+
         const user = await prisma.user.findFirst({
           where: {
-            email: credentials.email as string,
+            email,
             isActive: true,
           },
           include: { tenant: true },
@@ -28,10 +31,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         if (!user || !user.passwordHash) return null;
 
-        const valid = await bcrypt.compare(
-          credentials.password as string,
-          user.passwordHash
-        );
+        const valid = await bcrypt.compare(password, user.passwordHash);
         if (!valid) return null;
 
         await prisma.user.update({

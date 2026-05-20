@@ -46,7 +46,10 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { companyName, name, email, password } = parsed.data;
+  const companyName = parsed.data.companyName;
+  const name = parsed.data.name;
+  const email = parsed.data.email.trim().toLowerCase();
+  const password = parsed.data.password;
 
   try {
     const existing = await prisma.user.findFirst({ where: { email } });
