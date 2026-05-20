@@ -4,10 +4,12 @@ import { can } from "@/lib/auth/permissions";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EntityDetailShell } from "@/components/layout/entity-detail-shell";
+import { ds } from "@/lib/design-system";
+import { cn } from "@/lib/utils";
 import {
-  ArrowLeft, TrendingUp, User, Building2, Package,
+  TrendingUp, User, Building2, Package,
   Calendar, Clock, FileText, Activity,
 } from "lucide-react";
 
@@ -77,42 +79,37 @@ export default async function OpportunityDetailPage({ params }: Props) {
   const totalProducts = opp.products.reduce((s, p) => s + Number(p.totalPrice), 0);
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-6">
-      {/* Back */}
-      <Link href="/opportunities">
-        <Button variant="ghost" size="sm">
-          <ArrowLeft className="h-4 w-4 mr-1" /> Oportunidades
-        </Button>
-      </Link>
-
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-start gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10">
-            <TrendingUp className="h-5 w-5 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold">{opp.title}</h1>
-            <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-              <span>{opp.pipeline.name}</span>
-              <span>·</span>
-              <span className="font-medium text-foreground">{opp.stage.name}</span>
-              {opp.stage.probability > 0 && (
-                <span className="text-xs">({opp.stage.probability}% prob.)</span>
-              )}
-            </div>
-          </div>
+    <EntityDetailShell
+      backHref="/opportunities"
+      backLabel="Oportunidades"
+      title={opp.title}
+      leading={
+        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10">
+          <TrendingUp className="h-5 w-5 text-primary" />
         </div>
-        <div className="text-right shrink-0">
+      }
+      meta={
+        <>
+          <span>{opp.pipeline.name}</span>
+          <span>·</span>
+          <span className="font-medium text-foreground">{opp.stage.name}</span>
+          {opp.stage.probability > 0 && (
+            <span className="text-xs">({opp.stage.probability}% prob.)</span>
+          )}
+        </>
+      }
+      aside={
+        <>
           <p className={`inline-block rounded-full px-3 py-0.5 text-sm font-medium ${STATUS_COLOR[opp.status] ?? ""}`}>
             {STATUS_LABEL[opp.status] ?? opp.status}
           </p>
           <p className="mt-1 text-2xl font-bold">{fmt(Number(opp.value ?? 0))}</p>
-        </div>
-      </div>
+        </>
+      }
+    >
 
-      {/* Meta grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {/* Meta grid */}      {/* Meta grid */}
+      <div className={cn(ds.metricGrid, "md:grid-cols-4")}>
         {opp.contact && (
           <Card>
             <CardContent className="p-3">
@@ -270,6 +267,6 @@ export default async function OpportunityDetailPage({ params }: Props) {
         Criado em {fmtDate(opp.createdAt)} · Atualizado em {fmtDate(opp.updatedAt)}
         {opp.closedAt && ` · Fechado em ${fmtDate(opp.closedAt)}`}
       </p>
-    </div>
+    </EntityDetailShell>
   );
 }

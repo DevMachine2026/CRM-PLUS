@@ -13,6 +13,9 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
+import { PageHeader } from "@/components/layout/page-header";
+import { ds } from "@/lib/design-system";
 
 const ACTION_LABEL: Record<string, string> = {
   classify_lead:        "Classificou lead",
@@ -32,6 +35,56 @@ function fmtTime(d: Date) {
 function fmtDate(d: Date | string | null) {
   if (!d) return null;
   return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit" }).format(new Date(d));
+}
+
+type DashboardKpi = {
+  title: string;
+  value: string;
+  description: string;
+  icon: React.ComponentType<{ className?: string }>;
+  href: string;
+  alert?: boolean;
+  alertTone?: "warning" | "danger";
+};
+
+function DashboardKpiCard({
+  title,
+  value,
+  description,
+  icon: Icon,
+  href,
+  alert,
+  alertTone = "warning",
+}: DashboardKpi) {
+  const iconColor = alert
+    ? alertTone === "danger"
+      ? "text-red-500"
+      : "text-orange-500"
+    : "text-muted-foreground";
+  const valueColor = alert
+    ? alertTone === "danger"
+      ? "text-red-600"
+      : "text-orange-600"
+    : undefined;
+
+  return (
+    <Link href={href} className="block h-full min-h-0">
+      <Card className="flex h-full min-h-[8.5rem] flex-col rounded-xl shadow-sm transition-shadow hover:shadow-md">
+        <CardHeader className="flex shrink-0 flex-row items-start justify-between gap-2 space-y-0 p-4 pb-2">
+          <CardTitle className="line-clamp-2 min-h-[2.5rem] flex-1 text-sm font-medium leading-snug text-muted-foreground">
+            {title}
+          </CardTitle>
+          <Icon className={cn("h-4 w-4 shrink-0", iconColor)} />
+        </CardHeader>
+        <CardContent className="flex flex-1 flex-col p-4 pt-0">
+          <p className={cn("text-2xl font-semibold tabular-nums", valueColor)}>{value}</p>
+          <p className="mt-auto min-h-[2.5rem] line-clamp-2 text-xs font-medium leading-snug text-muted-foreground">
+            {description}
+          </p>
+        </CardContent>
+      </Card>
+    </Link>
+  );
 }
 
 export default async function DashboardPage() {
@@ -221,14 +274,12 @@ export default async function DashboardPage() {
   ];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">
-          Bom dia, {session.name?.split(" ")[0]}
-        </h1>
-        <p className="text-muted-foreground text-sm">Aqui está o resumo do seu dia comercial.</p>
-      </div>
+    <div className={ds.pageStack}>
+      <PageHeader
+        title={`Bom dia, ${session.name?.split(" ")[0] ?? ""}`}
+        description="Aqui está o resumo do seu dia comercial."
+        icon={<BarChart3 className="h-6 w-6 text-primary" />}
+      />
 
       {/* ── Demo guide ───────────────────────────────────────────────────────── */}
       {isDemoTenant && (
@@ -304,38 +355,34 @@ export default async function DashboardPage() {
       )}
 
       {/* ── KPI row 1 ────────────────────────────────────────────────────────── */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className={cn(ds.metricGrid, "items-stretch lg:grid-cols-4")}>
         {kpisTop.filter((k) => k.show).map((card) => (
-          <Link key={card.title} href={card.href}>
-            <Card className="hover:shadow-md transition-shadow cursor-pointer">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">{card.title}</CardTitle>
-                <card.icon className={`h-4 w-4 ${card.alert ? "text-orange-500" : "text-muted-foreground"}`} />
-              </CardHeader>
-              <CardContent>
-                <p className={`text-2xl font-bold tabular-nums ${card.alert ? "text-orange-600" : ""}`}>{card.value}</p>
-                <p className="text-xs text-muted-foreground mt-1">{card.description}</p>
-              </CardContent>
-            </Card>
-          </Link>
+          <DashboardKpiCard
+            key={card.title}
+            title={card.title}
+            value={card.value}
+            description={card.description}
+            icon={card.icon}
+            href={card.href}
+            alert={card.alert}
+            alertTone="warning"
+          />
         ))}
       </div>
 
       {/* ── KPI row 2 ────────────────────────────────────────────────────────── */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className={cn(ds.metricGrid, "items-stretch lg:grid-cols-4")}>
         {kpisBottom.filter((k) => k.show).map((card) => (
-          <Link key={card.title} href={card.href}>
-            <Card className="hover:shadow-md transition-shadow cursor-pointer">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">{card.title}</CardTitle>
-                <card.icon className={`h-4 w-4 ${card.alert ? "text-red-500" : "text-muted-foreground"}`} />
-              </CardHeader>
-              <CardContent>
-                <p className={`text-2xl font-bold tabular-nums ${card.alert ? "text-red-600" : ""}`}>{card.value}</p>
-                <p className="text-xs text-muted-foreground mt-1">{card.description}</p>
-              </CardContent>
-            </Card>
-          </Link>
+          <DashboardKpiCard
+            key={card.title}
+            title={card.title}
+            value={card.value}
+            description={card.description}
+            icon={card.icon}
+            href={card.href}
+            alert={card.alert}
+            alertTone="danger"
+          />
         ))}
       </div>
 

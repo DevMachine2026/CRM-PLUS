@@ -41,7 +41,9 @@ export async function resolveWhatsAppTenant(
 ): Promise<string | null> {
   if (phoneNumberId) {
     const tenantId = await matchIntegration("whatsapp", (creds) =>
-      creds.phoneNumberId === phoneNumberId
+      creds.phoneNumberId === phoneNumberId ||
+      creds.evolutionInstanceName === phoneNumberId ||
+      creds.evolutionInstanceId === phoneNumberId
     );
     if (tenantId) return tenantId;
   }

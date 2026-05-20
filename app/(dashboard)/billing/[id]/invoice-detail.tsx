@@ -13,6 +13,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import Link from "next/link";
+import { EntityDetailShell } from "@/components/layout/entity-detail-shell";
 import { useRouter } from "next/navigation";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -146,28 +148,20 @@ export function InvoiceDetail({ invoice, canUpdate, canDelete }: Props) {
   }
 
   return (
-    <div className="flex flex-col gap-6 p-6 max-w-4xl mx-auto">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => router.back()}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold">{invoice.number}</h1>
-              <Badge variant={STATUS_VARIANTS[invoice.status]} className="gap-1">
-                <StatusIcon className="h-3 w-3" />
-                {STATUS_LABELS[invoice.status]}
-              </Badge>
-            </div>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Emitida em {fmtDate(invoice.issuedAt)}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
+    <EntityDetailShell
+      backHref="/billing"
+      backLabel="Faturamento"
+      title={invoice.number}
+      className="max-w-4xl"
+      meta={<span>Emitida em {fmtDate(invoice.issuedAt)}</span>}
+      aside={
+        <Badge variant={STATUS_VARIANTS[invoice.status]} className="gap-1">
+          <StatusIcon className="h-3 w-3" />
+          {STATUS_LABELS[invoice.status]}
+        </Badge>
+      }
+      actions={
+        <>
           <Button
             variant="outline" size="sm" className="gap-2"
             onClick={() => window.print()}
@@ -190,10 +184,11 @@ export function InvoiceDetail({ invoice, canUpdate, canDelete }: Props) {
               Excluir
             </Button>
           )}
-        </div>
-      </div>
+        </>
+      }
+    >
 
-      {error && (
+            {error && (
         <div className="rounded-md bg-destructive/10 border border-destructive/30 px-4 py-2 text-sm text-destructive">
           {error}
         </div>
@@ -400,6 +395,6 @@ export function InvoiceDetail({ invoice, canUpdate, canDelete }: Props) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </EntityDetailShell>
   );
 }

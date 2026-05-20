@@ -1,6 +1,11 @@
 "use client";
 
-import { TrendingUp, Trophy, XCircle, Package, Users } from "lucide-react";
+import Link from "next/link";
+import { TrendingUp, Trophy, XCircle, Package, Users, BarChart3 } from "lucide-react";
+import { PageHeader } from "@/components/layout/page-header";
+import { ListCard } from "@/components/ui/list-card";
+import { ds } from "@/lib/design-system";
+import { cn } from "@/lib/utils";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -57,15 +62,15 @@ function BarRow({ label, value, max, sub, color = "bg-primary" }: {
 
 // ── Section card ──────────────────────────────────────────────────────────────
 
-function Card({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
+function ReportSection({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="rounded-lg border bg-card p-4 space-y-3">
+    <section className={cn(ds.listCard, "space-y-4")}>
       <div className="flex items-center gap-2 text-sm font-semibold">
         <span className="text-muted-foreground">{icon}</span>
         {title}
       </div>
       {children}
-    </div>
+    </section>
   );
 }
 
@@ -80,19 +85,15 @@ export function ReportsClient({ byMonth, byProduct, byUser, byStage }: Props) {
   const totalDeals = byMonth.reduce((s, m) => s + m.count, 0);
 
   return (
-    <div className="space-y-6 max-w-5xl">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Relatórios</h1>
-        <p className="text-sm text-muted-foreground">
-          Últimos 12 meses ·{" "}
-          <span className="font-medium text-foreground">{fmt(totalWon)}</span> em{" "}
-          {totalDeals} negócio{totalDeals !== 1 ? "s" : ""} ganho{totalDeals !== 1 ? "s" : ""}
-        </p>
-      </div>
+    <div className={cn(ds.pageStack, "mx-auto max-w-5xl")}>
+      <PageHeader
+        title="Relatórios"
+        description={`Últimos 12 meses · ${fmt(totalWon)} em ${totalDeals} negócio${totalDeals !== 1 ? "s" : ""} ganho${totalDeals !== 1 ? "s" : ""}`}
+        icon={<BarChart3 className="h-6 w-6 text-primary" />}
+      />
 
       {/* ── Sales by month ─────────────────────────────────────────────── */}
-      <Card title="Vendas por mês (ganhas)" icon={<TrendingUp className="w-4 h-4" />}>
+      <ReportSection title="Vendas por mês (ganhas)" icon={<TrendingUp className="w-4 h-4" />}>
         {byMonth.every((m) => m.total === 0) ? (
           <p className="text-sm text-muted-foreground py-4 text-center">Nenhuma venda ganha nos últimos 12 meses.</p>
         ) : (
@@ -108,11 +109,11 @@ export function ReportsClient({ byMonth, byProduct, byUser, byStage }: Props) {
             ))}
           </div>
         )}
-      </Card>
+      </ReportSection>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* ── By product ──────────────────────────────────────────────── */}
-        <Card title="Receita por produto" icon={<Package className="w-4 h-4" />}>
+        <ReportSection title="Receita por produto" icon={<Package className="w-4 h-4" />}>
           {byProduct.length === 0 ? (
             <p className="text-sm text-muted-foreground py-4 text-center">Nenhum produto em vendas ganhas.</p>
           ) : (
@@ -129,10 +130,10 @@ export function ReportsClient({ byMonth, byProduct, byUser, byStage }: Props) {
               ))}
             </div>
           )}
-        </Card>
+        </ReportSection>
 
         {/* ── By salesperson ──────────────────────────────────────────── */}
-        <Card title="Receita por vendedor" icon={<Users className="w-4 h-4" />}>
+        <ReportSection title="Receita por vendedor" icon={<Users className="w-4 h-4" />}>
           {byUser.length === 0 ? (
             <p className="text-sm text-muted-foreground py-4 text-center">Nenhum vendedor com vendas ganhas.</p>
           ) : (
@@ -149,75 +150,57 @@ export function ReportsClient({ byMonth, byProduct, byUser, byStage }: Props) {
               ))}
             </div>
           )}
-        </Card>
+        </ReportSection>
       </div>
 
       {/* ── Funnel conversion ───────────────────────────────────────────── */}
-      <Card title="Conversão por etapa (funil padrão)" icon={<Trophy className="w-4 h-4" />}>
+      <ReportSection title="Conversão por etapa (funil padrão)" icon={<Trophy className="w-4 h-4" />}>
         {byStage.length === 0 ? (
           <p className="text-sm text-muted-foreground py-4 text-center">
             Nenhuma etapa configurada.{" "}
-            <a href="/pipeline" className="underline text-primary">Configurar pipeline</a>
+            <Link href="/pipeline" className="font-medium text-primary underline-offset-4 hover:underline">Configurar pipeline</Link>
           </p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-xs text-muted-foreground border-b">
-                  <th className="text-left pb-2 font-medium">Etapa</th>
-                  <th className="text-right pb-2 font-medium">Abertas</th>
-                  <th className="text-right pb-2 font-medium">Ganhas</th>
-                  <th className="text-right pb-2 font-medium">Perdidas</th>
-                  <th className="text-right pb-2 font-medium">Tx. Conversão</th>
-                  <th className="pb-2 w-32" />
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {byStage.map((s) => {
-                  const closed = s.wonCount + s.lostCount;
-                  const convRate = pct(s.wonCount, closed);
-                  return (
-                    <tr key={s.stageId} className="text-sm">
-                      <td className="py-2 pr-4 font-medium">{s.stageName}</td>
-                      <td className="py-2 text-right tabular-nums text-muted-foreground">{s.openCount}</td>
-                      <td className="py-2 text-right tabular-nums text-green-700 font-medium">{s.wonCount}</td>
-                      <td className="py-2 text-right tabular-nums text-red-600">{s.lostCount}</td>
-                      <td className="py-2 text-right tabular-nums font-semibold">
-                        {closed === 0 ? (
-                          <span className="text-muted-foreground text-xs">—</span>
-                        ) : (
-                          <span className={convRate >= 50 ? "text-green-700" : convRate >= 25 ? "text-amber-600" : "text-red-600"}>
-                            {convRate}%
-                          </span>
-                        )}
-                      </td>
-                      <td className="py-2 pl-3">
-                        {closed > 0 && (
-                          <div className="h-2 rounded bg-muted overflow-hidden flex">
-                            <div
-                              className="h-full bg-green-500"
-                              style={{ width: `${pct(s.wonCount, closed)}%` }}
-                            />
-                            <div
-                              className="h-full bg-red-400"
-                              style={{ width: `${pct(s.lostCount, closed)}%` }}
-                            />
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-            <p className="text-[10px] text-muted-foreground mt-2">
-              <span className="inline-block w-2 h-2 rounded-sm bg-green-500 mr-1" />Ganhas
-              <span className="inline-block w-2 h-2 rounded-sm bg-red-400 mr-1 ml-3" />Perdidas
+          <div className={ds.listStack}>
+            {byStage.map((s) => {
+              const closed = s.wonCount + s.lostCount;
+              const convRate = pct(s.wonCount, closed);
+              return (
+                <ListCard key={s.stageId} className="p-4">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="font-semibold">{s.stageName}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {s.openCount} aberta{s.openCount !== 1 ? "s" : ""} · {s.wonCount} ganha{s.wonCount !== 1 ? "s" : ""} · {s.lostCount} perdida{s.lostCount !== 1 ? "s" : ""}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      {closed === 0 ? (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      ) : (
+                        <span className={cn("text-lg font-semibold tabular-nums", convRate >= 50 ? "text-green-700" : convRate >= 25 ? "text-amber-600" : "text-red-600")}>
+                          {convRate}%
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  {closed > 0 && (
+                    <div className="mt-3 flex h-2 overflow-hidden rounded bg-muted">
+                      <div className="h-full bg-green-500" style={{ width: `${pct(s.wonCount, closed)}%` }} />
+                      <div className="h-full bg-red-400" style={{ width: `${pct(s.lostCount, closed)}%` }} />
+                    </div>
+                  )}
+                </ListCard>
+              );
+            })}
+            <p className="text-[10px] text-muted-foreground">
+              <span className="mr-1 inline-block h-2 w-2 rounded-sm bg-green-500" />Ganhas
+              <span className="ml-3 mr-1 inline-block h-2 w-2 rounded-sm bg-red-400" />Perdidas
               · Taxa = ganhas / (ganhas + perdidas)
             </p>
           </div>
         )}
-      </Card>
+      </ReportSection>
 
       {/* ── Won vs Lost summary ─────────────────────────────────────────── */}
       {byStage.length > 0 && (() => {

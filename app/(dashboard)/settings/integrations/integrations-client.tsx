@@ -19,6 +19,9 @@ import {
   Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { PageHeader } from "@/components/layout/page-header";
+import { MetricCard, MetricGrid } from "@/components/ui/metric-card";
+import { ds } from "@/lib/design-system";
 import {
   getFieldHelp,
   getChannelFieldKeys,
@@ -646,27 +649,42 @@ export function IntegrationsClient({
 
   return (
     <TooltipProvider delay={200}>
-      <div className="p-6 max-w-3xl mx-auto space-y-6">
-        <div className="flex items-center gap-3">
-          <Link href="/settings">
-            <Button variant="ghost" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-1" /> Configurações
-            </Button>
-          </Link>
-        </div>
-
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Integrações</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Conecte WhatsApp e Instagram da Meta sem erro: copie o webhook, cole os tokens e
-              valide o status em um só lugar.
-            </p>
+      <div className={cn(ds.pageStack, ds.pagePbFab)}>
+        <PageHeader
+          title="Integrações"
+          description="Conecte WhatsApp e Instagram da Meta: copie o webhook, cole os tokens e valide o status em um só lugar."
+          toolbar={
+            <Link
+              href="/settings"
+              className="inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Configurações
+            </Link>
+          }
+        />
+        {loading && (
+          <div className="flex justify-end">
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
           </div>
-          {loading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground shrink-0" />}
-        </div>
+        )}
 
-        <IntegrationsOverview whatsappStatus={waStatus} instagramStatus={igStatus} />
+        <MetricGrid className="items-stretch">
+          <div className={cn(ds.listCard, "flex h-full min-h-[6.5rem] flex-col gap-2")}>
+            <div className="flex items-center gap-2">
+              <Smartphone className="h-4 w-4 text-green-600" />
+              <p className="text-xs font-medium text-muted-foreground">WhatsApp</p>
+            </div>
+            <StatusBadge status={waStatus} />
+          </div>
+          <div className={cn(ds.listCard, "flex h-full min-h-[6.5rem] flex-col gap-2")}>
+            <div className="flex items-center gap-2">
+              <Camera className="h-4 w-4 text-pink-600" />
+              <p className="text-xs font-medium text-muted-foreground">Instagram</p>
+            </div>
+            <StatusBadge status={igStatus} />
+          </div>
+        </MetricGrid>
 
         <ChannelCard
           channel="whatsapp"

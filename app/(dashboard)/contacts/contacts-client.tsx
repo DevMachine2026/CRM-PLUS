@@ -11,26 +11,26 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { PageHeader } from "@/components/layout/page-header";
+import { Fab } from "@/components/ui/fab";
+import { FormDrawer } from "@/components/ui/form-drawer";
+import { ListCard } from "@/components/ui/list-card";
+import { PrimaryActionButton } from "@/components/ui/primary-action-button";
+import { ds } from "@/lib/design-system";
+import { cn } from "@/lib/utils";
+import {
+  Sheet,
+  SheetBody,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 
 type ContactStatus = "lead" | "customer" | "inactive";
 
@@ -177,24 +177,114 @@ export function ContactsClient({ contacts, allTags, total, page, search, canCrea
   const limit = 20;
   const pages = Math.ceil(total / limit);
 
-  return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Contatos</h1>
-          <p className="text-sm text-muted-foreground">{total} contato{total !== 1 ? "s" : ""}</p>
-        </div>
-        {canCreate && (
-          <Button onClick={openCreate} size="sm">
-            <Plus className="mr-1.5 h-4 w-4" />
+  const listContent =
+    contacts.length === 0 ? (
+      <div className={ds.emptyState}>
+        <p className="text-sm text-muted-foreground">
+          {search ? "Nenhum contato encontrado." : "Nenhum contato cadastrado ainda."}
+        </p>
+        {canCreate && !search && (
+          <PrimaryActionButton className="mt-4" onClick={openCreate}>
+            <Plus className="h-4 w-4" />
             Novo contato
-          </Button>
+          </PrimaryActionButton>
         )}
       </div>
+    ) : (
+      contacts.map((c) => (
+        <ListCard key={c.id}>
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0 flex-1 space-y-2">
+              <Link
+                href={`/contacts/${c.id}`}
+                className="text-base font-semibold hover:underline"
+              >
+                {c.name}
+              </Link>
+              <div className="flex flex-wrap items-center gap-2">
+                <ScoreBadge score={c.leadScore ?? 0} />
+                <Badge variant={STATUS_VARIANTS[c.status]}>
+                  {STATUS_LABELS[c.status]}
+                </Badge>
+              </div>
+              {c.email && (
+                <p className="text-sm text-muted-foreground">{c.email}</p>
+              )}
+              {c.phone && (
+                <p className="text-sm text-muted-foreground">{c.phone}</p>
+              )}
+              {c.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {c.tags.map((t) => (
+                    <span
+                      key={t.id}
+                      className="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium text-white"
+                      style={{ backgroundColor: t.color ?? "#64748b" }}
+                    >
+                      {t.name}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="flex shrink-0 gap-1">
+              {canEdit && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={ds.touchTarget}
+                  title="Gerenciar tags"
+                  onClick={() => openTagDialog(c)}
+                >
+                  <TagIcon className="h-4 w-4" />
+                </Button>
+              )}
+              {canEdit && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={ds.touchTarget}
+                  onClick={() => openEdit(c)}
+                  aria-label="Editar"
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              )}
+              {canDelete && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn(ds.touchTarget, "text-destructive")}
+                  onClick={() => handleDelete(c.id, c.name)}
+                  aria-label="Excluir"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          </div>
+        </ListCard>
+      ))
+    );
+
+  return (
+    <div className={ds.pageStack}>
+      <PageHeader
+        title="Contatos"
+        description={`${total} contato${total !== 1 ? "s" : ""}`}
+        action={
+          canCreate ? (
+            <PrimaryActionButton onClick={openCreate}>
+              <Plus className="h-4 w-4" />
+              Novo contato
+            </PrimaryActionButton>
+          ) : undefined
+        }
+      />
+      {canCreate && <Fab label="Novo contato" onClick={openCreate} />}
 
       {/* Search */}
-      <div className="relative max-w-sm">
+      <div className="relative w-full max-w-sm">
         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
           className="pl-8"
@@ -205,83 +295,7 @@ export function ContactsClient({ contacts, allTags, total, page, search, canCrea
         />
       </div>
 
-      {/* Table */}
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nome</TableHead>
-              <TableHead>E-mail</TableHead>
-              <TableHead>Telefone</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Tags</TableHead>
-              <TableHead className="w-24" />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {contacts.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground py-10">
-                  {search ? "Nenhum contato encontrado." : "Nenhum contato cadastrado ainda."}
-                </TableCell>
-              </TableRow>
-            ) : (
-              contacts.map((c) => (
-                <TableRow key={c.id}>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center gap-1.5">
-                      <Link href={`/contacts/${c.id}`} className="font-medium hover:underline">
-                        {c.name}
-                      </Link>
-                      <ScoreBadge score={c.leadScore ?? 0} />
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">{c.email ?? "—"}</TableCell>
-                  <TableCell className="text-muted-foreground">{c.phone ?? "—"}</TableCell>
-                  <TableCell>
-                    <Badge variant={STATUS_VARIANTS[c.status]}>
-                      {STATUS_LABELS[c.status]}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-1">
-                      {c.tags.map((t) => (
-                        <span
-                          key={t.id}
-                          className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium text-white"
-                          style={{ backgroundColor: t.color ?? "#64748b" }}
-                        >
-                          {t.name}
-                        </span>
-                      ))}
-                      {c.tags.length === 0 && <span className="text-xs text-muted-foreground">—</span>}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1">
-                      {canEdit && (
-                        <Button variant="ghost" size="icon" className="h-7 w-7" title="Gerenciar tags" onClick={() => openTagDialog(c)}>
-                          <TagIcon className="h-3.5 w-3.5" />
-                        </Button>
-                      )}
-                      {canEdit && (
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(c)}>
-                          <Pencil className="h-3.5 w-3.5" />
-                        </Button>
-                      )}
-                      {canDelete && (
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => handleDelete(c.id, c.name)}>
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      <div className={ds.listStack}>{listContent}</div>
 
       {/* Pagination */}
       {pages > 1 && (
@@ -300,55 +314,47 @@ export function ContactsClient({ contacts, allTags, total, page, search, canCrea
         </div>
       )}
 
-      {/* Dialog — criar / editar */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{editContact ? "Editar contato" : "Novo contato"}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3 pt-1">
-            <div className="space-y-1.5">
-              <Label>Nome *</Label>
-              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="João Silva" />
-            </div>
-            <div className="space-y-1.5">
-              <Label>E-mail</Label>
-              <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="joao@empresa.com" />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Telefone</Label>
-              <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="(11) 99999-9999" />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Status</Label>
-              <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v as ContactStatus })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="lead">Lead</SelectItem>
-                  <SelectItem value="customer">Cliente</SelectItem>
-                  <SelectItem value="inactive">Inativo</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            {error && <p className="text-sm text-destructive">{error}</p>}
-            <div className="flex justify-end gap-2 pt-2">
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
-              <Button onClick={handleSave} disabled={saving}>
-                {saving && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}
-                {editContact ? "Salvar" : "Criar"}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <FormDrawer
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        title={editContact ? "Editar contato" : "Novo contato"}
+        description="Preencha os dados essenciais. Você pode completar depois."
+        submitLabel={editContact ? "Salvar" : "Criar"}
+        onSubmit={handleSave}
+        loading={saving}
+      >
+        <div className="space-y-1.5">
+          <Label>Nome *</Label>
+          <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="João Silva" />
+        </div>
+        <div className="space-y-1.5">
+          <Label>E-mail</Label>
+          <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="joao@empresa.com" />
+        </div>
+        <div className="space-y-1.5">
+          <Label>Telefone</Label>
+          <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="(11) 99999-9999" />
+        </div>
+        <div className="space-y-1.5">
+          <Label>Status</Label>
+          <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v as ContactStatus })}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="lead">Lead</SelectItem>
+              <SelectItem value="customer">Cliente</SelectItem>
+              <SelectItem value="inactive">Inativo</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        {error && <p className="text-sm text-destructive">{error}</p>}
+      </FormDrawer>
 
-      {/* Dialog — gerenciar tags do contato */}
-      <Dialog open={tagDialogOpen} onOpenChange={setTagDialogOpen}>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Tags — {tagContact?.name}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3 pt-1">
+      <Sheet open={tagDialogOpen} onOpenChange={setTagDialogOpen}>
+        <SheetContent className="max-w-sm">
+          <SheetHeader>
+            <SheetTitle>Tags — {tagContact?.name}</SheetTitle>
+          </SheetHeader>
+          <SheetBody>
             {allTags.length === 0 ? (
               <p className="text-sm text-muted-foreground">Nenhuma tag cadastrada. <a href="/tags" className="underline">Criar tags</a>.</p>
             ) : (
@@ -364,7 +370,7 @@ export function ContactsClient({ contacts, allTags, total, page, search, canCrea
                         if (applied) removeTag(tagContact.id, t.id);
                         else addTag(tagContact.id, t.id);
                       }}
-                      className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-all"
+                      className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-all duration-200"
                       style={{
                         backgroundColor: applied ? (t.color ?? "#64748b") : "transparent",
                         color: applied ? "white" : (t.color ?? "#64748b"),
@@ -378,12 +384,9 @@ export function ContactsClient({ contacts, allTags, total, page, search, canCrea
                 })}
               </div>
             )}
-            <div className="flex justify-end pt-2">
-              <Button variant="outline" onClick={() => setTagDialogOpen(false)}>Fechar</Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+          </SheetBody>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

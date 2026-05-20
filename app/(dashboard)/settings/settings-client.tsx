@@ -16,15 +16,18 @@ import {
   Card, CardContent, CardHeader, CardTitle, CardDescription,
 } from "@/components/ui/card";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@/components/ui/table";
-import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
+import { FormDrawer } from "@/components/ui/form-drawer";
+import { ListCard } from "@/components/ui/list-card";
+import { PrimaryActionButton } from "@/components/ui/primary-action-button";
 import { cn } from "@/lib/utils";
+import { PageHeader } from "@/components/layout/page-header";
+import { mobileLayout } from "@/lib/mobile-design";
+import { ds } from "@/lib/design-system";
 import { AiAgentConfig } from "@/components/settings/ai-agent-config";
 import type { TenantAiSettings } from "@/lib/ai/tenant-settings";
 
@@ -106,7 +109,7 @@ type MemberForm = {
   role: AssignableRole; phone: string;
 };
 
-function MemberDialog({
+function MemberDrawer({
   open, onClose, initial, isEdit,
   onSave,
 }: {
@@ -126,67 +129,60 @@ function MemberDialog({
   const [error,   setError]   = useState("");
   const [saving,  setSaving]  = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleSubmit() {
     setSaving(true);
     setError("");
     const err = await onSave(form, initial?.id);
     if (err) { setError(err); setSaving(false); }
-    else      { onClose(); }
+    else { onClose(); }
   }
 
   const f = (k: keyof MemberForm) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setForm((prev) => ({ ...prev, [k]: e.target.value }));
+    setForm((p) => ({ ...p, [k]: e.target.value }));
 
   return (
-    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>{isEdit ? "Editar Membro" : "Novo Membro"}</DialogTitle>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 pt-2">
-          <div className="space-y-1">
-            <Label>Nome</Label>
-            <Input value={form.name} onChange={f("name")} required minLength={2} />
+    <FormDrawer
+      open={open}
+      onOpenChange={(v) => !v && onClose()}
+      title={isEdit ? "Editar membro" : "Novo membro"}
+      description={isEdit ? "Atualize nome, telefone e perfil." : "Convide alguém para o workspace."}
+      submitLabel={isEdit ? "Salvar" : "Criar"}
+      onSubmit={handleSubmit}
+      loading={saving}
+    >
+      <div className="space-y-1.5">
+        <Label>Nome</Label>
+        <Input value={form.name} onChange={f("name")} required minLength={2} />
+      </div>
+      {!isEdit && (
+        <>
+          <div className="space-y-1.5">
+            <Label>E-mail</Label>
+            <Input type="email" value={form.email} onChange={f("email")} required />
           </div>
-          {!isEdit && (
-            <div className="space-y-1">
-              <Label>E-mail</Label>
-              <Input type="email" value={form.email} onChange={f("email")} required />
-            </div>
-          )}
-          {!isEdit && (
-            <div className="space-y-1">
-              <Label>Senha</Label>
-              <Input type="password" value={form.password} onChange={f("password")} required minLength={8} placeholder="Mínimo 8 caracteres" />
-            </div>
-          )}
-          <div className="space-y-1">
-            <Label>Telefone</Label>
-            <Input value={form.phone} onChange={f("phone")} placeholder="(opcional)" />
+          <div className="space-y-1.5">
+            <Label>Senha</Label>
+            <Input type="password" value={form.password} onChange={f("password")} required minLength={8} placeholder="Mínimo 8 caracteres" />
           </div>
-          <div className="space-y-1">
-            <Label>Perfil</Label>
-            <Select value={form.role} onValueChange={(v) => setForm((p) => ({ ...p, role: v as AssignableRole }))}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {ASSIGNABLE_ROLES.map((r) => (
-                  <SelectItem key={r} value={r}>{ROLE_LABEL[r]}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          {error && <p className="text-sm text-destructive">{error}</p>}
-          <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
-            <Button type="submit" disabled={saving}>
-              {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isEdit ? "Salvar" : "Criar"}
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+        </>
+      )}
+      <div className="space-y-1.5">
+        <Label>Telefone</Label>
+        <Input value={form.phone} onChange={f("phone")} placeholder="(opcional)" />
+      </div>
+      <div className="space-y-1.5">
+        <Label>Perfil</Label>
+        <Select value={form.role} onValueChange={(v) => setForm((p) => ({ ...p, role: v as AssignableRole }))}>
+          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectContent>
+            {ASSIGNABLE_ROLES.map((r) => (
+              <SelectItem key={r} value={r}>{ROLE_LABEL[r]}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      {error && <p className="text-sm text-destructive">{error}</p>}
+    </FormDrawer>
   );
 }
 
@@ -356,23 +352,28 @@ export function SettingsClient({
   ];
 
   return (
-    <div className="max-w-4xl space-y-6">
-      <h1 className="text-2xl font-bold tracking-tight">Configurações</h1>
+    <div className={mobileLayout.pageStack}>
+      <PageHeader
+        title="Configurações"
+        description="Dados da empresa, equipe e agente de IA do seu workspace."
+      />
 
-      {/* Tab nav */}
-      <div className="flex border-b">
+      <div className="-mx-1 flex gap-1 overflow-x-auto border-b border-border/60 px-1">
         {tabs.map(({ key, label, icon }) => (
           <button
             key={key}
+            type="button"
             onClick={() => setTab(key)}
             className={cn(
-              "flex items-center gap-2 border-b-2 px-4 py-2 text-sm font-medium transition-colors",
+              "flex shrink-0 items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors",
+              mobileLayout.touchTarget,
               tab === key
                 ? "border-primary text-foreground"
                 : "border-transparent text-muted-foreground hover:text-foreground"
             )}
           >
-            {icon}{label}
+            {icon}
+            {label}
           </button>
         ))}
       </div>
@@ -494,99 +495,75 @@ export function SettingsClient({
       {/* ── Equipe tab ───────────────────────────────────────────────────────── */}
       {tab === "equipe" && canReadTeam && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-3">
             <p className="text-sm text-muted-foreground">{users.length} membro{users.length !== 1 ? "s" : ""}</p>
             {canCreateTeam && (
-              <Button size="sm" onClick={() => setShowAdd(true)}>
-                <Plus className="mr-1.5 h-4 w-4" />Novo Membro
-              </Button>
+              <PrimaryActionButton onClick={() => setShowAdd(true)}>
+                <Plus className="h-4 w-4" />
+                Novo membro
+              </PrimaryActionButton>
             )}
           </div>
 
-          <Card>
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>E-mail</TableHead>
-                    <TableHead>Perfil</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Último acesso</TableHead>
-                    {(canUpdateTeam || canDeleteTeam) && <TableHead className="w-28" />}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {users.map((u) => (
-                    <TableRow key={u.id} className={!u.isActive ? "opacity-60" : ""}>
-                      <TableCell className="font-medium">
+          <div className={ds.listStack}>
+            {users.length === 0 ? (
+              <div className={ds.emptyState}>
+                <p className="text-sm text-muted-foreground">Nenhum membro cadastrado.</p>
+              </div>
+            ) : (
+              users.map((u) => (
+                <ListCard key={u.id}>
+                  <div className={cn("flex items-start justify-between gap-4", !u.isActive && "opacity-60")}>
+                    <div className="min-w-0 flex-1 space-y-2">
+                      <p className="text-base font-semibold leading-snug">
                         {u.name}
                         {u.id === currentUserId && (
-                          <span className="ml-1.5 text-xs text-muted-foreground">(você)</span>
+                          <span className="ml-1.5 text-xs font-normal text-muted-foreground">(você)</span>
                         )}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">{u.email}</TableCell>
-                      <TableCell><RoleBadge role={u.role} /></TableCell>
-                      <TableCell>
-                        {u.isActive
-                          ? <span className="flex items-center gap-1 text-xs text-green-700"><UserCheck className="h-3.5 w-3.5" />Ativo</span>
-                          : <span className="flex items-center gap-1 text-xs text-slate-500"><UserX   className="h-3.5 w-3.5" />Inativo</span>}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground text-xs">{fmtDate(u.lastLoginAt)}</TableCell>
-                      {(canUpdateTeam || canDeleteTeam) && (
-                        <TableCell>
-                          <div className="flex items-center gap-1">
-                            {canUpdateTeam && (
-                              <>
-                                <Button
-                                  variant="ghost" size="icon" className="h-7 w-7"
-                                  onClick={() => setEditUser(u)}
-                                  title="Editar"
-                                >
-                                  <Pencil className="h-3.5 w-3.5" />
-                                </Button>
-                                {u.id !== currentUserId && (
-                                  <Button
-                                    variant="ghost" size="icon" className="h-7 w-7"
-                                    onClick={() => handleToggleActive(u)}
-                                    title={u.isActive ? "Desativar" : "Ativar"}
-                                  >
-                                    {u.isActive ? <UserX className="h-3.5 w-3.5 text-amber-600" /> : <UserCheck className="h-3.5 w-3.5 text-green-600" />}
-                                  </Button>
-                                )}
-                              </>
-                            )}
-                            {canDeleteTeam && u.id !== currentUserId && (
-                              <Button
-                                variant="ghost" size="icon" className="h-7 w-7"
-                                onClick={() => setDeleteUser(u)}
-                                title="Remover"
-                              >
-                                <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                      </p>
+                      <p className="truncate text-sm text-muted-foreground">{u.email}</p>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <RoleBadge role={u.role} />
+                        {u.isActive ? (
+                          <span className="flex items-center gap-1 text-xs text-green-700"><UserCheck className="h-3.5 w-3.5" />Ativo</span>
+                        ) : (
+                          <span className="flex items-center gap-1 text-xs text-slate-500"><UserX className="h-3.5 w-3.5" />Inativo</span>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground">Último acesso: {fmtDate(u.lastLoginAt)}</p>
+                    </div>
+                    {(canUpdateTeam || canDeleteTeam) && (
+                      <div className="flex shrink-0 items-center gap-1">
+                        {canUpdateTeam && (
+                          <>
+                            <Button variant="ghost" size="icon" className={ds.touchTarget} onClick={() => setEditUser(u)} title="Editar" aria-label="Editar membro">
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            {u.id !== currentUserId && (
+                              <Button variant="ghost" size="icon" className={ds.touchTarget} onClick={() => handleToggleActive(u)} title={u.isActive ? "Desativar" : "Ativar"} aria-label={u.isActive ? "Desativar membro" : "Ativar membro"}>
+                                {u.isActive ? <UserX className="h-4 w-4 text-amber-600" /> : <UserCheck className="h-4 w-4 text-green-600" />}
                               </Button>
                             )}
-                          </div>
-                        </TableCell>
-                      )}
-                    </TableRow>
-                  ))}
-                  {users.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
-                        Nenhum membro encontrado.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+                          </>
+                        )}
+                        {canDeleteTeam && u.id !== currentUserId && (
+                          <Button variant="ghost" size="icon" className={ds.touchTarget} onClick={() => setDeleteUser(u)} title="Remover" aria-label="Remover membro">
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </ListCard>
+              ))
+            )}
+          </div>
         </div>
       )}
 
       {/* ── Dialogs ──────────────────────────────────────────────────────────── */}
       {showAdd && (
-        <MemberDialog
+        <MemberDrawer
           open={showAdd}
           onClose={() => setShowAdd(false)}
           isEdit={false}
@@ -595,7 +572,7 @@ export function SettingsClient({
       )}
 
       {editUser && (
-        <MemberDialog
+        <MemberDrawer
           open={!!editUser}
           onClose={() => setEditUser(null)}
           initial={{ id: editUser.id, name: editUser.name, role: editUser.role as AssignableRole, phone: editUser.phone ?? "" }}

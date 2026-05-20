@@ -2,30 +2,31 @@
 
 import { apiFetch } from "@/lib/api/client-fetch";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Search, Pencil, Trash2, Loader2, TrendingUp, Trophy, XCircle, Package, LayoutList, Kanban } from "lucide-react";
 import { KanbanBoard } from "./kanban-board";
 import type { KanbanOpportunity } from "@/lib/kanban/types";
+import { PageHeader } from "@/components/layout/page-header";
+import { FilterBar } from "@/components/layout/filter-bar";
+import { Fab } from "@/components/ui/fab";
+import { FormDrawer } from "@/components/ui/form-drawer";
+import { ListCard } from "@/components/ui/list-card";
+import { PrimaryActionButton } from "@/components/ui/primary-action-button";
+import {
+  Sheet,
+  SheetBody,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { ds } from "@/lib/design-system";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   Select,
   SelectContent,
@@ -129,6 +130,15 @@ export function OpportunitiesClient({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [view, setView] = useState<"table" | "kanban">("kanban");
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    const sync = () => {
+      if (mq.matches) setView("table");
+    };
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
   const [q, setQ] = useState(search);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editOpp, setEditOpp] = useState<Opportunity | null>(null);
@@ -343,40 +353,41 @@ export function OpportunitiesClient({
   const pages = Math.ceil(total / limit);
 
   return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Oportunidades</h1>
-          <p className="text-sm text-muted-foreground">{total} oportunidade{total !== 1 ? "s" : ""}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          {/* View toggle */}
-          <div className="flex rounded-md border overflow-hidden">
+    <div className={ds.pageStack}>
+      <PageHeader
+        title="Oportunidades"
+        description={`${total} oportunidade${total !== 1 ? "s" : ""}`}
+        action={
+          canCreate ? (
+            <PrimaryActionButton onClick={() => openCreate()}>
+              <Plus className="h-4 w-4" />
+              Nova oportunidade
+            </PrimaryActionButton>
+          ) : undefined
+        }
+        toolbar={
+          <div className="flex rounded-lg border overflow-hidden">
             <button
+              type="button"
               onClick={() => setView("kanban")}
-              className={`flex items-center gap-1 px-2.5 py-1.5 text-xs transition-colors ${view === "kanban" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}
+              className={`flex min-h-11 items-center gap-1 px-3 py-2 text-xs font-medium transition-colors ${view === "kanban" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}
             >
-              <Kanban className="w-3.5 h-3.5" />Kanban
+              <Kanban className="h-3.5 w-3.5" /> Kanban
             </button>
             <button
+              type="button"
               onClick={() => setView("table")}
-              className={`flex items-center gap-1 px-2.5 py-1.5 text-xs transition-colors ${view === "table" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}
+              className={`flex min-h-11 items-center gap-1 px-3 py-2 text-xs font-medium transition-colors ${view === "table" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}
             >
-              <LayoutList className="w-3.5 h-3.5" />Lista
+              <LayoutList className="h-3.5 w-3.5" /> Lista
             </button>
           </div>
-          {canCreate && (
-            <Button onClick={() => openCreate()} size="sm">
-              <Plus className="mr-1.5 h-4 w-4" />
-              Nova oportunidade
-            </Button>
-          )}
-        </div>
-      </div>
+        }
+      />
+      {canCreate && <Fab label="Nova oportunidade" onClick={() => openCreate()} />}
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-3">
+      <FilterBar>
         <div className="relative max-w-xs flex-1">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
@@ -411,7 +422,7 @@ export function OpportunitiesClient({
             </SelectContent>
           </Select>
         )}
-      </div>
+      </FilterBar>
 
       {/* ── Kanban view ────────────────────────────────────────────────── */}
       {view === "kanban" && (
@@ -429,124 +440,84 @@ export function OpportunitiesClient({
         />
       )}
 
-      {/* ── Table view ──────────────────────────────────────────────────── */}
-      {view === "table" && <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Título</TableHead>
-              <TableHead>Contato / Empresa</TableHead>
-              <TableHead>Etapa</TableHead>
-              <TableHead>Valor</TableHead>
-              <TableHead>Fechamento</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="w-24" />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {opportunities.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground py-10">
-                  Nenhuma oportunidade encontrada.
-                </TableCell>
-              </TableRow>
-            ) : (
-              opportunities.map((o) => (
-                <TableRow key={o.id}>
-                  <TableCell className="font-medium">{o.title}</TableCell>
-                  <TableCell className="text-muted-foreground text-sm">
-                    <div className="flex flex-col gap-0.5">
-                      {o.contact && <span>{o.contact.name}</span>}
-                      {o.company && <span className="text-xs">{o.company.name}</span>}
-                      {!o.contact && !o.company && <span>—</span>}
+      {/* ── Lista (modo tabela) ─────────────────────────────────────────── */}
+      {view === "table" && (
+        <div className={ds.listStack}>
+          {opportunities.length === 0 ? (
+            <div className={ds.emptyState}>
+              <p className="text-sm text-muted-foreground">Nenhuma oportunidade encontrada.</p>
+            </div>
+          ) : (
+            opportunities.map((o) => (
+              <ListCard key={o.id}>
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0 flex-1 space-y-2">
+                    <p className="text-base font-semibold">{o.title}</p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge variant={STATUS_VARIANTS[o.status]} className="gap-1">
+                        {STATUS_ICONS[o.status]}
+                        {STATUS_LABELS[o.status]}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        {o.stage.name} · {o.stage.probability}%
+                      </span>
                     </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-sm">{o.stage.name}</span>
-                      <span className="text-xs text-muted-foreground">{o.stage.probability}%</span>
+                    {(o.contact || o.company) && (
+                      <p className="text-sm text-muted-foreground">
+                        {[o.contact?.name, o.company?.name].filter(Boolean).join(" · ")}
+                      </p>
+                    )}
+                    <div className="flex flex-wrap gap-4 text-sm">
+                      <span className="font-semibold tabular-nums">{formatCurrency(o.value)}</span>
+                      <span className="text-muted-foreground">Fechamento: {formatDate(o.expectedCloseAt)}</span>
                     </div>
-                  </TableCell>
-                  <TableCell className="font-medium tabular-nums">{formatCurrency(o.value)}</TableCell>
-                  <TableCell className="text-muted-foreground text-sm">{formatDate(o.expectedCloseAt)}</TableCell>
-                  <TableCell>
-                    <Badge variant={STATUS_VARIANTS[o.status]} className="gap-1">
-                      {STATUS_ICONS[o.status]}
-                      {STATUS_LABELS[o.status]}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 relative"
-                        title="Gerenciar produtos"
-                        onClick={() => openProductDialog(o)}
-                      >
-                        <Package className="h-3.5 w-3.5" />
-                        {o.products.length > 0 && (
-                          <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground">
-                            {o.products.length}
-                          </span>
-                        )}
+                  </div>
+                  <div className="flex shrink-0 items-center gap-1">
+                    <Button variant="ghost" size="icon" className={cn(ds.touchTarget, "relative")} title="Gerenciar produtos" onClick={() => openProductDialog(o)}>
+                      <Package className="h-4 w-4" />
+                      {o.products.length > 0 && (
+                        <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground">
+                          {o.products.length}
+                        </span>
+                      )}
+                    </Button>
+                    {canEdit && o.status === "open" && (
+                      <>
+                        <Button variant="ghost" size="icon" className={cn(ds.touchTarget, "text-green-600")} title="Ganha" onClick={() => quickStatus(o.id, "won")}>
+                          <Trophy className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className={cn(ds.touchTarget, "text-destructive")} title="Perdida" onClick={() => quickStatus(o.id, "lost")}>
+                          <XCircle className="h-4 w-4" />
+                        </Button>
+                      </>
+                    )}
+                    {canEdit && (
+                      <Button variant="ghost" size="icon" className={ds.touchTarget} onClick={() => openEdit(o)} aria-label="Editar">
+                        <Pencil className="h-4 w-4" />
                       </Button>
-                      {canEdit && o.status === "open" && (
-                        <>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 text-green-600 hover:text-green-700"
-                            title="Marcar como ganha"
-                            onClick={() => quickStatus(o.id, "won")}
-                          >
-                            <Trophy className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 text-destructive hover:text-destructive"
-                            title="Marcar como perdida"
-                            onClick={() => quickStatus(o.id, "lost")}
-                          >
-                            <XCircle className="h-3.5 w-3.5" />
-                          </Button>
-                        </>
-                      )}
-                      {canEdit && (
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(o)}>
-                          <Pencil className="h-3.5 w-3.5" />
-                        </Button>
-                      )}
-                      {canDelete && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 text-destructive hover:text-destructive"
-                          onClick={() => handleDelete(o.id, o.title)}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>}
+                    )}
+                    {canDelete && (
+                      <Button variant="ghost" size="icon" className={cn(ds.touchTarget, "text-destructive")} onClick={() => handleDelete(o.id, o.title)} aria-label="Excluir">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </ListCard>
+            ))
+          )}
+        </div>
+      )}
 
-      {/* Pagination (table view only) */}
       {view === "table" && pages > 1 && (
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           <span>Página {page} de {pages}</span>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" disabled={page <= 1 || isPending}
+            <Button variant="outline" size="sm" className="rounded-xl" disabled={page <= 1 || isPending}
               onClick={() => router.push(`/opportunities?${buildParams({ page: String(page - 1) })}`)}>
               Anterior
             </Button>
-            <Button variant="outline" size="sm" disabled={page >= pages || isPending}
+            <Button variant="outline" size="sm" className="rounded-xl" disabled={page >= pages || isPending}
               onClick={() => router.push(`/opportunities?${buildParams({ page: String(page + 1) })}`)}>
               Próxima
             </Button>
@@ -554,13 +525,16 @@ export function OpportunitiesClient({
         </div>
       )}
 
-      {/* Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>{editOpp ? "Editar oportunidade" : "Nova oportunidade"}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3 pt-1">
+      <FormDrawer
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        title={editOpp ? "Editar oportunidade" : "Nova oportunidade"}
+        description="Defina pipeline, etapa e valor estimado."
+        submitLabel={editOpp ? "Salvar" : "Criar"}
+        onSubmit={handleSave}
+        loading={saving}
+        className="max-w-lg"
+      >
             <div className="space-y-1.5">
               <Label>Título *</Label>
               <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Ex: Proposta para Acme Ltda" />
@@ -652,25 +626,15 @@ export function OpportunitiesClient({
               <Label>Notas</Label>
               <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Observações sobre a oportunidade..." className="resize-none" rows={2} />
             </div>
-            {error && <p className="text-sm text-destructive">{error}</p>}
-            <div className="flex justify-end gap-2 pt-2">
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
-              <Button onClick={handleSave} disabled={saving}>
-                {saving && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}
-                {editOpp ? "Salvar" : "Criar"}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+        {error && <p className="text-sm text-destructive">{error}</p>}
+      </FormDrawer>
 
-      {/* Dialog — produtos da oportunidade */}
-      <Dialog open={productDialogOpen} onOpenChange={setProductDialogOpen}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Produtos — {productDialogOpp?.title}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 pt-1">
+      <Sheet open={productDialogOpen} onOpenChange={setProductDialogOpen}>
+        <SheetContent className="max-w-lg">
+          <SheetHeader>
+            <SheetTitle>Produtos — {productDialogOpp?.title}</SheetTitle>
+          </SheetHeader>
+          <SheetBody className="space-y-4">
             {/* Existing items */}
             {productDialogOpp && productDialogOpp.products.length > 0 && (
               <div className="rounded-md border divide-y">
@@ -787,12 +751,12 @@ export function OpportunitiesClient({
               </p>
             )}
 
-            <div className="flex justify-end pt-1">
-              <Button variant="outline" onClick={() => setProductDialogOpen(false)}>Fechar</Button>
+            <div className="flex justify-end pt-2">
+              <Button variant="outline" className="rounded-xl" onClick={() => setProductDialogOpen(false)}>Fechar</Button>
             </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+          </SheetBody>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

@@ -4,25 +4,18 @@ import { apiFetch } from "@/lib/api/client-fetch";
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Search, Pencil, Trash2, Loader2, Building2, Users } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Building2, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
+import { PageHeader } from "@/components/layout/page-header";
+import { Fab } from "@/components/ui/fab";
+import { FormDrawer } from "@/components/ui/form-drawer";
+import { ListCard } from "@/components/ui/list-card";
+import { PrimaryActionButton } from "@/components/ui/primary-action-button";
+import { ds } from "@/lib/design-system";
+import { cn } from "@/lib/utils";
 
 interface Company {
   id: string;
@@ -46,11 +39,19 @@ interface Props {
 
 const EMPTY_FORM = { name: "", domain: "", phone: "", address: "", notes: "" };
 
-export function CompaniesClient({ companies, total, page, search, canCreate, canEdit, canDelete }: Props) {
+export function CompaniesClient({
+  companies,
+  total,
+  page,
+  search,
+  canCreate,
+  canEdit,
+  canDelete,
+}: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [q, setQ] = useState(search);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [editCompany, setEditCompany] = useState<Company | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
@@ -66,7 +67,7 @@ export function CompaniesClient({ companies, total, page, search, canCreate, can
     setEditCompany(null);
     setForm(EMPTY_FORM);
     setError("");
-    setDialogOpen(true);
+    setDrawerOpen(true);
   }
 
   function openEdit(c: Company) {
@@ -79,15 +80,20 @@ export function CompaniesClient({ companies, total, page, search, canCreate, can
       notes: "",
     });
     setError("");
-    setDialogOpen(true);
+    setDrawerOpen(true);
   }
 
   async function handleSave() {
-    if (!form.name.trim()) { setError("Nome é obrigatório."); return; }
+    if (!form.name.trim()) {
+      setError("Nome é obrigatório.");
+      return;
+    }
     setSaving(true);
     setError("");
     try {
-      const url = editCompany ? `/api/companies/${editCompany.id}` : "/api/companies";
+      const url = editCompany
+        ? `/api/companies/${editCompany.id}`
+        : "/api/companies";
       const method = editCompany ? "PATCH" : "POST";
       const res = await apiFetch(url, {
         method,
@@ -105,7 +111,7 @@ export function CompaniesClient({ companies, total, page, search, canCreate, can
         setError(d.error ?? "Erro ao salvar.");
         return;
       }
-      setDialogOpen(false);
+      setDrawerOpen(false);
       startTransition(() => router.refresh());
     } finally {
       setSaving(false);
@@ -113,7 +119,8 @@ export function CompaniesClient({ companies, total, page, search, canCreate, can
   }
 
   async function handleDelete(id: string, name: string) {
-    if (!confirm(`Excluir "${name}"? Os contatos vinculados serão desvinculados.`)) return;
+    if (!confirm(`Excluir "${name}"? Os contatos vinculados serão desvinculados.`))
+      return;
     await apiFetch(`/api/companies/${id}`, { method: "DELETE" });
     startTransition(() => router.refresh());
   }
@@ -121,27 +128,90 @@ export function CompaniesClient({ companies, total, page, search, canCreate, can
   const limit = 20;
   const pages = Math.ceil(total / limit);
 
-  return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Empresas</h1>
-          <p className="text-sm text-muted-foreground">{total} empresa{total !== 1 ? "s" : ""}</p>
-        </div>
-        {canCreate && (
-          <Button onClick={openCreate} size="sm">
-            <Plus className="mr-1.5 h-4 w-4" />
+  const listContent =
+    companies.length === 0 ? (
+      <div className={ds.emptyState}>
+        <p className="text-sm text-muted-foreground">
+          {search
+            ? "Nenhuma empresa encontrada."
+            : "Nenhuma empresa cadastrada ainda."}
+        </p>
+        {canCreate && !search && (
+          <PrimaryActionButton className="mt-4" onClick={openCreate}>
+            <Plus className="h-4 w-4" />
             Nova empresa
-          </Button>
+          </PrimaryActionButton>
         )}
       </div>
+    ) : (
+      companies.map((c) => (
+        <ListCard key={c.id}>
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0 flex-1 space-y-2">
+              <div className="flex items-center gap-2">
+                <Building2 className="h-5 w-5 shrink-0 text-muted-foreground" />
+                <p className="text-base font-semibold">{c.name}</p>
+              </div>
+              {c.domain && (
+                <p className="text-sm text-muted-foreground">{c.domain}</p>
+              )}
+              {c.phone && (
+                <p className="text-sm text-muted-foreground">{c.phone}</p>
+              )}
+              <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Users className="h-3.5 w-3.5" />
+                {c._count.contacts} contato{c._count.contacts !== 1 ? "s" : ""}
+              </p>
+            </div>
+            <div className="flex shrink-0 gap-1">
+              {canEdit && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={ds.touchTarget}
+                  onClick={() => openEdit(c)}
+                  aria-label="Editar"
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              )}
+              {canDelete && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn(ds.touchTarget, "text-destructive")}
+                  onClick={() => handleDelete(c.id, c.name)}
+                  aria-label="Excluir"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          </div>
+        </ListCard>
+      ))
+    );
 
-      {/* Search */}
-      <div className="relative max-w-sm">
-        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+  return (
+    <div className={ds.pageStack}>
+      <PageHeader
+        title="Empresas"
+        description={`${total} empresa${total !== 1 ? "s" : ""}`}
+        action={
+          canCreate ? (
+            <PrimaryActionButton onClick={openCreate}>
+              <Plus className="h-4 w-4" />
+              Nova empresa
+            </PrimaryActionButton>
+          ) : undefined
+        }
+      />
+      {canCreate && <Fab label="Nova empresa" onClick={openCreate} />}
+
+      <div className="relative w-full max-w-sm">
+        <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
         <Input
-          className="pl-8"
+          className="min-h-11 pl-9"
           placeholder="Buscar por nome, domínio ou telefone..."
           value={q}
           onChange={(e) => setQ(e.target.value)}
@@ -149,69 +219,8 @@ export function CompaniesClient({ companies, total, page, search, canCreate, can
         />
       </div>
 
-      {/* Table */}
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nome</TableHead>
-              <TableHead>Domínio</TableHead>
-              <TableHead>Telefone</TableHead>
-              <TableHead>Contatos</TableHead>
-              <TableHead className="w-20" />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {companies.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground py-10">
-                  {search ? "Nenhuma empresa encontrada." : "Nenhuma empresa cadastrada ainda."}
-                </TableCell>
-              </TableRow>
-            ) : (
-              companies.map((c) => (
-                <TableRow key={c.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Building2 className="h-4 w-4 text-muted-foreground shrink-0" />
-                      <span className="font-medium">{c.name}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">{c.domain ?? "—"}</TableCell>
-                  <TableCell className="text-muted-foreground">{c.phone ?? "—"}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1 text-muted-foreground">
-                      <Users className="h-3.5 w-3.5" />
-                      <span className="text-sm">{c._count.contacts}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1">
-                      {canEdit && (
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(c)}>
-                          <Pencil className="h-3.5 w-3.5" />
-                        </Button>
-                      )}
-                      {canDelete && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 text-destructive hover:text-destructive"
-                          onClick={() => handleDelete(c.id, c.name)}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      <div className={ds.listStack}>{listContent}</div>
 
-      {/* Pagination */}
       {pages > 1 && (
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           <span>Página {page} de {pages}</span>
@@ -219,6 +228,7 @@ export function CompaniesClient({ companies, total, page, search, canCreate, can
             <Button
               variant="outline"
               size="sm"
+              className="rounded-xl"
               disabled={page <= 1 || isPending}
               onClick={() => {
                 const p = new URLSearchParams();
@@ -232,6 +242,7 @@ export function CompaniesClient({ companies, total, page, search, canCreate, can
             <Button
               variant="outline"
               size="sm"
+              className="rounded-xl"
               disabled={page >= pages || isPending}
               onClick={() => {
                 const p = new URLSearchParams();
@@ -246,66 +257,59 @@ export function CompaniesClient({ companies, total, page, search, canCreate, can
         </div>
       )}
 
-      {/* Dialog — criar / editar */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{editCompany ? "Editar empresa" : "Nova empresa"}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3 pt-1">
-            <div className="space-y-1.5">
-              <Label>Nome *</Label>
-              <Input
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder="Acme Ltda"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Domínio</Label>
-              <Input
-                value={form.domain}
-                onChange={(e) => setForm({ ...form, domain: e.target.value })}
-                placeholder="acme.com.br"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Telefone</Label>
-              <Input
-                value={form.phone}
-                onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                placeholder="(11) 3000-0000"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Endereço</Label>
-              <Input
-                value={form.address}
-                onChange={(e) => setForm({ ...form, address: e.target.value })}
-                placeholder="Rua das Flores, 123 — São Paulo, SP"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Observações</Label>
-              <Textarea
-                value={form.notes}
-                onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                placeholder="Anotações sobre a empresa..."
-                className="resize-none"
-                rows={3}
-              />
-            </div>
-            {error && <p className="text-sm text-destructive">{error}</p>}
-            <div className="flex justify-end gap-2 pt-2">
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
-              <Button onClick={handleSave} disabled={saving}>
-                {saving && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}
-                {editCompany ? "Salvar" : "Criar"}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <FormDrawer
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        title={editCompany ? "Editar empresa" : "Nova empresa"}
+        description="Dados principais da conta. Você pode detalhar depois."
+        submitLabel={editCompany ? "Salvar" : "Criar"}
+        onSubmit={handleSave}
+        loading={saving}
+      >
+        <div className="space-y-1.5">
+          <Label>Nome *</Label>
+          <Input
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            placeholder="Acme Ltda"
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label>Domínio</Label>
+          <Input
+            value={form.domain}
+            onChange={(e) => setForm({ ...form, domain: e.target.value })}
+            placeholder="acme.com.br"
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label>Telefone</Label>
+          <Input
+            value={form.phone}
+            onChange={(e) => setForm({ ...form, phone: e.target.value })}
+            placeholder="(11) 3000-0000"
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label>Endereço</Label>
+          <Input
+            value={form.address}
+            onChange={(e) => setForm({ ...form, address: e.target.value })}
+            placeholder="Rua das Flores, 123 — São Paulo, SP"
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label>Observações</Label>
+          <Textarea
+            value={form.notes}
+            onChange={(e) => setForm({ ...form, notes: e.target.value })}
+            placeholder="Anotações sobre a empresa..."
+            className="resize-none"
+            rows={3}
+          />
+        </div>
+        {error && <p className="text-sm text-destructive">{error}</p>}
+      </FormDrawer>
     </div>
   );
 }

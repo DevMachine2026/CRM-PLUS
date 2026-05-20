@@ -3,11 +3,14 @@ import { requirePageSession, requirePagePermission } from "@/lib/auth/get-sessio
 import { can } from "@/lib/auth/permissions";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EntityDetailShell } from "@/components/layout/entity-detail-shell";
+import { ListCard } from "@/components/ui/list-card";
+import { ds } from "@/lib/design-system";
 import {
-  ArrowLeft, Building2, Phone, Globe, MapPin, Users,
+  Building2, Phone, Globe, MapPin, Users,
   TrendingUp, Receipt, FileText,
 } from "lucide-react";
 
@@ -75,38 +78,35 @@ export default async function CompanyDetailPage({ params }: Props) {
     .reduce((s, o) => s + Number(o.value ?? 0), 0);
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-6">
-      {/* Back */}
-      <Link href="/companies">
-        <Button variant="ghost" size="sm">
-          <ArrowLeft className="h-4 w-4 mr-1" /> Empresas
-        </Button>
-      </Link>
-
-      {/* Header */}
-      <div className="flex items-start gap-4">
-        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+    <EntityDetailShell
+      backHref="/companies"
+      backLabel="Empresas"
+      title={company.name}
+      leading={
+        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
           <Building2 className="h-6 w-6 text-primary" />
         </div>
-        <div className="flex-1">
-          <h1 className="text-2xl font-bold">{company.name}</h1>
-          <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-            {company.phone && (
-              <span className="flex items-center gap-1"><Phone className="h-3 w-3" />{company.phone}</span>
-            )}
-            {company.domain && (
-              <span className="flex items-center gap-1"><Globe className="h-3 w-3" />{company.domain}</span>
-            )}
-            {company.address && (
-              <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{company.address}</span>
-            )}
-          </div>
-        </div>
-        <div className="text-right">
+      }
+      meta={
+        <>
+          {company.phone && (
+            <span className="flex items-center gap-1"><Phone className="h-3 w-3" />{company.phone}</span>
+          )}
+          {company.domain && (
+            <span className="flex items-center gap-1"><Globe className="h-3 w-3" />{company.domain}</span>
+          )}
+          {company.address && (
+            <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{company.address}</span>
+          )}
+        </>
+      }
+      aside={
+        <>
           <p className="text-xs text-muted-foreground">Receita total (ganho)</p>
           <p className="text-xl font-bold text-green-600">{fmt(totalRevenue)}</p>
-        </div>
-      </div>
+        </>
+      }
+    >
 
       {/* Notes */}
       {company.notes && (
@@ -121,7 +121,7 @@ export default async function CompanyDetailPage({ params }: Props) {
       )}
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className={cn(ds.metricGrid, "lg:grid-cols-3")}>
         <Card>
           <CardContent className="p-4 text-center">
             <p className="text-2xl font-bold">{company.contacts.length}</p>
@@ -153,21 +153,23 @@ export default async function CompanyDetailPage({ params }: Props) {
           {company.contacts.length === 0 ? (
             <p className="text-sm text-muted-foreground">Nenhum contato vinculado.</p>
           ) : (
-            <div className="divide-y">
+            <div className={ds.listStack}>
               {company.contacts.map((c) => (
-                <Link key={c.id} href={`/contacts/${c.id}`} className="flex items-center justify-between py-2 hover:bg-accent/40 rounded px-2 -mx-2 transition-colors">
-                  <div>
-                    <p className="text-sm font-medium">{c.name}</p>
-                    <p className="text-xs text-muted-foreground">{c.email ?? c.phone ?? "—"}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-xs capitalize">{c.status}</Badge>
-                    {c.leadScore > 0 && (
-                      <span className={`text-xs font-semibold ${c.leadScore >= 70 ? "text-red-600" : c.leadScore >= 35 ? "text-yellow-600" : "text-blue-600"}`}>
-                        {c.leadScore}
-                      </span>
-                    )}
-                  </div>
+                <Link key={c.id} href={`/contacts/${c.id}`} className="block">
+                  <ListCard className={cn(ds.listCardInteractive, "flex items-center justify-between gap-3 p-4")}>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium">{c.name}</p>
+                      <p className="truncate text-xs text-muted-foreground">{c.email ?? c.phone ?? "—"}</p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <Badge variant="outline" className="text-xs capitalize">{c.status}</Badge>
+                      {c.leadScore > 0 && (
+                        <span className={`text-xs font-semibold ${c.leadScore >= 70 ? "text-red-600" : c.leadScore >= 35 ? "text-yellow-600" : "text-blue-600"}`}>
+                          {c.leadScore}
+                        </span>
+                      )}
+                    </div>
+                  </ListCard>
                 </Link>
               ))}
             </div>
@@ -186,17 +188,19 @@ export default async function CompanyDetailPage({ params }: Props) {
           {company.opportunities.length === 0 ? (
             <p className="text-sm text-muted-foreground">Nenhuma oportunidade.</p>
           ) : (
-            <div className="divide-y">
+            <div className={ds.listStack}>
               {company.opportunities.map((o) => (
-                <Link key={o.id} href={`/opportunities/${o.id}`} className="flex items-center justify-between py-2 hover:bg-accent/40 rounded px-2 -mx-2 transition-colors">
-                  <div>
-                    <p className="text-sm font-medium">{o.title}</p>
-                    <p className="text-xs text-muted-foreground">{o.stage.name}{o.contact ? ` · ${o.contact.name}` : ""}</p>
-                  </div>
-                  <div className="flex items-center gap-2 text-right">
-                    <Badge variant={STATUS_VARIANT[o.status] ?? "outline"}>{STATUS_LABEL[o.status] ?? o.status}</Badge>
-                    <span className="text-sm font-semibold">{fmt(Number(o.value ?? 0))}</span>
-                  </div>
+                <Link key={o.id} href={`/opportunities/${o.id}`} className="block">
+                  <ListCard className={cn(ds.listCardInteractive, "flex items-center justify-between gap-3 p-4")}>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium">{o.title}</p>
+                      <p className="truncate text-xs text-muted-foreground">{o.stage.name}{o.contact ? ` · ${o.contact.name}` : ""}</p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <Badge variant={STATUS_VARIANT[o.status] ?? "outline"}>{STATUS_LABEL[o.status] ?? o.status}</Badge>
+                      <span className="text-sm font-semibold">{fmt(Number(o.value ?? 0))}</span>
+                    </div>
+                  </ListCard>
                 </Link>
               ))}
             </div>
@@ -216,17 +220,19 @@ export default async function CompanyDetailPage({ params }: Props) {
             {company.invoices.length === 0 ? (
               <p className="text-sm text-muted-foreground">Nenhuma fatura.</p>
             ) : (
-              <div className="divide-y">
+              <div className={ds.listStack}>
                 {company.invoices.map((inv) => (
-                  <Link key={inv.id} href={`/billing/${inv.id}`} className="flex items-center justify-between py-2 hover:bg-accent/40 rounded px-2 -mx-2 transition-colors">
-                    <div>
-                      <p className="text-sm font-medium">{inv.number}</p>
-                      <p className="text-xs text-muted-foreground">{fmtDate(inv.issuedAt)}{inv.dueAt ? ` · vence ${fmtDate(inv.dueAt)}` : ""}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant={INV_VARIANT[inv.status] ?? "outline"}>{INV_LABEL[inv.status] ?? inv.status}</Badge>
-                      <span className="text-sm font-semibold">{fmt(Number(inv.totalAmount))}</span>
-                    </div>
+                  <Link key={inv.id} href={`/billing/${inv.id}`} className="block">
+                    <ListCard className={cn(ds.listCardInteractive, "flex items-center justify-between gap-3 p-4")}>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium">{inv.number}</p>
+                        <p className="truncate text-xs text-muted-foreground">{fmtDate(inv.issuedAt)}{inv.dueAt ? ` · vence ${fmtDate(inv.dueAt)}` : ""}</p>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <Badge variant={INV_VARIANT[inv.status] ?? "outline"}>{INV_LABEL[inv.status] ?? inv.status}</Badge>
+                        <span className="text-sm font-semibold">{fmt(Number(inv.totalAmount))}</span>
+                      </div>
+                    </ListCard>
                   </Link>
                 ))}
               </div>
@@ -236,6 +242,6 @@ export default async function CompanyDetailPage({ params }: Props) {
       )}
 
       <p className="text-xs text-muted-foreground">Criado em {fmtDate(company.createdAt)}</p>
-    </div>
+    </EntityDetailShell>
   );
 }

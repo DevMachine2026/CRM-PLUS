@@ -10,12 +10,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { PageHeader } from "@/components/layout/page-header";
+import { Fab } from "@/components/ui/fab";
+import { FormDrawer } from "@/components/ui/form-drawer";
+import { ListCard } from "@/components/ui/list-card";
+import { PrimaryActionButton } from "@/components/ui/primary-action-button";
+import { ds } from "@/lib/design-system";
+import { cn } from "@/lib/utils";
 
 interface Stage {
   id: string;
@@ -53,19 +54,16 @@ export function PipelineClient({ pipelines, canCreate, canEdit, canDelete }: Pro
     ? pipelines.filter((p) => p.name.toLowerCase().includes(q.toLowerCase()))
     : pipelines;
 
-  // expanded state per pipeline
   const [expanded, setExpanded] = useState<Record<string, boolean>>(
     Object.fromEntries(pipelines.map((p) => [p.id, true]))
   );
 
-  // pipeline dialog
   const [pipelineDialog, setPipelineDialog] = useState(false);
   const [editPipeline, setEditPipeline] = useState<Pipeline | null>(null);
   const [pipelineForm, setPipelineForm] = useState(EMPTY_PIPELINE);
   const [pipelineSaving, setPipelineSaving] = useState(false);
   const [pipelineError, setPipelineError] = useState("");
 
-  // stage dialog
   const [stageDialog, setStageDialog] = useState(false);
   const [stageContext, setStageContext] = useState<{ pipelineId: string; stage: Stage | null } | null>(null);
   const [stageForm, setStageForm] = useState(EMPTY_STAGE);
@@ -166,128 +164,128 @@ export function PipelineClient({ pipelines, canCreate, canEdit, canDelete }: Pro
   }
 
   return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Pipelines</h1>
-          <p className="text-sm text-muted-foreground">{pipelines.length} pipeline{pipelines.length !== 1 ? "s" : ""}</p>
-        </div>
-        {canCreate && (
-          <Button onClick={openCreatePipeline} size="sm">
-            <Plus className="mr-1.5 h-4 w-4" />
+    <div className={ds.pageStack}>
+      <PageHeader
+        title="Pipelines"
+        description={`${pipelines.length} pipeline${pipelines.length !== 1 ? "s" : ""}`}
+        icon={<GitBranch className="h-6 w-6 text-primary" />}
+        action={canCreate ? (
+          <PrimaryActionButton onClick={openCreatePipeline}>
+            <Plus className="h-4 w-4" />
             Novo pipeline
-          </Button>
-        )}
-      </div>
+          </PrimaryActionButton>
+        ) : undefined}
+      />
+      {canCreate && <Fab label="Novo pipeline" onClick={openCreatePipeline} />}
 
-      {/* Search */}
-      <div className="relative max-w-xs">
-        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+      <div className="relative w-full max-w-sm">
+        <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
         <Input
           placeholder="Buscar pipelines…"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          className="pl-8"
+          className="min-h-11 pl-9"
         />
       </div>
 
-      {/* Pipeline list */}
-      <div className="space-y-3">
+      <div className={ds.listStack}>
         {filteredPipelines.length === 0 ? (
-          <div className="rounded-md border p-10 text-center text-muted-foreground">
-            {q ? "Nenhum pipeline encontrado." : "Nenhum pipeline cadastrado."}
+          <div className={ds.emptyState}>
+            <p className="text-sm text-muted-foreground">
+              {q ? "Nenhum pipeline encontrado." : "Nenhum pipeline cadastrado."}
+            </p>
           </div>
         ) : (
           filteredPipelines.map((p) => (
-            <div key={p.id} className="rounded-md border">
-              {/* Pipeline header */}
+            <ListCard key={p.id} className="p-0 overflow-hidden">
               <div className="flex items-center gap-3 p-4">
                 <button
                   type="button"
-                  className="text-muted-foreground hover:text-foreground"
+                  className={cn(ds.touchTarget, "text-muted-foreground hover:text-foreground")}
                   onClick={() => setExpanded((prev) => ({ ...prev, [p.id]: !prev[p.id] }))}
+                  aria-label={expanded[p.id] ? "Recolher etapas" : "Expandir etapas"}
                 >
                   {expanded[p.id]
                     ? <ChevronDown className="h-4 w-4" />
                     : <ChevronRight className="h-4 w-4" />}
                 </button>
-                <GitBranch className="h-4 w-4 text-muted-foreground shrink-0" />
-                <div className="flex-1 min-w-0">
+                <GitBranch className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold">{p.name}</span>
+                    <span className="text-base font-semibold">{p.name}</span>
                     {p.isDefault && <Badge variant="secondary" className="text-xs">Padrão</Badge>}
                   </div>
                   {p.description && (
-                    <p className="text-xs text-muted-foreground truncate">{p.description}</p>
+                    <p className="truncate text-sm text-muted-foreground">{p.description}</p>
                   )}
                 </div>
-                <span className="text-xs text-muted-foreground shrink-0">
+                <span className="shrink-0 text-xs text-muted-foreground">
                   {p.stages.length} etapa{p.stages.length !== 1 ? "s" : ""}
                 </span>
                 <div className="flex items-center gap-1">
                   {canEdit && (
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditPipeline(p)}>
-                      <Pencil className="h-3.5 w-3.5" />
+                    <Button variant="ghost" size="icon" className={ds.touchTarget} onClick={() => openEditPipeline(p)} title="Editar" aria-label="Editar pipeline">
+                      <Pencil className="h-4 w-4" />
                     </Button>
                   )}
                   {canDelete && (
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-7 w-7 text-destructive hover:text-destructive"
+                      className={cn(ds.touchTarget, "text-destructive hover:text-destructive")}
                       onClick={() => handleDeletePipeline(p.id, p.name)}
+                      title="Excluir"
+                      aria-label="Excluir pipeline"
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   )}
                 </div>
               </div>
 
-              {/* Stages */}
               {expanded[p.id] && (
                 <div className="border-t">
-                  {/* Kanban preview strip */}
                   {p.stages.length > 0 && (
                     <div className="flex gap-0 overflow-x-auto border-b bg-muted/30 px-4 py-2">
                       {p.stages.map((s, i) => (
-                        <div key={s.id} className="flex items-center gap-0 shrink-0">
+                        <div key={s.id} className="flex shrink-0 items-center gap-0">
                           <div className="flex flex-col items-center px-3 py-1">
-                            <span className="text-xs font-medium whitespace-nowrap">{s.name}</span>
+                            <span className="whitespace-nowrap text-xs font-medium">{s.name}</span>
                             <span className="text-[10px] text-muted-foreground">{s.probability}%</span>
                           </div>
                           {i < p.stages.length - 1 && (
-                            <span className="text-muted-foreground text-xs">→</span>
+                            <span className="text-xs text-muted-foreground">→</span>
                           )}
                         </div>
                       ))}
                     </div>
                   )}
 
-                  {/* Stages list */}
                   <div className="divide-y">
                     {p.stages.map((s) => (
                       <div key={s.id} className="flex items-center gap-3 px-4 py-2.5">
-                        <GripVertical className="h-4 w-4 text-muted-foreground/40 shrink-0" />
-                        <span className="w-6 text-xs text-muted-foreground tabular-nums text-center">{s.order}</span>
+                        <GripVertical className="h-4 w-4 shrink-0 text-muted-foreground/40" />
+                        <span className="w-6 text-center text-xs tabular-nums text-muted-foreground">{s.order}</span>
                         <span className="flex-1 text-sm">{s.name}</span>
-                        <span className="text-xs text-muted-foreground tabular-nums w-12 text-right">
+                        <span className="w-12 text-right text-xs tabular-nums text-muted-foreground">
                           {s.probability}%
                         </span>
                         <div className="flex items-center gap-1">
                           {canEdit && (
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => openEditStage(p.id, s)}>
-                              <Pencil className="h-3 w-3" />
+                            <Button variant="ghost" size="icon" className={ds.touchTarget} onClick={() => openEditStage(p.id, s)} title="Editar etapa" aria-label="Editar etapa">
+                              <Pencil className="h-4 w-4" />
                             </Button>
                           )}
                           {canEdit && (
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-6 w-6 text-destructive hover:text-destructive"
+                              className={cn(ds.touchTarget, "text-destructive hover:text-destructive")}
                               onClick={() => handleDeleteStage(p.id, s.id, s.name)}
+                              title="Excluir etapa"
+                              aria-label="Excluir etapa"
                             >
-                              <Trash2 className="h-3 w-3" />
+                              <Trash2 className="h-4 w-4" />
                             </Button>
                           )}
                         </div>
@@ -296,11 +294,11 @@ export function PipelineClient({ pipelines, canCreate, canEdit, canDelete }: Pro
                   </div>
 
                   {canEdit && (
-                    <div className="px-4 py-2 border-t">
+                    <div className="border-t px-4 py-2">
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-muted-foreground h-7 text-xs"
+                        className="h-9 text-xs text-muted-foreground"
                         onClick={() => openCreateStage(p.id, p.stages.length + 1)}
                       >
                         <Plus className="mr-1 h-3 w-3" />
@@ -310,106 +308,92 @@ export function PipelineClient({ pipelines, canCreate, canEdit, canDelete }: Pro
                   )}
                 </div>
               )}
-            </div>
+            </ListCard>
           ))
         )}
       </div>
 
-      {/* Dialog — Pipeline */}
-      <Dialog open={pipelineDialog} onOpenChange={setPipelineDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{editPipeline ? "Editar pipeline" : "Novo pipeline"}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3 pt-1">
-            <div className="space-y-1.5">
-              <Label>Nome *</Label>
-              <Input
-                value={pipelineForm.name}
-                onChange={(e) => setPipelineForm({ ...pipelineForm, name: e.target.value })}
-                placeholder="Vendas, Pós-venda, Parcerias..."
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Descrição</Label>
-              <Textarea
-                value={pipelineForm.description}
-                onChange={(e) => setPipelineForm({ ...pipelineForm, description: e.target.value })}
-                placeholder="Descrição do pipeline..."
-                className="resize-none"
-                rows={2}
-              />
-            </div>
-            <label className="flex items-center gap-2 text-sm cursor-pointer">
-              <input
-                type="checkbox"
-                checked={pipelineForm.isDefault}
-                onChange={(e) => setPipelineForm({ ...pipelineForm, isDefault: e.target.checked })}
-                className="rounded"
-              />
-              Pipeline padrão
-            </label>
-            {pipelineError && <p className="text-sm text-destructive">{pipelineError}</p>}
-            <div className="flex justify-end gap-2 pt-2">
-              <Button variant="outline" onClick={() => setPipelineDialog(false)}>Cancelar</Button>
-              <Button onClick={handleSavePipeline} disabled={pipelineSaving}>
-                {pipelineSaving && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}
-                {editPipeline ? "Salvar" : "Criar"}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <FormDrawer
+        open={pipelineDialog}
+        onOpenChange={setPipelineDialog}
+        title={editPipeline ? "Editar pipeline" : "Novo pipeline"}
+        description="Defina nome, descrição e se é o pipeline padrão do workspace."
+        submitLabel={editPipeline ? "Salvar" : "Criar"}
+        onSubmit={handleSavePipeline}
+        loading={pipelineSaving}
+      >
+        <div className="space-y-1.5">
+          <Label>Nome *</Label>
+          <Input
+            value={pipelineForm.name}
+            onChange={(e) => setPipelineForm({ ...pipelineForm, name: e.target.value })}
+            placeholder="Vendas, Pós-venda, Parcerias..."
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label>Descrição</Label>
+          <Textarea
+            value={pipelineForm.description}
+            onChange={(e) => setPipelineForm({ ...pipelineForm, description: e.target.value })}
+            placeholder="Descrição do pipeline..."
+            className="resize-none"
+            rows={2}
+          />
+        </div>
+        <label className="flex cursor-pointer items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={pipelineForm.isDefault}
+            onChange={(e) => setPipelineForm({ ...pipelineForm, isDefault: e.target.checked })}
+            className="rounded"
+          />
+          Pipeline padrão
+        </label>
+        {pipelineError && <p className="text-sm text-destructive">{pipelineError}</p>}
+      </FormDrawer>
 
-      {/* Dialog — Stage */}
-      <Dialog open={stageDialog} onOpenChange={setStageDialog}>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle>{stageContext?.stage ? "Editar etapa" : "Nova etapa"}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3 pt-1">
-            <div className="space-y-1.5">
-              <Label>Nome *</Label>
-              <Input
-                value={stageForm.name}
-                onChange={(e) => setStageForm({ ...stageForm, name: e.target.value })}
-                placeholder="Prospecção, Proposta, Fechamento..."
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label>Ordem *</Label>
-                <Input
-                  type="number"
-                  min={1}
-                  value={stageForm.order}
-                  onChange={(e) => setStageForm({ ...stageForm, order: e.target.value })}
-                  placeholder="1"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Probabilidade (%)</Label>
-                <Input
-                  type="number"
-                  min={0}
-                  max={100}
-                  value={stageForm.probability}
-                  onChange={(e) => setStageForm({ ...stageForm, probability: e.target.value })}
-                  placeholder="0"
-                />
-              </div>
-            </div>
-            {stageError && <p className="text-sm text-destructive">{stageError}</p>}
-            <div className="flex justify-end gap-2 pt-2">
-              <Button variant="outline" onClick={() => setStageDialog(false)}>Cancelar</Button>
-              <Button onClick={handleSaveStage} disabled={stageSaving}>
-                {stageSaving && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}
-                {stageContext?.stage ? "Salvar" : "Criar"}
-              </Button>
-            </div>
+      <FormDrawer
+        open={stageDialog}
+        onOpenChange={setStageDialog}
+        title={stageContext?.stage ? "Editar etapa" : "Nova etapa"}
+        description="Ordem e probabilidade definem o funil de oportunidades."
+        submitLabel={stageContext?.stage ? "Salvar" : "Criar"}
+        onSubmit={handleSaveStage}
+        loading={stageSaving}
+      >
+        <div className="space-y-1.5">
+          <Label>Nome *</Label>
+          <Input
+            value={stageForm.name}
+            onChange={(e) => setStageForm({ ...stageForm, name: e.target.value })}
+            placeholder="Prospecção, Proposta, Fechamento..."
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <Label>Ordem *</Label>
+            <Input
+              type="number"
+              min={1}
+              value={stageForm.order}
+              onChange={(e) => setStageForm({ ...stageForm, order: e.target.value })}
+              placeholder="1"
+            />
           </div>
-        </DialogContent>
-      </Dialog>
+          <div className="space-y-1.5">
+            <Label>Probabilidade (%)</Label>
+            <Input
+              type="number"
+              min={0}
+              max={100}
+              value={stageForm.probability}
+              onChange={(e) => setStageForm({ ...stageForm, probability: e.target.value })}
+              placeholder="0"
+            />
+          </div>
+        </div>
+        {stageError && <p className="text-sm text-destructive">{stageError}</p>}
+      </FormDrawer>
     </div>
   );
 }

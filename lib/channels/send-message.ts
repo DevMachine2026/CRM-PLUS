@@ -1,8 +1,9 @@
 import { sendWhatsAppMessage } from "./whatsapp";
 import { sendInstagramMessage } from "./instagram";
+import { sendEvolutionGoTextMessage } from "./evolution-go-send";
 import {
-  loadWhatsAppCredentials,
   loadInstagramCredentials,
+  resolveWhatsAppSendRoute,
 } from "@/lib/integrations/credentials";
 
 export interface OutboundPayload {
@@ -32,8 +33,34 @@ export async function sendChannelMessage(
         deliveryError: "recipientPhone required for whatsapp",
       };
     }
-    const cfg = await loadWhatsAppCredentials(tenantId);
-    return sendWhatsAppMessage(payload.recipientPhone, content, cfg);
+
+    const route = await resolveWhatsAppSendRoute(tenantId);
+
+    if (!route) {
+      return sendWhatsAppMessage(payload.recipientPhone, content, null);
+    }
+    if (route.kind === "unavailable") {
+      return {
+        externalId: null,
+        externalStatus: "failed",
+        deliveryError: route.reason,
+      };
+    }
+    if (route.kind === "evolution-go") {
+      return sendEvolutionGoTextMessage(
+        payload.recipientPhone,
+        content,
+        route.instanceToken,
+      );
+    }
+    if (route.kind === "simulated") {
+      return { externalId: `sim-${Date.now()}`, externalStatus: "simulated" };
+    }
+
+    return sendWhatsAppMessage(payload.recipientPhone, content, {
+      accessToken: route.accessToken,
+      phoneNumberId: route.phoneNumberId,
+    });
   }
 
   if (channel === "instagram") {

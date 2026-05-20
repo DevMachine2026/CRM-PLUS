@@ -3,10 +3,11 @@ import { requirePageSession, requirePagePermission } from "@/lib/auth/get-sessio
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Mail, Phone, Building2, Tag, Brain, Activity } from "lucide-react";
+import { Mail, Phone, Building2, Tag, Activity } from "lucide-react";
 import { ContactSummaryCard } from "@/components/contact-summary-card";
+import { EntityDetailShell } from "@/components/layout/entity-detail-shell";
+import { ListCard } from "@/components/ui/list-card";
 
 export default async function ContactProfilePage({
   params,
@@ -83,47 +84,42 @@ export default async function ContactProfilePage({
     : "Cold";
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <Link href="/contacts">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="h-4 w-4 mr-1" /> Contatos
-          </Button>
-        </Link>
-      </div>
+    <EntityDetailShell
+      backHref="/contacts"
+      backLabel="Contatos"
+      title={contact.name}
+      meta={
+        <>
+          {contact.email && (
+            <span className="flex items-center gap-1">
+              <Mail className="h-3 w-3" />{contact.email}
+            </span>
+          )}
+          {contact.phone && (
+            <span className="flex items-center gap-1">
+              <Phone className="h-3 w-3" />{contact.phone}
+            </span>
+          )}
+          {contact.company && (
+            <Link
+              href={`/companies/${contact.company.id}`}
+              className="flex items-center gap-1 hover:text-foreground hover:underline"
+            >
+              <Building2 className="h-3 w-3" />{contact.company.name}
+            </Link>
+          )}
+        </>
+      }
+      aside={
+        <>
+          <p className={`text-3xl font-bold ${scoreColor}`}>{contact.leadScore}</p>
+          <p className={`text-sm font-medium ${scoreColor}`}>{scoreLabel}</p>
+        </>
+      }
+    >
 
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">{contact.name}</h1>
-          <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-            {contact.email && (
-              <span className="flex items-center gap-1">
-                <Mail className="h-3 w-3" />{contact.email}
-              </span>
-            )}
-            {contact.phone && (
-              <span className="flex items-center gap-1">
-                <Phone className="h-3 w-3" />{contact.phone}
-              </span>
-            )}
-            {contact.company && (
-              <Link
-                href={`/companies/${contact.company.id}`}
-                className="flex items-center gap-1 hover:underline"
-              >
-                <Building2 className="h-3 w-3" />{contact.company.name}
-              </Link>
-            )}
-          </div>
-        </div>
-        <div className="text-right">
-          <div className={`text-3xl font-bold ${scoreColor}`}>{contact.leadScore}</div>
-          <div className={`text-sm font-medium ${scoreColor}`}>{scoreLabel}</div>
-        </div>
-      </div>
-
-      {/* Tags */}
+      
+{/* Tags */}
       {contact.tags.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {contact.tags.map(({ tag }) => (
@@ -148,7 +144,7 @@ export default async function ContactProfilePage({
             {contact.opportunities.length === 0 ? (
               <p className="text-xs text-muted-foreground">Nenhuma oportunidade</p>
             ) : contact.opportunities.map((opp) => (
-              <div key={opp.id} className="text-xs p-2 rounded border">
+              <ListCard key={opp.id} className="p-3 text-xs">
                 <div className="font-medium truncate">{opp.title}</div>
                 <div className="text-muted-foreground flex justify-between">
                   <span>{opp.stage.name}</span>
@@ -156,7 +152,7 @@ export default async function ContactProfilePage({
                     R${Number(opp.value ?? 0).toLocaleString("pt-BR")}
                   </span>
                 </div>
-              </div>
+</ListCard>
             ))}
           </CardContent>
         </Card>
@@ -170,14 +166,14 @@ export default async function ContactProfilePage({
             {contact.tasks.length === 0 ? (
               <p className="text-xs text-muted-foreground">Nenhuma tarefa pendente</p>
             ) : contact.tasks.map((task) => (
-              <div key={task.id} className="text-xs p-2 rounded border">
+              <ListCard key={task.id} className="p-3 text-xs">
                 <div className="font-medium truncate">{task.title}</div>
                 {task.dueAt && (
                   <div className="text-muted-foreground">
                     {new Date(task.dueAt).toLocaleDateString("pt-BR")}
                   </div>
                 )}
-              </div>
+              </ListCard>
             ))}
           </CardContent>
         </Card>
@@ -192,7 +188,7 @@ export default async function ContactProfilePage({
               <p className="text-xs text-muted-foreground">Nenhuma conversa</p>
             ) : contact.conversations.map((conv) => (
               <Link key={conv.id} href={`/conversations/${conv.id}`} className="block">
-                <div className="text-xs p-2 rounded border hover:bg-accent transition-colors">
+                <ListCard className="p-3 text-xs transition-colors hover:border-border">
                   <div className="flex justify-between">
                     <span className="capitalize font-medium">{conv.channel}</span>
                     <Badge
@@ -202,10 +198,10 @@ export default async function ContactProfilePage({
                       {conv.status}
                     </Badge>
                   </div>
-                  <div className="text-muted-foreground">
+                  <p className="text-muted-foreground">
                     {conv._count.messages} mensagens
-                  </div>
-                </div>
+                  </p>
+                </ListCard>
               </Link>
             ))}
           </CardContent>
@@ -256,6 +252,6 @@ export default async function ContactProfilePage({
           )}
         </CardContent>
       </Card>
-    </div>
+    </EntityDetailShell>
   );
 }

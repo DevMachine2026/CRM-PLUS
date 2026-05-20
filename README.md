@@ -13,6 +13,10 @@
 | Você é… | Leia primeiro |
 |---------|----------------|
 | **Gestor / apresentação ao contratante** | **[VISAO-GERAL.md](./VISAO-GERAL.md)** — funcionalidades, fluxos, roteiro de demo |
+| **Dono do produto / planejamento** | **[docs/ESTADO-DO-PROJETO-E-PLANO.md](./docs/ESTADO-DO-PROJETO-E-PLANO.md)** — estado real vs visão, lacunas, fases |
+| **Validar sem Evolution API** | **[docs/ENTREGA-SEM-EVOLUTION.md](./docs/ENTREGA-SEM-EVOLUTION.md)** — demo, webhooks simulados, checklist |
+| **WhatsApp produção (Evolution GO)** | **[docs/EVOLUTION-GO.md](./docs/EVOLUTION-GO.md)** — cliente GO, webhook, deploy Render |
+| **Auditoria técnica / MVP** | **[docs/AUDITORIA-ARQUITETURA-MVP.md](./docs/AUDITORIA-ARQUITETURA-MVP.md)** — stack, fluxos, gaps, plano hoje |
 | **Desenvolvedor / QA** | [GUIA-DE-TESTES.md](./GUIA-DE-TESTES.md) — validação módulo a módulo |
 | **Arquiteto / produto técnico** | [SDD.md](./SDD.md) — design completo do sistema |
 
@@ -99,6 +103,14 @@ npm run dev
 ```
 
 Acesse `http://localhost:3000` → `/login` ou `/register`.
+
+**Dev lento ou `ChunkLoadError` na primeira carga?** O projeto em `/mnt/hd` (disco montado via FUSE/NTFS) faz o Turbopack gravar milhares de arquivos em `.next` de forma lenta; às vezes o chunk fica incompleto e a primeira requisição retorna 500. Soluções (da mais estável à paliativa):
+
+1. Clonar/copiar o repo para disco local ext4 (ex.: `~/CRM-PLUS`) e rodar `npm run dev` de lá.
+2. `npm run dev:webpack` — Webpack costuma ser mais estável nesse tipo de montagem.
+3. `npm run dev:clean` — apaga `.next` e sobe de novo (pare o servidor antes, se já estiver rodando).
+
+Na segunda visita à mesma rota, após o cache esquentar, costuma responder em ~300 ms.
 
 ---
 

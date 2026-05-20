@@ -4,6 +4,7 @@ import { useCallback, useEffect, useOptimistic, useState, useTransition } from "
 import {
   TrendingUp, Trophy, XCircle, GripVertical, Plus,
   Smartphone, Camera, AtSign, MessageSquare, Clock,
+  Inbox,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -58,11 +59,11 @@ function priorityTags(opp: KanbanOpportunity) {
   }).slice(0, 3);
 }
 
-// ── Skeleton ──────────────────────────────────────────────────────────────────
+// ── Skeleton (loading placeholders) ─────────────────────────────────────────
 
 function KanbanCardSkeleton() {
   return (
-    <div className="rounded-lg border bg-background p-3 shadow-sm space-y-2">
+    <div className="space-y-2 rounded-lg border border-border/80 bg-card p-3 shadow-sm">
       <Skeleton className="h-4 w-4/5" />
       <Skeleton className="h-3 w-1/2" />
       <div className="flex gap-1">
@@ -83,7 +84,7 @@ export function KanbanBoardSkeleton({ stageCount = 5 }: { stageCount?: number })
             <Skeleton className="h-4 w-24" />
             <Skeleton className="h-5 w-6 rounded-full" />
           </div>
-          <div className="min-h-[120px] space-y-2 rounded-lg bg-muted/30 p-2">
+          <div className="min-h-[120px] space-y-2 rounded-xl border border-border/70 bg-muted/45 p-2 shadow-sm">
             <KanbanCardSkeleton />
             <KanbanCardSkeleton />
             {i % 2 === 0 && <KanbanCardSkeleton />}
@@ -125,8 +126,8 @@ function KanbanCard({
       onDragEnd={onDragEnd}
       aria-grabbed={isDragging}
       className={cn(
-        "group rounded-lg border bg-background p-3 shadow-sm select-none transition-all duration-200",
-        canEdit && !isPendingMove && "cursor-grab active:cursor-grabbing hover:shadow-md",
+        "group select-none rounded-lg border border-border/80 bg-card p-3 shadow-sm ring-1 ring-black/[0.04] transition-all duration-200",
+        canEdit && !isPendingMove && "cursor-grab active:cursor-grabbing hover:border-border hover:shadow-md",
         isDragging && "scale-95 opacity-40",
         isPendingMove && "opacity-70 ring-2 ring-primary/30",
       )}
@@ -264,7 +265,7 @@ function KanbanColumn({
       <div className="mb-2 flex items-center justify-between px-1">
         <div className="flex min-w-0 items-center gap-2">
           <h3 id={colId} className="truncate text-sm font-semibold">{stage.name}</h3>
-          <span className="shrink-0 rounded-full bg-muted px-1.5 py-0.5 text-[11px] text-muted-foreground">
+          <span className="shrink-0 rounded-full border border-border/60 bg-muted/80 px-1.5 py-0.5 text-[11px] font-medium tabular-nums text-muted-foreground">
             {cards.length}
           </span>
         </div>
@@ -286,8 +287,10 @@ function KanbanColumn({
         role="list"
         aria-label={`Oportunidades em ${stage.name}`}
         className={cn(
-          "min-h-[120px] flex-1 space-y-2 rounded-lg p-2 transition-colors",
-          dragOver ? "border-2 border-dashed border-primary/40 bg-primary/10" : "bg-muted/30",
+          "min-h-[140px] flex-1 space-y-2 rounded-xl border p-2 transition-colors",
+          dragOver
+            ? "border-2 border-dashed border-primary/50 bg-primary/10 shadow-inner"
+            : "border-border/70 bg-muted/45 shadow-sm",
         )}
         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
         onDragLeave={() => setDragOver(false)}
@@ -309,7 +312,15 @@ function KanbanColumn({
           </div>
         ))}
         {cards.length === 0 && !draggingId && (
-          <p className="py-4 text-center text-xs text-muted-foreground/60">Sem oportunidades</p>
+          <div
+            className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border/80 bg-card/90 px-3 py-8 text-center"
+            aria-hidden
+          >
+            <span className="flex h-9 w-9 items-center justify-center rounded-full border border-border/60 bg-muted/60">
+              <Inbox className="h-4 w-4 text-muted-foreground" />
+            </span>
+            <p className="text-xs font-medium text-muted-foreground">Sem oportunidades</p>
+          </div>
         )}
       </div>
     </section>
@@ -424,7 +435,7 @@ export function KanbanBoard({
           )}
         </div>
 
-        <div className="flex gap-4 overflow-x-auto pb-4">
+        <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-4 md:mx-0 md:gap-4 md:px-0">
           {stages.map((stage) => (
             <KanbanColumn
               key={stage.id}

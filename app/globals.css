@@ -1,4 +1,10 @@
 @import "tailwindcss";
+
+/* Mobile: subtle horizontal scroll hint for data tables */
+@utility scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklch, var(--muted-foreground) 35%, transparent) transparent;
+}
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 

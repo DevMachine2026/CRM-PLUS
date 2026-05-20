@@ -1,6 +1,8 @@
 import { z } from "zod";
+import { prisma } from "@/lib/db/client";
 
 export const tenantAiSettingsSchema = z.object({
+  aiEnabled:       z.boolean().optional(),
   agentName:       z.string().min(2, "Nome do agente deve ter pelo menos 2 caracteres.").max(40),
   agentTone:       z.enum(["professional", "friendly", "empathetic", "direct"]).optional(),
   companyContext:  z.string().max(500, "Contexto da empresa: máximo 500 caracteres.").optional(),
@@ -17,11 +19,12 @@ export const TONE_LABELS: Record<NonNullable<TenantAiSettings["agentTone"]>, str
 };
 
 export const DEFAULT_AI_SETTINGS: TenantAiSettings = {
+  aiEnabled:      false,
   agentName:      "Sara",
   agentTone:      "professional",
   companyContext: "",
   systemPrompt:
-    "Você é uma assistente comercial da empresa. Seja objetiva, cordial e focada em avançar o lead no funil. Sempre responda em português do Brasil.",
+    "Você é a Sara, assistente comercial da empresa. Seja objetiva, cordial e focada em qualificar leads e agendar próximos passos. Responda em português do Brasil.",
 };
 
 export function parseTenantAiSettings(raw: unknown): TenantAiSettings {
@@ -29,7 +32,20 @@ export function parseTenantAiSettings(raw: unknown): TenantAiSettings {
   const ai = (raw as Record<string, unknown>).ai;
   if (!ai || typeof ai !== "object") return { ...DEFAULT_AI_SETTINGS };
   const parsed = tenantAiSettingsSchema.safeParse(ai);
-  return parsed.success ? parsed.data : { ...DEFAULT_AI_SETTINGS };
+  return parsed.success ? { ...DEFAULT_AI_SETTINGS, ...parsed.data } : { ...DEFAULT_AI_SETTINGS };
+}
+
+/** IA nativa ativa (switch em Integrações). Default: false. */
+export function isAiEnabled(settings: unknown): boolean {
+  return parseTenantAiSettings(settings).aiEnabled === true;
+}
+
+export async function loadTenantAiEnabled(tenantId: string): Promise<boolean> {
+  const tenant = await prisma.tenant.findUnique({
+    where: { id: tenantId },
+    select: { settings: true },
+  });
+  return isAiEnabled(tenant?.settings);
 }
 
 export function validateAiField(

@@ -46,6 +46,8 @@ cd /mnt/hd/CRM-PLUS   # ou o caminho do seu clone
 npm run dev
 ```
 
+> **Performance em `/mnt/hd`:** a primeira abertura pode levar 20–30 s e falhar com `ChunkLoadError` / `Unexpected end of input` até o cache do Turbopack terminar de gravar. Recarregue a página ou use `npm run dev:webpack` / `npm run dev:clean`. Para demos, prefira o projeto em disco local (`~/…`).
+
 Aguarde a mensagem `✓ Ready in ...ms` no terminal. Acesse:
 
 ```

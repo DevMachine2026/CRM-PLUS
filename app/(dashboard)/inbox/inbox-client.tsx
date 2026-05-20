@@ -18,9 +18,8 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
-} from "@/components/ui/dialog";
+import { FormDrawer } from "@/components/ui/form-drawer";
+import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { MessageBubble } from "@/components/inbox/message-bubble";
@@ -176,6 +175,12 @@ export function InboxClient({
     if (value) p.set(key, value); else p.delete(key);
     p.delete("convId");
     startTransition(() => router.push(`?${p.toString()}`));
+  }
+
+  function clearActive() {
+    setActive(null);
+    setShowAiPanel(false);
+    setLoadingMsgs(false);
   }
 
   async function selectConversation(conv: ConvSummary) {
@@ -366,10 +371,13 @@ export function InboxClient({
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex -m-6 h-[calc(100vh-56px)] overflow-hidden">
+    <div className="-mx-4 -my-4 flex h-[calc(100dvh-3.5rem)] overflow-hidden md:-mx-6 md:-my-6 md:h-[calc(100dvh-4.5rem)]">
 
       {/* ── LEFT: Conversation list ─────────────────────────────────────── */}
-      <aside className="w-72 flex-shrink-0 flex flex-col border-r bg-background">
+      <aside className={cn(
+        "flex w-full shrink-0 flex-col border-r bg-background md:w-72",
+        active && "hidden md:flex"
+      )}>
         <div className="flex items-center justify-between px-4 py-3 border-b">
           <div className="flex items-center gap-2">
             <MessageSquare className="w-4 h-4" />
@@ -672,10 +680,20 @@ export function InboxClient({
 
             {/* ── RIGHT: AI Panel ─────────────────────────────────────────── */}
             {showAiPanel && (
-              <aside className="w-64 flex-shrink-0 border-l flex flex-col bg-background overflow-y-auto">
-                <div className="px-3 py-3 border-b flex items-center gap-2">
+              <aside className="flex w-full shrink-0 flex-col overflow-y-auto border-l bg-background max-md:absolute max-md:inset-0 max-md:z-20 md:w-64">
+                                <div className="flex items-center gap-2 border-b px-3 py-3">
                   <Bot className="w-4 h-4 text-purple-600" />
                   <span className="text-sm font-semibold">Assistente IA</span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="ml-auto min-h-11 min-w-11 md:hidden"
+                    onClick={() => setShowAiPanel(false)}
+                    aria-label="Fechar painel de IA"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
                 </div>
 
                 <div className="flex-1 p-3 space-y-4">
@@ -820,49 +838,45 @@ export function InboxClient({
         )}
       </main>
 
-      {/* ── New Conversation Dialog ───────────────────────────────────── */}
-      <Dialog open={showNew} onOpenChange={(o) => { if (!o) setShowNew(false); }}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Nova Conversa</DialogTitle></DialogHeader>
-          <div className="space-y-3">
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Contato</label>
-              <Select value={newContactId || "none"} onValueChange={(v) => setNewContactId(v === "none" ? "" : (v ?? ""))}>
-                <SelectTrigger><SelectValue placeholder="Selecionar contato (opcional)" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Sem contato</SelectItem>
-                  {contacts.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>{c.name}{c.email ? ` — ${c.email}` : ""}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Canal</label>
-              <Select value={newChannel} onValueChange={(v) => setNewChannel(v ?? "manual")}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="manual">Manual</SelectItem>
-                  <SelectItem value="whatsapp">WhatsApp (simulado)</SelectItem>
-                  <SelectItem value="instagram">Instagram (simulado)</SelectItem>
-                  <SelectItem value="email">E-mail (simulado)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Assunto</label>
-              <Input value={newSubject} onChange={(e) => setNewSubject(e.target.value)} placeholder="Opcional" />
-            </div>
-            {createError && <p className="text-sm text-destructive">{createError}</p>}
-            <div className="flex justify-end gap-2 pt-1">
-              <Button variant="outline" onClick={() => setShowNew(false)} disabled={creating}>Cancelar</Button>
-              <Button onClick={handleCreate} disabled={creating}>
-                {creating && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}Criar
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <FormDrawer
+        open={showNew}
+        onOpenChange={(o) => { if (!o) setShowNew(false); }}
+        title="Nova conversa"
+        description="Inicie um atendimento manual ou simulado por canal."
+        submitLabel="Criar"
+        onSubmit={handleCreate}
+        loading={creating}
+      >
+        <div className="space-y-1.5">
+          <Label>Contato</Label>
+          <Select value={newContactId || "none"} onValueChange={(v) => setNewContactId(v === "none" ? "" : (v ?? ""))}>
+            <SelectTrigger><SelectValue placeholder="Selecionar contato (opcional)" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">Sem contato</SelectItem>
+              {contacts.map((c) => (
+                <SelectItem key={c.id} value={c.id}>{c.name}{c.email ? ` — ${c.email}` : ""}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1.5">
+          <Label>Canal</Label>
+          <Select value={newChannel} onValueChange={(v) => setNewChannel(v ?? "manual")}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="manual">Manual</SelectItem>
+              <SelectItem value="whatsapp">WhatsApp (simulado)</SelectItem>
+              <SelectItem value="instagram">Instagram (simulado)</SelectItem>
+              <SelectItem value="email">E-mail (simulado)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1.5">
+          <Label>Assunto</Label>
+          <Input value={newSubject} onChange={(e) => setNewSubject(e.target.value)} placeholder="Opcional" />
+        </div>
+        {createError && <p className="text-sm text-destructive">{createError}</p>}
+      </FormDrawer>
     </div>
   );
 }

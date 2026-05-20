@@ -17,6 +17,13 @@ import {
 } from "@/components/automations/ai-activity-panel";
 import type { AutomationTrigger } from "@/lib/automations/types";
 import type { ActionsRunRaw } from "@/lib/automations/log-timeline";
+import { PageHeader } from "@/components/layout/page-header";
+import { MetricCard, MetricGrid } from "@/components/ui/metric-card";
+import { Fab } from "@/components/ui/fab";
+import { FormDrawer } from "@/components/ui/form-drawer";
+import { ListCard } from "@/components/ui/list-card";
+import { PrimaryActionButton } from "@/components/ui/primary-action-button";
+import { ds } from "@/lib/design-system";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -382,50 +389,27 @@ export function AutomationsClient({
   const totalRuns = automations.reduce((s, a) => s + a.runCount, 0);
 
   return (
-    <div className="flex flex-col gap-6 p-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Automações</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Crie regras que executam ações automaticamente quando eventos acontecem no CRM.
-          </p>
-        </div>
-        {canCreate && (
-          <Button onClick={openCreate} size="sm" className="gap-2">
-            <Plus className="h-4 w-4" />
-            Nova automação
-          </Button>
-        )}
-      </div>
+    <div className={ds.pageStack}>
+      <PageHeader
+        title="Automações"
+        description="Crie regras que executam ações automaticamente quando eventos acontecem no CRM."
+        action={
+          canCreate ? (
+            <PrimaryActionButton onClick={openCreate}>
+              <Plus className="h-4 w-4" />
+              Nova automação
+            </PrimaryActionButton>
+          ) : undefined
+        }
+      />
+      {canCreate && <Fab label="Nova automação" onClick={openCreate} />}
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <Card>
-          <CardContent className="pt-5">
-            <p className="text-xs text-muted-foreground">Total de automações</p>
-            <p className="text-2xl font-bold mt-1">{automations.length}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-5">
-            <p className="text-xs text-muted-foreground">Ativas</p>
-            <p className="text-2xl font-bold mt-1">{activeCount}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-5">
-            <p className="text-xs text-muted-foreground">Total de execuções</p>
-            <p className="text-2xl font-bold mt-1">{totalRuns}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-5">
-            <p className="text-xs text-muted-foreground">Logs recentes</p>
-            <p className="text-2xl font-bold mt-1">{logs.length}</p>
-          </CardContent>
-        </Card>
-      </div>
+      <MetricGrid>
+        <MetricCard label="Total de automações" value={automations.length} />
+        <MetricCard label="Ativas" value={activeCount} />
+        <MetricCard label="Total de execuções" value={totalRuns} />
+        <MetricCard label="Logs recentes" value={logs.length} />
+      </MetricGrid>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Automation list */}
@@ -454,7 +438,8 @@ export function AutomationsClient({
                   const trigger = a.trigger as AutomationTrigger;
                   const acts = a.actions as ActionConfig[];
                   return (
-                    <div key={a.id} className="flex items-start gap-3 rounded-lg border p-3">
+                    <ListCard key={a.id} className="!p-4">
+                      <div className="flex items-start gap-3">
                       <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted">
                         <Zap className="h-4 w-4 text-amber-500" />
                       </div>
@@ -516,7 +501,8 @@ export function AutomationsClient({
                           </Button>
                         )}
                       </div>
-                    </div>
+                      </div>
+                    </ListCard>
                   );
                 })}
               </div>
@@ -589,14 +575,16 @@ export function AutomationsClient({
         </Card>
       </div>
 
-      {/* ─── Create / Edit Dialog ──────────────────────────────────────────── */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{editingId ? "Editar automação" : "Nova automação"}</DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-5 py-2">
+      <FormDrawer
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        title={editingId ? "Editar automação" : "Nova automação"}
+        description="Configure gatilho, condições e ações em um só fluxo."
+        submitLabel={editingId ? "Salvar alterações" : "Criar automação"}
+        onSubmit={handleSave}
+        loading={saving}
+        className="max-w-2xl"
+      >
             {/* Name */}
             <div className="space-y-1.5">
               <Label htmlFor="aut-name">Nome <span className="text-red-500">*</span></Label>
@@ -719,22 +707,8 @@ export function AutomationsClient({
               )}
             </div>
 
-            {formError && (
-              <p className="text-sm text-red-500">{formError}</p>
-            )}
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={saving}>
-              Cancelar
-            </Button>
-            <Button onClick={handleSave} disabled={saving} className="gap-2">
-              {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-              {editingId ? "Salvar alterações" : "Criar automação"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        {formError && <p className="text-sm text-destructive">{formError}</p>}
+      </FormDrawer>
 
       {/* ─── Delete confirmation dialog ───────────────────────────────────── */}
       <Dialog open={!!deletingId} onOpenChange={(open) => !open && setDeletingId(null)}>

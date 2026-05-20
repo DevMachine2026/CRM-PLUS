@@ -4,26 +4,12 @@ import { apiFetch } from "@/lib/api/client-fetch";
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Search, Pencil, Trash2, Loader2 } from "lucide-react";
+import { Plus, Search, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   Select,
   SelectContent,
@@ -31,6 +17,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { PageHeader } from "@/components/layout/page-header";
+import { FilterBar } from "@/components/layout/filter-bar";
+import { Fab } from "@/components/ui/fab";
+import { FormDrawer } from "@/components/ui/form-drawer";
+import { ListCard } from "@/components/ui/list-card";
+import { PrimaryActionButton } from "@/components/ui/primary-action-button";
+import { ds } from "@/lib/design-system";
+import { cn } from "@/lib/utils";
 
 type ProductStatus = "active" | "inactive";
 
@@ -38,7 +32,7 @@ interface Product {
   id: string;
   name: string;
   description: string | null;
-  price: unknown; // Decimal serialized as string from Prisma
+  price: unknown;
   category: string | null;
   status: ProductStatus;
   createdAt: Date;
@@ -60,7 +54,7 @@ const STATUS_LABELS: Record<ProductStatus, string> = {
   inactive: "Inativo",
 };
 
-const STATUS_VARIANTS: Record<ProductStatus, "default" | "secondary" | "outline"> = {
+const STATUS_VARIANTS: Record<ProductStatus, "default" | "outline"> = {
   active: "default",
   inactive: "outline",
 };
@@ -92,7 +86,7 @@ export function ProductsClient({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [q, setQ] = useState(search);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [editProduct, setEditProduct] = useState<Product | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
@@ -124,7 +118,7 @@ export function ProductsClient({
     setEditProduct(null);
     setForm(EMPTY_FORM);
     setError("");
-    setDialogOpen(true);
+    setDrawerOpen(true);
   }
 
   function openEdit(p: Product) {
@@ -137,13 +131,19 @@ export function ProductsClient({
       status: p.status,
     });
     setError("");
-    setDialogOpen(true);
+    setDrawerOpen(true);
   }
 
   async function handleSave() {
-    if (!form.name.trim()) { setError("Nome é obrigatório."); return; }
+    if (!form.name.trim()) {
+      setError("Nome é obrigatório.");
+      return;
+    }
     const price = parseFloat(form.price.replace(",", "."));
-    if (isNaN(price) || price < 0) { setError("Preço inválido."); return; }
+    if (isNaN(price) || price < 0) {
+      setError("Preço inválido.");
+      return;
+    }
 
     setSaving(true);
     setError("");
@@ -166,7 +166,7 @@ export function ProductsClient({
         setError(d.error ?? "Erro ao salvar.");
         return;
       }
-      setDialogOpen(false);
+      setDrawerOpen(false);
       startTransition(() => router.refresh());
     } finally {
       setSaving(false);
@@ -183,27 +183,26 @@ export function ProductsClient({
   const pages = Math.ceil(total / limit);
 
   return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Produtos</h1>
-          <p className="text-sm text-muted-foreground">{total} produto{total !== 1 ? "s" : ""}</p>
-        </div>
-        {canCreate && (
-          <Button onClick={openCreate} size="sm">
-            <Plus className="mr-1.5 h-4 w-4" />
-            Novo produto
-          </Button>
-        )}
-      </div>
+    <div className={ds.pageStack}>
+      <PageHeader
+        title="Produtos"
+        description={`${total} produto${total !== 1 ? "s" : ""}`}
+        action={
+          canCreate ? (
+            <PrimaryActionButton onClick={openCreate}>
+              <Plus className="h-4 w-4" />
+              Novo produto
+            </PrimaryActionButton>
+          ) : undefined
+        }
+      />
+      {canCreate && <Fab label="Novo produto" onClick={openCreate} />}
 
-      {/* Filters */}
-      <div className="flex gap-3">
-        <div className="relative max-w-sm flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+      <FilterBar>
+        <div className="relative min-w-0 flex-1 sm:max-w-sm">
+          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
           <Input
-            className="pl-8"
+            className="min-h-11 pl-9"
             placeholder="Buscar por nome, categoria..."
             value={q}
             onChange={(e) => setQ(e.target.value)}
@@ -211,7 +210,7 @@ export function ProductsClient({
           />
         </div>
         <Select value={statusFilter || "all"} onValueChange={(v) => applyStatus(v ?? "all")}>
-          <SelectTrigger className="w-36">
+          <SelectTrigger className="min-h-11 w-full sm:w-36">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
@@ -220,72 +219,70 @@ export function ProductsClient({
             <SelectItem value="inactive">Inativos</SelectItem>
           </SelectContent>
         </Select>
-      </div>
+      </FilterBar>
 
-      {/* Table */}
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nome</TableHead>
-              <TableHead>Categoria</TableHead>
-              <TableHead>Preço</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="w-20" />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {products.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground py-10">
-                  {search || statusFilter ? "Nenhum produto encontrado." : "Nenhum produto cadastrado ainda."}
-                </TableCell>
-              </TableRow>
-            ) : (
-              products.map((p) => (
-                <TableRow key={p.id}>
-                  <TableCell>
-                    <div>
-                      <p className="font-medium">{p.name}</p>
-                      {p.description && (
-                        <p className="text-xs text-muted-foreground line-clamp-1">{p.description}</p>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">{p.category ?? "—"}</TableCell>
-                  <TableCell className="font-medium tabular-nums">{formatPrice(p.price)}</TableCell>
-                  <TableCell>
-                    <Badge variant={STATUS_VARIANTS[p.status]}>
-                      {STATUS_LABELS[p.status]}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1">
-                      {canEdit && (
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(p)}>
-                          <Pencil className="h-3.5 w-3.5" />
-                        </Button>
-                      )}
-                      {canDelete && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 text-destructive hover:text-destructive"
-                          onClick={() => handleDelete(p.id, p.name)}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
+      <div className={ds.listStack}>
+        {products.length === 0 ? (
+          <div className={ds.emptyState}>
+            <p className="text-sm text-muted-foreground">
+              {search || statusFilter
+                ? "Nenhum produto encontrado."
+                : "Nenhum produto cadastrado ainda."}
+            </p>
+            {canCreate && !search && !statusFilter && (
+              <PrimaryActionButton className="mt-4" onClick={openCreate}>
+                <Plus className="h-4 w-4" />
+                Novo produto
+              </PrimaryActionButton>
             )}
-          </TableBody>
-        </Table>
+          </div>
+        ) : (
+          products.map((p) => (
+            <ListCard key={p.id}>
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0 flex-1 space-y-2">
+                  <p className="text-base font-semibold">{p.name}</p>
+                  {p.description && (
+                    <p className="line-clamp-2 text-sm text-muted-foreground">{p.description}</p>
+                  )}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant={STATUS_VARIANTS[p.status]}>{STATUS_LABELS[p.status]}</Badge>
+                    {p.category && (
+                      <span className="text-xs text-muted-foreground">{p.category}</span>
+                    )}
+                  </div>
+                  <p className="text-lg font-semibold tabular-nums">{formatPrice(p.price)}</p>
+                </div>
+                <div className="flex shrink-0 gap-1">
+                  {canEdit && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={ds.touchTarget}
+                      onClick={() => openEdit(p)}
+                      aria-label="Editar"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  )}
+                  {canDelete && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={cn(ds.touchTarget, "text-destructive")}
+                      onClick={() => handleDelete(p.id, p.name)}
+                      aria-label="Excluir"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </ListCard>
+          ))
+        )}
       </div>
 
-      {/* Pagination */}
       {pages > 1 && (
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           <span>Página {page} de {pages}</span>
@@ -293,6 +290,7 @@ export function ProductsClient({
             <Button
               variant="outline"
               size="sm"
+              className="rounded-xl"
               disabled={page <= 1 || isPending}
               onClick={() => router.push(`/products?${buildParams({ page: String(page - 1) })}`)}
             >
@@ -301,6 +299,7 @@ export function ProductsClient({
             <Button
               variant="outline"
               size="sm"
+              className="rounded-xl"
               disabled={page >= pages || isPending}
               onClick={() => router.push(`/products?${buildParams({ page: String(page + 1) })}`)}
             >
@@ -310,72 +309,68 @@ export function ProductsClient({
         </div>
       )}
 
-      {/* Dialog — criar / editar */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{editProduct ? "Editar produto" : "Novo produto"}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3 pt-1">
-            <div className="space-y-1.5">
-              <Label>Nome *</Label>
-              <Input
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder="Consultoria mensal"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Preço *</Label>
-              <div className="relative">
-                <span className="absolute left-3 top-2.5 text-sm text-muted-foreground">R$</span>
-                <Input
-                  className="pl-8"
-                  value={form.price}
-                  onChange={(e) => setForm({ ...form, price: e.target.value })}
-                  placeholder="0,00"
-                />
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label>Categoria</Label>
-              <Input
-                value={form.category}
-                onChange={(e) => setForm({ ...form, category: e.target.value })}
-                placeholder="Serviços, Licenças, Hardware..."
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Descrição</Label>
-              <Textarea
-                value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-                placeholder="Descrição do produto ou serviço..."
-                className="resize-none"
-                rows={3}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Status</Label>
-              <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v as ProductStatus })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Ativo</SelectItem>
-                  <SelectItem value="inactive">Inativo</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            {error && <p className="text-sm text-destructive">{error}</p>}
-            <div className="flex justify-end gap-2 pt-2">
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
-              <Button onClick={handleSave} disabled={saving}>
-                {saving && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}
-                {editProduct ? "Salvar" : "Criar"}
-              </Button>
-            </div>
+      <FormDrawer
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        title={editProduct ? "Editar produto" : "Novo produto"}
+        description="Catálogo usado em oportunidades e propostas."
+        submitLabel={editProduct ? "Salvar" : "Criar"}
+        onSubmit={handleSave}
+        loading={saving}
+      >
+        <div className="space-y-1.5">
+          <Label>Nome *</Label>
+          <Input
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            placeholder="Consultoria mensal"
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label>Preço *</Label>
+          <div className="relative">
+            <span className="absolute left-3 top-3 text-sm text-muted-foreground">R$</span>
+            <Input
+              className="min-h-11 pl-8"
+              value={form.price}
+              onChange={(e) => setForm({ ...form, price: e.target.value })}
+              placeholder="0,00"
+            />
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+        <div className="space-y-1.5">
+          <Label>Categoria</Label>
+          <Input
+            value={form.category}
+            onChange={(e) => setForm({ ...form, category: e.target.value })}
+            placeholder="Serviços, Licenças..."
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label>Descrição</Label>
+          <Textarea
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            placeholder="Descrição do produto ou serviço..."
+            className="resize-none"
+            rows={3}
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label>Status</Label>
+          <Select
+            value={form.status}
+            onValueChange={(v) => setForm({ ...form, status: v as ProductStatus })}
+          >
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="active">Ativo</SelectItem>
+              <SelectItem value="inactive">Inativo</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        {error && <p className="text-sm text-destructive">{error}</p>}
+      </FormDrawer>
     </div>
   );
 }

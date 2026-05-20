@@ -2,6 +2,11 @@ import { prisma } from "@/lib/db/client";
 import type { WhatsAppConfig } from "@/lib/channels/whatsapp";
 import type { InstagramConfig } from "@/lib/channels/instagram";
 import { getChannelFieldKeys } from "./meta-field-help";
+import {
+  parseWhatsAppCredentials,
+  whatsappUiState,
+} from "./connection-state";
+import { isEvolutionGoSimulated } from "./evolution-go-client";
 
 function envWhatsApp(): WhatsAppConfig | null {
   const accessToken = process.env.WHATSAPP_ACCESS_TOKEN;
@@ -22,6 +27,59 @@ function hasAllKeys(
   keys: string[],
 ): boolean {
   return keys.every((k) => Boolean(creds[k]?.trim()));
+}
+
+export type WhatsAppSendRoute =
+  | { kind: "meta"; accessToken: string; phoneNumberId: string }
+  | { kind: "evolution-go"; instanceToken: string }
+  | { kind: "simulated" }
+  | { kind: "unavailable"; reason: string };
+
+/**
+ * Decide como enviar WhatsApp outbound: Evolution GO, Meta Cloud ou simulado.
+ */
+export async function resolveWhatsAppSendRoute(
+  tenantId: string,
+): Promise<WhatsAppSendRoute | null> {
+  const row = await prisma.integration.findFirst({
+    where: { tenantId, channelType: "whatsapp", isActive: true },
+    orderBy: { updatedAt: "desc" },
+    select: { credentials: true },
+  });
+
+  if (row) {
+    const creds = parseWhatsAppCredentials(row.credentials);
+    const isGo =
+      creds.provider === "evolution" || creds.evolutionApiVersion === "go";
+
+    if (isGo) {
+      if (whatsappUiState(creds) !== "connected") {
+        return {
+          kind: "unavailable",
+          reason: "WhatsApp não conectado. Escaneie o QR em Integrações.",
+        };
+      }
+      const token = creds.instanceToken?.trim();
+      if (isEvolutionGoSimulated() || !token || token.startsWith("sim-")) {
+        return { kind: "simulated" };
+      }
+      return { kind: "evolution-go", instanceToken: token };
+    }
+
+    const required = getChannelFieldKeys("whatsapp").filter((k) => k !== "verifyToken");
+    const raw = row.credentials as Record<string, string>;
+    if (hasAllKeys(raw, required)) {
+      return {
+        kind: "meta",
+        accessToken: raw.accessToken.trim(),
+        phoneNumberId: raw.phoneNumberId.trim(),
+      };
+    }
+  }
+
+  const env = envWhatsApp();
+  if (env) return { kind: "meta", ...env };
+  return null;
 }
 
 /**

@@ -4,24 +4,17 @@ import { apiFetch } from "@/lib/api/client-fetch";
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Pencil, Trash2, Loader2, Tag as TagIcon, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, Tag as TagIcon, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { PageHeader } from "@/components/layout/page-header";
+import { Fab } from "@/components/ui/fab";
+import { FormDrawer } from "@/components/ui/form-drawer";
+import { ListCard } from "@/components/ui/list-card";
+import { PrimaryActionButton } from "@/components/ui/primary-action-button";
+import { ds } from "@/lib/design-system";
+import { cn } from "@/lib/utils";
 
 interface Tag {
   id: string;
@@ -50,7 +43,7 @@ function TagBadge({ name, color }: { name: string; color: string | null }) {
   const bg = color ?? "#64748b";
   return (
     <span
-      className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium text-white"
+      className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm font-medium text-white"
       style={{ backgroundColor: bg }}
     >
       {name}
@@ -62,7 +55,7 @@ export function TagsClient({ tags, canCreate, canEdit, canDelete }: Props) {
   const router = useRouter();
   const [, startTransition] = useTransition();
   const [q, setQ] = useState("");
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [editTag, setEditTag] = useState<Tag | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
@@ -72,18 +65,21 @@ export function TagsClient({ tags, canCreate, canEdit, canDelete }: Props) {
     setEditTag(null);
     setForm(EMPTY_FORM);
     setError("");
-    setDialogOpen(true);
+    setDrawerOpen(true);
   }
 
   function openEdit(t: Tag) {
     setEditTag(t);
     setForm({ name: t.name, color: t.color ?? "#64748b" });
     setError("");
-    setDialogOpen(true);
+    setDrawerOpen(true);
   }
 
   async function handleSave() {
-    if (!form.name.trim()) { setError("Nome é obrigatório."); return; }
+    if (!form.name.trim()) {
+      setError("Nome é obrigatório.");
+      return;
+    }
     setSaving(true);
     setError("");
     try {
@@ -99,7 +95,7 @@ export function TagsClient({ tags, canCreate, canEdit, canDelete }: Props) {
         setError(d.error ?? "Erro ao salvar.");
         return;
       }
-      setDialogOpen(false);
+      setDrawerOpen(false);
       startTransition(() => router.refresh());
     } finally {
       setSaving(false);
@@ -107,7 +103,8 @@ export function TagsClient({ tags, canCreate, canEdit, canDelete }: Props) {
   }
 
   async function handleDelete(id: string, name: string) {
-    if (!confirm(`Excluir a tag "${name}"? Ela será removida de todos os contatos.`)) return;
+    if (!confirm(`Excluir a tag "${name}"? Ela será removida de todos os contatos.`))
+      return;
     await apiFetch(`/api/tags/${id}`, { method: "DELETE" });
     startTransition(() => router.refresh());
   }
@@ -117,138 +114,132 @@ export function TagsClient({ tags, canCreate, canEdit, canDelete }: Props) {
     : tags;
 
   return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Tags</h1>
-          <p className="text-sm text-muted-foreground">{tags.length} tag{tags.length !== 1 ? "s" : ""}</p>
-        </div>
-        {canCreate && (
-          <Button onClick={openCreate} size="sm">
-            <Plus className="mr-1.5 h-4 w-4" />
-            Nova tag
-          </Button>
-        )}
-      </div>
+    <div className={ds.pageStack}>
+      <PageHeader
+        title="Tags"
+        description={`${tags.length} tag${tags.length !== 1 ? "s" : ""}`}
+        action={
+          canCreate ? (
+            <PrimaryActionButton onClick={openCreate}>
+              <Plus className="h-4 w-4" />
+              Nova tag
+            </PrimaryActionButton>
+          ) : undefined
+        }
+      />
+      {canCreate && <Fab label="Nova tag" onClick={openCreate} />}
 
-      {/* Search */}
-      <div className="relative max-w-xs">
-        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+      <div className="relative w-full max-w-sm">
+        <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
         <Input
           placeholder="Buscar tags…"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          className="pl-8"
+          className="min-h-11 pl-9"
         />
       </div>
 
-      {/* Table */}
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Tag</TableHead>
-              <TableHead>Contatos vinculados</TableHead>
-              <TableHead className="w-20" />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filtered.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={3} className="text-center text-muted-foreground py-10">
-                  {q ? "Nenhuma tag encontrada." : "Nenhuma tag cadastrada ainda."}
-                </TableCell>
-              </TableRow>
-            ) : (
-              filtered.map((t) => (
-                <TableRow key={t.id}>
-                  <TableCell>
-                    <TagBadge name={t.name} color={t.color} />
-                  </TableCell>
-                  <TableCell className="text-muted-foreground text-sm">
-                    {t._count.contacts} contato{t._count.contacts !== 1 ? "s" : ""}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1">
-                      {canEdit && (
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(t)}>
-                          <Pencil className="h-3.5 w-3.5" />
-                        </Button>
-                      )}
-                      {canDelete && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 text-destructive hover:text-destructive"
-                          onClick={() => handleDelete(t.id, t.name)}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
+      <div className={ds.listStack}>
+        {filtered.length === 0 ? (
+          <div className={ds.emptyState}>
+            <p className="text-sm text-muted-foreground">
+              {q ? "Nenhuma tag encontrada." : "Nenhuma tag cadastrada ainda."}
+            </p>
+            {canCreate && !q && (
+              <PrimaryActionButton className="mt-4" onClick={openCreate}>
+                <Plus className="h-4 w-4" />
+                Nova tag
+              </PrimaryActionButton>
             )}
-          </TableBody>
-        </Table>
+          </div>
+        ) : (
+          filtered.map((t) => (
+            <ListCard key={t.id}>
+              <div className="flex items-center justify-between gap-4">
+                <div className="space-y-2">
+                  <TagBadge name={t.name} color={t.color} />
+                  <p className="text-sm text-muted-foreground">
+                    {t._count.contacts} contato{t._count.contacts !== 1 ? "s" : ""} vinculado
+                    {t._count.contacts !== 1 ? "s" : ""}
+                  </p>
+                </div>
+                <div className="flex shrink-0 gap-1">
+                  {canEdit && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={ds.touchTarget}
+                      onClick={() => openEdit(t)}
+                      aria-label="Editar"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  )}
+                  {canDelete && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={cn(ds.touchTarget, "text-destructive")}
+                      onClick={() => handleDelete(t.id, t.name)}
+                      aria-label="Excluir"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </ListCard>
+          ))
+        )}
       </div>
 
-      {/* Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle>{editTag ? "Editar tag" : "Nova tag"}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 pt-1">
-            <div className="space-y-1.5">
-              <Label>Nome *</Label>
-              <Input
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder="Ex: cliente vip, urgente..."
+      <FormDrawer
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        title={editTag ? "Editar tag" : "Nova tag"}
+        description="Organize contatos com etiquetas coloridas."
+        submitLabel={editTag ? "Salvar" : "Criar"}
+        onSubmit={handleSave}
+        loading={saving}
+      >
+        <div className="space-y-1.5">
+          <Label>Nome *</Label>
+          <Input
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            placeholder="Ex: cliente vip, urgente..."
+          />
+        </div>
+        <div className="space-y-3">
+          <Label>Cor</Label>
+          <div className="flex flex-wrap gap-2">
+            {PRESET_COLORS.map((c) => (
+              <button
+                key={c}
+                type="button"
+                className="h-8 w-8 rounded-full border-2 transition-all duration-200"
+                style={{
+                  backgroundColor: c,
+                  borderColor: form.color === c ? "var(--foreground)" : "transparent",
+                  boxShadow: form.color === c ? `0 0 0 2px ${c}` : "none",
+                }}
+                onClick={() => setForm({ ...form, color: c })}
+                aria-label={c}
               />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Cor</Label>
-              <div className="flex flex-wrap gap-2">
-                {PRESET_COLORS.map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    className="h-7 w-7 rounded-full border-2 transition-all"
-                    style={{
-                      backgroundColor: c,
-                      borderColor: form.color === c ? "white" : "transparent",
-                      boxShadow: form.color === c ? `0 0 0 2px ${c}` : "none",
-                    }}
-                    onClick={() => setForm({ ...form, color: c })}
-                    aria-label={c}
-                  />
-                ))}
-              </div>
-              <div className="flex items-center gap-2 mt-1">
-                <TagIcon className="h-4 w-4 text-muted-foreground" />
-                <span
-                  className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium text-white"
-                  style={{ backgroundColor: form.color }}
-                >
-                  {form.name || "Prévia"}
-                </span>
-              </div>
-            </div>
-            {error && <p className="text-sm text-destructive">{error}</p>}
-            <div className="flex justify-end gap-2 pt-1">
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
-              <Button onClick={handleSave} disabled={saving}>
-                {saving && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}
-                {editTag ? "Salvar" : "Criar"}
-              </Button>
-            </div>
+            ))}
           </div>
-        </DialogContent>
-      </Dialog>
+          <div className="flex items-center gap-2 pt-1">
+            <TagIcon className="h-4 w-4 text-muted-foreground" />
+            <span
+              className="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium text-white"
+              style={{ backgroundColor: form.color }}
+            >
+              {form.name || "Prévia"}
+            </span>
+          </div>
+        </div>
+        {error && <p className="text-sm text-destructive">{error}</p>}
+      </FormDrawer>
     </div>
   );
 }

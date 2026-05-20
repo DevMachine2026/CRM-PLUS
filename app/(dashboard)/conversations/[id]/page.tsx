@@ -4,9 +4,9 @@ import { can } from "@/lib/auth/permissions";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, MessageSquare, User, Smartphone, Camera, AtSign, Bot } from "lucide-react";
+import { EntityDetailShell } from "@/components/layout/entity-detail-shell";
+import { MessageSquare, User, Smartphone, Camera, AtSign, Bot } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Props = { params: Promise<{ id: string }> };
@@ -69,49 +69,43 @@ export default async function ConversationPage({ params }: Props) {
   let lastDateLabel = "";
 
   return (
-    <div className="p-6 max-w-3xl mx-auto space-y-4">
-      {/* Back */}
-      <Link href="/inbox">
-        <Button variant="ghost" size="sm">
-          <ArrowLeft className="h-4 w-4 mr-1" /> Conversas
-        </Button>
-      </Link>
-
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
-            {CHANNEL_ICON[conv.channel]}
-          </div>
-          <div>
-            <h1 className="text-xl font-bold">
-              {conv.subject ?? conv.contact?.name ?? "Conversa sem título"}
-            </h1>
-            <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-              <span>{CHANNEL_LABEL[conv.channel] ?? conv.channel}</span>
-              {conv.contact && (
-                <>
-                  <span>·</span>
-                  <Link href={`/contacts/${conv.contact.id}`} className="hover:underline">
-                    {conv.contact.name}
-                  </Link>
-                </>
-              )}
-              {conv.assignedUser && (
-                <>
-                  <span>·</span>
-                  <span className="flex items-center gap-1"><User className="h-3 w-3" />{conv.assignedUser.name}</span>
-                </>
-              )}
-            </div>
-          </div>
+    <EntityDetailShell
+      backHref="/inbox"
+      backLabel="Conversas"
+      title={conv.subject ?? conv.contact?.name ?? "Conversa sem título"}
+      className="max-w-3xl"
+      leading={
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted">
+          {CHANNEL_ICON[conv.channel]}
         </div>
+      }
+      meta={
+        <>
+          <span>{CHANNEL_LABEL[conv.channel] ?? conv.channel}</span>
+          {conv.contact && (
+            <>
+              <span>·</span>
+              <Link href={`/contacts/${conv.contact.id}`} className="hover:text-foreground hover:underline">
+                {conv.contact.name}
+              </Link>
+            </>
+          )}
+          {conv.assignedUser && (
+            <>
+              <span>·</span>
+              <span className="flex items-center gap-1"><User className="h-3 w-3" />{conv.assignedUser.name}</span>
+            </>
+          )}
+        </>
+      }
+      aside={
         <Badge variant={STATUS_VARIANT[conv.status] ?? "outline"}>
           {STATUS_LABEL[conv.status] ?? conv.status}
         </Badge>
-      </div>
+      }
+    >
 
-      {/* AI summary */}
+      {/* AI summary */}      {/* AI summary */}
       {conv.summaryText && (
         <Card className="border-primary/20 bg-primary/5">
           <CardHeader className="pb-1 pt-3">
@@ -186,6 +180,6 @@ export default async function ConversationPage({ params }: Props) {
         Iniciada em {fmtDate(conv.createdAt)}
         {conv.lastMessageAt && ` · Última mensagem ${fmtDate(conv.lastMessageAt)}`}
       </p>
-    </div>
+    </EntityDetailShell>
   );
 }

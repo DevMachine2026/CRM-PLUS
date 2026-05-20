@@ -14,14 +14,18 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@/components/ui/table";
-import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
-} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { PageHeader } from "@/components/layout/page-header";
+import { FilterBar } from "@/components/layout/filter-bar";
+import { MetricCard, MetricGrid } from "@/components/ui/metric-card";
+import { Fab } from "@/components/ui/fab";
+import { FormDrawer } from "@/components/ui/form-drawer";
+import { ListCard } from "@/components/ui/list-card";
+import { PrimaryActionButton } from "@/components/ui/primary-action-button";
+import { ds } from "@/lib/design-system";
+import { cn } from "@/lib/utils";
 
 type Task = {
   id: string;
@@ -184,66 +188,111 @@ export function TasksClient({
   const pending   = statusCounts["pending"]   ?? 0;
   const done      = statusCounts["done"]       ?? 0;
   const cancelled = statusCounts["cancelled"]  ?? 0;
+  const totalAll  = pending + done + cancelled;
+  const statusFilter = sp.get("status") ?? "";
 
-  return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <CheckSquare className="w-6 h-6" />
-          <h1 className="text-2xl font-bold">Central de Tarefas</h1>
-        </div>
-        {canCreate && (
-          <Button size="sm" onClick={() => setShowCreate(true)}>
-            <Plus className="w-4 h-4 mr-1" /> Nova Tarefa
+  function renderActions(task: Task) {
+    return (
+      <div className="flex items-center gap-1">
+        {canUpdate && task.status === "pending" && (
+          <>
+            <Button size="icon" variant="ghost" className="min-h-11 min-w-11 text-green-600 hover:bg-green-50 hover:text-green-700" title="Concluir" onClick={() => markDone(task.id)}>
+              <CheckCircle2 className="h-4 w-4" />
+            </Button>
+            <Button size="icon" variant="ghost" className="min-h-11 min-w-11" title="Editar" onClick={() => openEdit(task)}>
+              <Pencil className="h-4 w-4" />
+            </Button>
+            <Button size="icon" variant="ghost" className="min-h-11 min-w-11 text-muted-foreground hover:text-destructive" title="Cancelar" onClick={() => markCancelled(task.id)}>
+              <XCircle className="h-4 w-4" />
+            </Button>
+          </>
+        )}
+        {canDelete && task.status !== "pending" && (
+          <Button size="icon" variant="ghost" className="min-h-11 min-w-11 text-muted-foreground hover:text-destructive" title="Deletar" onClick={() => deleteTask(task.id)}>
+            <Trash2 className="h-4 w-4" />
           </Button>
         )}
       </div>
+    );
+  }
 
-      {/* Status summary pills */}
-      <div className="flex gap-3 flex-wrap">
-        <button
-          onClick={() => pushParam("status", "")}
-          className="flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm hover:bg-muted transition-colors"
-        >
-          <span className="font-medium">Todas</span>
-          <span className="text-muted-foreground">{pending + done + cancelled}</span>
-        </button>
-        <button
-          onClick={() => pushParam("status", "pending")}
-          className="flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm hover:bg-muted transition-colors"
-        >
-          <Clock className="w-3.5 h-3.5 text-yellow-600" />
-          <span>Pendentes</span>
-          <span className="font-bold text-yellow-700">{pending}</span>
-        </button>
-        <button
-          onClick={() => pushParam("status", "done")}
-          className="flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm hover:bg-muted transition-colors"
-        >
-          <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />
-          <span>Concluídas</span>
-          <span className="font-bold text-green-700">{done}</span>
-        </button>
-        <button
-          onClick={() => pushParam("status", "cancelled")}
-          className="flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm hover:bg-muted transition-colors"
-        >
-          <XCircle className="w-3.5 h-3.5 text-slate-400" />
-          <span>Canceladas</span>
-          <span className="font-bold text-slate-500">{cancelled}</span>
-        </button>
-      </div>
+  const statusFilters = [
+    { key: "", label: "Todas", value: totalAll, valueClassName: undefined as string | undefined },
+    { key: "pending", label: "Pendentes", value: pending, valueClassName: "text-yellow-700" },
+    { key: "done", label: "Concluídas", value: done, valueClassName: "text-green-700" },
+    { key: "cancelled", label: "Canceladas", value: cancelled, valueClassName: "text-slate-500" },
+  ] as const;
 
-      {/* Filters */}
-      <div className="flex flex-wrap gap-3 items-center">
-        <Select
-          value={sp.get("priority") ?? "all"}
-          onValueChange={(v) => pushParam("priority", !v || v === "all" ? "" : v)}
-        >
-          <SelectTrigger className="w-36">
-            <SelectValue placeholder="Prioridade" />
-          </SelectTrigger>
+  function TaskRow({ task }: { task: Task }) {
+    const overdue = isOverdue(task.dueAt, task.status);
+    return (
+      <ListCard>
+        <div className="flex items-start gap-4">
+          <div className="mt-1 shrink-0">{STATUS_ICON[task.status]}</div>
+          <div className="min-w-0 flex-1 space-y-2">
+            <p className={cn("text-base font-semibold leading-snug", task.status === "done" && "text-muted-foreground line-through")}>
+              {task.title}
+            </p>
+            {task.description && (
+              <p className="line-clamp-2 text-sm text-muted-foreground">{task.description}</p>
+            )}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={cn("rounded-full border px-2.5 py-0.5 text-xs font-medium", PRIORITY_COLOR[task.priority])}>
+                {PRIORITY_LABEL[task.priority]}
+              </span>
+              <span className="text-xs text-muted-foreground">{STATUS_LABEL[task.status]}</span>
+              {task.source === "ai" ? (
+                <Badge variant="secondary" className="gap-1 border-purple-200 bg-purple-50 text-xs text-purple-700">
+                  <Bot className="h-3 w-3" /> IA
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="gap-1 text-xs">
+                  <User className="h-3 w-3" /> Manual
+                </Badge>
+              )}
+            </div>
+            <p className={cn("text-xs font-medium", overdue ? "text-red-600" : "text-muted-foreground")}>
+              {overdue && <AlertTriangle className="mr-1 inline h-3 w-3" />}
+              Prazo: {fmtDate(task.dueAt)}
+            </p>
+            {(task.opportunity || task.contact) && (
+              <p className="truncate text-xs text-muted-foreground">
+                {task.opportunity?.title ?? task.contact?.name}
+              </p>
+            )}
+          </div>
+          {(canUpdate || canDelete) && <div className="shrink-0">{renderActions(task)}</div>}
+        </div>
+      </ListCard>
+    );
+  }
+
+  return (
+    <div className={ds.pageStack}>
+      <PageHeader
+        title="Central de Tarefas"
+        description={`${total} tarefa${total !== 1 ? "s" : ""}`}
+        icon={<CheckSquare className="h-6 w-6" />}
+        action={canCreate ? (
+          <PrimaryActionButton onClick={() => setShowCreate(true)}>
+            <Plus className="h-4 w-4" /> Nova tarefa
+          </PrimaryActionButton>
+        ) : undefined}
+      />
+      {canCreate && <Fab label="Nova tarefa" onClick={() => setShowCreate(true)} />}
+
+      <MetricGrid>
+        {statusFilters.map((f) => (
+          <button key={f.key || "all"} type="button" onClick={() => pushParam("status", f.key)}
+            className={cn("rounded-xl text-left transition-all duration-200", statusFilter === f.key && "ring-2 ring-primary ring-offset-2")}>
+            <MetricCard label={f.label} value={f.value} valueClassName={f.valueClassName} />
+          </button>
+        ))}
+      </MetricGrid>
+
+      <FilterBar>
+        <Select value={sp.get("priority") ?? "all"} onValueChange={(v) => pushParam("priority", !v || v === "all" ? "" : v)}>
+          <SelectTrigger className="min-h-11 w-full sm:w-36"><SelectValue placeholder="Prioridade" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todas</SelectItem>
             <SelectItem value="high">Alta</SelectItem>
@@ -251,260 +300,112 @@ export function TasksClient({
             <SelectItem value="low">Baixa</SelectItem>
           </SelectContent>
         </Select>
-
-        <Select
-          value={sp.get("source") ?? "all"}
-          onValueChange={(v) => pushParam("source", !v || v === "all" ? "" : v)}
-        >
-          <SelectTrigger className="w-36">
-            <SelectValue placeholder="Origem" />
-          </SelectTrigger>
+        <Select value={sp.get("source") ?? "all"} onValueChange={(v) => pushParam("source", !v || v === "all" ? "" : v)}>
+          <SelectTrigger className="min-h-11 w-full sm:w-36"><SelectValue placeholder="Origem" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todas</SelectItem>
             <SelectItem value="ai">IA</SelectItem>
             <SelectItem value="manual">Manual</SelectItem>
           </SelectContent>
         </Select>
+        {isPending && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+      </FilterBar>
 
-        {isPending && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
-      </div>
-
-      {/* Table */}
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-8" />
-              <TableHead>Tarefa</TableHead>
-              <TableHead>Vínculo</TableHead>
-              <TableHead>Prioridade</TableHead>
-              <TableHead>Prazo</TableHead>
-              <TableHead>Origem</TableHead>
-              <TableHead>Status</TableHead>
-              {(canUpdate || canDelete) && <TableHead className="w-32" />}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {tasks.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={8} className="text-center py-10 text-muted-foreground">
-                  Nenhuma tarefa encontrada.
-                </TableCell>
-              </TableRow>
-            ) : (
-              tasks.map((task) => {
-                const overdue = isOverdue(task.dueAt, task.status);
-                return (
-                  <TableRow key={task.id} className={task.status !== "pending" ? "opacity-60" : ""}>
-                    {/* Status icon */}
-                    <TableCell>{STATUS_ICON[task.status]}</TableCell>
-
-                    {/* Title + description */}
-                    <TableCell className="max-w-[260px]">
-                      <p className={`font-medium text-sm truncate ${task.status === "done" ? "line-through text-muted-foreground" : ""}`}>
-                        {task.title}
-                      </p>
-                      {task.description && (
-                        <p className="text-xs text-muted-foreground truncate mt-0.5">{task.description}</p>
-                      )}
-                    </TableCell>
-
-                    {/* Contact / Opportunity */}
-                    <TableCell className="text-sm">
-                      {task.opportunity ? (
-                        <span className="flex items-center gap-1 text-blue-700">
-                          <ChevronRight className="w-3 h-3" />
-                          <span className="truncate max-w-[120px]">{task.opportunity.title}</span>
-                        </span>
-                      ) : task.contact ? (
-                        <span className="text-muted-foreground truncate max-w-[120px] block">
-                          {task.contact.name}
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground">—</span>
-                      )}
-                    </TableCell>
-
-                    {/* Priority */}
-                    <TableCell>
-                      <span className={`text-xs font-medium border rounded-full px-2 py-0.5 ${PRIORITY_COLOR[task.priority]}`}>
-                        {PRIORITY_LABEL[task.priority]}
-                      </span>
-                    </TableCell>
-
-                    {/* Due date */}
-                    <TableCell>
-                      <span className={`text-sm ${overdue ? "text-red-600 font-semibold" : "text-muted-foreground"}`}>
-                        {overdue && <AlertTriangle className="w-3 h-3 inline mr-1" />}
-                        {fmtDate(task.dueAt)}
-                      </span>
-                    </TableCell>
-
-                    {/* Source badge */}
-                    <TableCell>
-                      {task.source === "ai" ? (
-                        <Badge variant="secondary" className="gap-1 text-xs bg-purple-50 text-purple-700 border-purple-200">
-                          <Bot className="w-3 h-3" /> IA
-                        </Badge>
-                      ) : (
-                        <Badge variant="outline" className="gap-1 text-xs">
-                          <User className="w-3 h-3" /> Manual
-                        </Badge>
-                      )}
-                    </TableCell>
-
-                    {/* Status */}
-                    <TableCell>
-                      <span className="text-xs text-muted-foreground">{STATUS_LABEL[task.status]}</span>
-                    </TableCell>
-
-                    {/* Actions */}
-                    {(canUpdate || canDelete) && (
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          {canUpdate && task.status === "pending" && (
-                            <>
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                className="h-7 w-7 text-green-600 hover:text-green-700 hover:bg-green-50"
-                                title="Concluir"
-                                onClick={() => markDone(task.id)}
-                              >
-                                <CheckCircle2 className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                className="h-7 w-7"
-                                title="Editar"
-                                onClick={() => openEdit(task)}
-                              >
-                                <Pencil className="w-3.5 h-3.5" />
-                              </Button>
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                                title="Cancelar"
-                                onClick={() => markCancelled(task.id)}
-                              >
-                                <XCircle className="w-4 h-4" />
-                              </Button>
-                            </>
-                          )}
-                          {canDelete && task.status !== "pending" && (
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                              title="Deletar"
-                              onClick={() => deleteTask(task.id)}
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                    )}
-                  </TableRow>
-                );
-              })
+      <div className={ds.listStack}>
+        {tasks.length === 0 ? (
+          <div className={ds.emptyState}>
+            <p className="text-sm text-muted-foreground">Nenhuma tarefa encontrada.</p>
+            {canCreate && (
+              <PrimaryActionButton className="mt-4" onClick={() => setShowCreate(true)}>
+                <Plus className="h-4 w-4" /> Nova tarefa
+              </PrimaryActionButton>
             )}
-          </TableBody>
-        </Table>
+          </div>
+        ) : (
+          tasks.map((task) => <TaskRow key={task.id} task={task} />)
+        )}
       </div>
 
-      {/* Pagination */}
       {pages > 1 && (
         <div className="flex items-center justify-end gap-2">
-          <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => pushParam("page", String(page - 1))}>
+          <Button variant="outline" size="sm" className="rounded-xl" disabled={page <= 1} onClick={() => pushParam("page", String(page - 1))}>
             Anterior
           </Button>
           <span className="text-sm text-muted-foreground">{page} / {pages}</span>
-          <Button variant="outline" size="sm" disabled={page >= pages} onClick={() => pushParam("page", String(page + 1))}>
+          <Button variant="outline" size="sm" className="rounded-xl" disabled={page >= pages} onClick={() => pushParam("page", String(page + 1))}>
             Próxima
           </Button>
         </div>
       )}
 
-      {/* Edit Dialog */}
-      <Dialog open={!!editTask} onOpenChange={(o) => { if (!o) setEditTask(null); }}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Editar Tarefa</DialogTitle></DialogHeader>
-          <div className="space-y-3">
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Título</label>
-              <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
-            </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Descrição</label>
-              <Textarea value={editDesc} onChange={(e) => setEditDesc(e.target.value)} rows={3} />
-            </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Prioridade</label>
-              <Select value={editPriority} onValueChange={(v) => setEditPriority((v ?? "medium") as Task["priority"])}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="high">Alta</SelectItem>
-                  <SelectItem value="medium">Média</SelectItem>
-                  <SelectItem value="low">Baixa</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Prazo</label>
-              <Input type="datetime-local" value={editDueAt} onChange={(e) => setEditDueAt(e.target.value)} />
-            </div>
-            {dialogError && <p className="text-sm text-destructive">{dialogError}</p>}
-            <div className="flex justify-end gap-2 pt-1">
-              <Button variant="outline" onClick={() => setEditTask(null)} disabled={isSaving}>Cancelar</Button>
-              <Button onClick={handleSave} disabled={isSaving}>
-                {isSaving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}Salvar
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <FormDrawer
+        open={!!editTask}
+        onOpenChange={(o) => { if (!o) setEditTask(null); }}
+        title="Editar tarefa"
+        submitLabel="Salvar"
+        onSubmit={handleSave}
+        loading={isSaving}
+      >
+        <div className="space-y-1.5">
+          <Label>Título</Label>
+          <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
+        </div>
+        <div className="space-y-1.5">
+          <Label>Descrição</Label>
+          <Textarea value={editDesc} onChange={(e) => setEditDesc(e.target.value)} rows={3} />
+        </div>
+        <div className="space-y-1.5">
+          <Label>Prioridade</Label>
+          <Select value={editPriority} onValueChange={(v) => setEditPriority((v ?? "medium") as Task["priority"])}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="high">Alta</SelectItem>
+              <SelectItem value="medium">Média</SelectItem>
+              <SelectItem value="low">Baixa</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1.5">
+          <Label>Prazo</Label>
+          <Input type="datetime-local" value={editDueAt} onChange={(e) => setEditDueAt(e.target.value)} />
+        </div>
+        {dialogError && <p className="text-sm text-destructive">{dialogError}</p>}
+      </FormDrawer>
 
-      {/* Create Dialog */}
-      <Dialog open={showCreate} onOpenChange={(o) => { if (!o) setShowCreate(false); }}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Nova Tarefa</DialogTitle></DialogHeader>
-          <div className="space-y-3">
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Título *</label>
-              <Input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="Descreva a tarefa..." />
-            </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Descrição</label>
-              <Textarea value={newDesc} onChange={(e) => setNewDesc(e.target.value)} rows={2} />
-            </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Prioridade</label>
-              <Select value={newPriority} onValueChange={(v) => setNewPriority((v ?? "medium") as Task["priority"])}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="high">Alta</SelectItem>
-                  <SelectItem value="medium">Média</SelectItem>
-                  <SelectItem value="low">Baixa</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Prazo</label>
-              <Input type="datetime-local" value={newDueAt} onChange={(e) => setNewDueAt(e.target.value)} />
-            </div>
-            {createError && <p className="text-sm text-destructive">{createError}</p>}
-            <div className="flex justify-end gap-2 pt-1">
-              <Button variant="outline" onClick={() => setShowCreate(false)} disabled={isCreating}>Cancelar</Button>
-              <Button onClick={handleCreate} disabled={isCreating}>
-                {isCreating && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}Criar
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <FormDrawer
+        open={showCreate}
+        onOpenChange={setShowCreate}
+        title="Nova tarefa"
+        description="Registre rapidamente o que precisa ser feito."
+        submitLabel="Criar"
+        onSubmit={handleCreate}
+        loading={isCreating}
+      >
+        <div className="space-y-1.5">
+          <Label>Título *</Label>
+          <Input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="Descreva a tarefa..." />
+        </div>
+        <div className="space-y-1.5">
+          <Label>Descrição</Label>
+          <Textarea value={newDesc} onChange={(e) => setNewDesc(e.target.value)} rows={2} />
+        </div>
+        <div className="space-y-1.5">
+          <Label>Prioridade</Label>
+          <Select value={newPriority} onValueChange={(v) => setNewPriority((v ?? "medium") as Task["priority"])}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="high">Alta</SelectItem>
+              <SelectItem value="medium">Média</SelectItem>
+              <SelectItem value="low">Baixa</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1.5">
+          <Label>Prazo</Label>
+          <Input type="datetime-local" value={newDueAt} onChange={(e) => setNewDueAt(e.target.value)} />
+        </div>
+        {createError && <p className="text-sm text-destructive">{createError}</p>}
+      </FormDrawer>
     </div>
   );
 }

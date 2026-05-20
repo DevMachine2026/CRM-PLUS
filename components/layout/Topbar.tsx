@@ -21,14 +21,16 @@ export async function Topbar() {
     .toUpperCase() ?? "??";
 
   return (
-    <header className="flex h-14 items-center justify-end border-b bg-background px-4">
+    <div className="flex w-full items-center justify-end">
       <DropdownMenu>
-        <DropdownMenuTrigger className="flex items-center gap-2 rounded-md p-1 hover:bg-muted outline-none">
+        <DropdownMenuTrigger
+          className="flex min-h-11 min-w-11 items-center justify-end gap-2 rounded-lg p-1.5 hover:bg-muted outline-none sm:min-h-0 sm:min-w-0"
+        >
           <div className="hidden text-right sm:block">
             <p className="text-sm font-medium leading-none">{session.user.name}</p>
             <p className="text-xs text-muted-foreground">{session.user.email}</p>
           </div>
-          <Avatar className="h-8 w-8">
+          <Avatar className="h-9 w-9 sm:h-8 sm:w-8">
             <AvatarImage src={session.user.image ?? undefined} />
             <AvatarFallback className="text-xs">{initials}</AvatarFallback>
           </Avatar>
@@ -56,6 +58,6 @@ export async function Topbar() {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-    </header>
+    </div>
   );
 }

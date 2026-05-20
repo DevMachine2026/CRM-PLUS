@@ -4,18 +4,11 @@ import { apiFetch } from "@/lib/api/client-fetch";
 
 import { useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { CheckCircle2, Clock, XCircle, Loader2, DollarSign, Search } from "lucide-react";
+import { CheckCircle2, Clock, XCircle, Loader2, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   Select,
   SelectContent,
@@ -23,12 +16,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { PageHeader } from "@/components/layout/page-header";
+import { MetricCard, MetricGrid } from "@/components/ui/metric-card";
+import { FilterBar } from "@/components/layout/filter-bar";
+import { FormDrawer } from "@/components/ui/form-drawer";
+import { ListCard } from "@/components/ui/list-card";
+import { ds } from "@/lib/design-system";
+import { cn } from "@/lib/utils";
 
 type Revenue = {
   id: string;
@@ -65,9 +59,9 @@ const STATUS_VARIANT: Record<Revenue["status"], "default" | "secondary" | "destr
 };
 
 const STATUS_ICON: Record<Revenue["status"], React.ReactNode> = {
-  pending: <Clock className="w-3 h-3" />,
-  paid: <CheckCircle2 className="w-3 h-3" />,
-  cancelled: <XCircle className="w-3 h-3" />,
+  pending: <Clock className="h-3 w-3" />,
+  paid: <CheckCircle2 className="h-3 w-3" />,
+  cancelled: <XCircle className="h-3 w-3" />,
 };
 
 function fmt(amount: number) {
@@ -98,7 +92,8 @@ export function BillingClient({ revenues, total, page, limit, canUpdate }: Props
 
   function pushParam(key: string, value: string) {
     const p = new URLSearchParams(searchParams.toString());
-    if (value) p.set(key, value); else p.delete(key);
+    if (value) p.set(key, value);
+    else p.delete(key);
     p.delete("page");
     startTransition(() => router.push(`?${p.toString()}`));
   }
@@ -128,7 +123,10 @@ export function BillingClient({ revenues, total, page, limit, canUpdate }: Props
         }),
       });
       const json = await res.json();
-      if (!res.ok) { setError(json.error ?? "Erro ao salvar."); return; }
+      if (!res.ok) {
+        setError(json.error ?? "Erro ao salvar.");
+        return;
+      }
       setEditingRevenue(null);
       startTransition(() => router.refresh());
     } catch {
@@ -139,40 +137,27 @@ export function BillingClient({ revenues, total, page, limit, canUpdate }: Props
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center gap-3">
-        <DollarSign className="w-6 h-6" />
-        <h1 className="text-2xl font-bold">Faturamento</h1>
-      </div>
+    <div className={ds.pageStack}>
+      <PageHeader
+        title="Faturamento"
+        description="Receitas vinculadas às oportunidades"
+        icon={<DollarSign className="h-6 w-6" />}
+      />
 
-      {/* Summary cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="rounded-lg border p-4">
-          <p className="text-sm text-muted-foreground">Total (página)</p>
-          <p className="text-xl font-bold mt-1">{fmt(totalAmount)}</p>
-        </div>
-        <div className="rounded-lg border p-4">
-          <p className="text-sm text-muted-foreground">Pago (página)</p>
-          <p className="text-xl font-bold mt-1 text-green-600">{fmt(paidAmount)}</p>
-        </div>
-        <div className="rounded-lg border p-4">
-          <p className="text-sm text-muted-foreground">Registros</p>
-          <p className="text-xl font-bold mt-1">{total}</p>
-        </div>
-        <div className="rounded-lg border p-4">
-          <p className="text-sm text-muted-foreground">Página</p>
-          <p className="text-xl font-bold mt-1">{page} / {pages || 1}</p>
-        </div>
-      </div>
+      <MetricGrid>
+        <MetricCard label="Total (página)" value={fmt(totalAmount)} />
+        <MetricCard label="Pago (página)" value={fmt(paidAmount)} valueClassName="text-green-600" />
+        <MetricCard label="Registros" value={total} />
+        <MetricCard label="Página" value={`${page} / ${pages || 1}`} />
+      </MetricGrid>
 
-      {/* Filters */}
-      <div className="flex flex-wrap gap-3 items-end">
-        <div className="w-40">
+      <FilterBar className="items-end">
+        <div className="w-full sm:w-40">
           <Select
             value={searchParams.get("status") ?? "all"}
             onValueChange={(v) => pushParam("status", !v || v === "all" ? "" : v)}
           >
-            <SelectTrigger>
+            <SelectTrigger className="min-h-11">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -183,183 +168,119 @@ export function BillingClient({ revenues, total, page, limit, canUpdate }: Props
             </SelectContent>
           </Select>
         </div>
-
-        <div className="flex items-center gap-2">
-          <Search className="w-4 h-4 text-muted-foreground" />
+        <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center">
           <Input
             type="date"
-            placeholder="De"
-            className="w-36"
+            className="min-h-11 w-full sm:w-36"
             defaultValue={searchParams.get("dateFrom") ?? ""}
             onChange={(e) => pushParam("dateFrom", e.target.value)}
           />
           <span className="text-sm text-muted-foreground">até</span>
           <Input
             type="date"
-            placeholder="Até"
-            className="w-36"
+            className="min-h-11 w-full sm:w-36"
             defaultValue={searchParams.get("dateTo") ?? ""}
             onChange={(e) => pushParam("dateTo", e.target.value)}
           />
         </div>
+        {isPending && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+      </FilterBar>
 
-        {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-      </div>
-
-      {/* Table */}
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Oportunidade</TableHead>
-              <TableHead>Contato / Empresa</TableHead>
-              <TableHead>Descrição</TableHead>
-              <TableHead className="text-right">Valor</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Pago em</TableHead>
-              <TableHead>Criado em</TableHead>
-              {canUpdate && <TableHead />}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {revenues.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={canUpdate ? 8 : 7} className="text-center py-8 text-muted-foreground">
-                  Nenhum faturamento encontrado.
-                </TableCell>
-              </TableRow>
-            ) : (
-              revenues.map((rev) => (
-                <TableRow key={rev.id}>
-                  <TableCell className="font-medium max-w-[200px] truncate">
-                    {rev.opportunity?.title ?? "—"}
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
+      <div className={ds.listStack}>
+        {revenues.length === 0 ? (
+          <div className={ds.emptyState}>
+            <p className="text-sm text-muted-foreground">Nenhum faturamento encontrado.</p>
+          </div>
+        ) : (
+          revenues.map((rev) => (
+            <ListCard
+              key={rev.id}
+              onClick={canUpdate ? () => openEdit(rev) : undefined}
+              className={canUpdate ? undefined : ""}
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0 flex-1 space-y-2">
+                  <p className="text-base font-semibold leading-snug">
+                    {rev.opportunity?.title ?? "Sem oportunidade"}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
                     {rev.contact?.name ?? rev.company?.name ?? "—"}
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">
-                    {rev.description ?? "—"}
-                  </TableCell>
-                  <TableCell className="text-right font-mono">
-                    {fmt(rev.amount)}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={STATUS_VARIANT[rev.status]} className="flex items-center gap-1 w-fit">
+                  </p>
+                  {rev.description && (
+                    <p className="line-clamp-2 text-sm text-muted-foreground">{rev.description}</p>
+                  )}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant={STATUS_VARIANT[rev.status]} className="flex items-center gap-1">
                       {STATUS_ICON[rev.status]}
                       {STATUS_LABEL[rev.status]}
                     </Badge>
-                  </TableCell>
-                  <TableCell className="text-sm">{fmtDate(rev.paidAt)}</TableCell>
-                  <TableCell className="text-sm">{fmtDate(rev.createdAt)}</TableCell>
-                  {canUpdate && (
-                    <TableCell>
-                      <Button size="sm" variant="ghost" onClick={() => openEdit(rev)}>
-                        Editar
-                      </Button>
-                    </TableCell>
-                  )}
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+                    <span className="text-xs text-muted-foreground">
+                      Pago: {fmtDate(rev.paidAt)}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      Criado: {fmtDate(rev.createdAt)}
+                    </span>
+                  </div>
+                </div>
+                <p className="shrink-0 text-lg font-semibold tabular-nums">{fmt(rev.amount)}</p>
+              </div>
+            </ListCard>
+          ))
+        )}
       </div>
 
-      {/* Pagination */}
       {pages > 1 && (
         <div className="flex items-center justify-end gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={page <= 1}
-            onClick={() => pushParam("page", String(page - 1))}
-          >
+          <Button variant="outline" size="sm" className="rounded-xl" disabled={page <= 1} onClick={() => pushParam("page", String(page - 1))}>
             Anterior
           </Button>
-          <span className="text-sm text-muted-foreground">
-            {page} / {pages}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={page >= pages}
-            onClick={() => pushParam("page", String(page + 1))}
-          >
+          <span className="text-sm text-muted-foreground">{page} / {pages}</span>
+          <Button variant="outline" size="sm" className="rounded-xl" disabled={page >= pages} onClick={() => pushParam("page", String(page + 1))}>
             Próxima
           </Button>
         </div>
       )}
 
-      {/* Edit Dialog */}
-      <Dialog open={!!editingRevenue} onOpenChange={(open) => { if (!open) setEditingRevenue(null); }}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Editar Faturamento</DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            {editingRevenue && (
-              <div className="text-sm text-muted-foreground">
-                <span className="font-medium text-foreground">{editingRevenue.opportunity?.title}</span>
-                {" · "}{fmt(editingRevenue.amount)}
-              </div>
-            )}
-
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Status</label>
-              <Select value={editStatus} onValueChange={(v) => setEditStatus(v as Revenue["status"])}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="pending">Pendente</SelectItem>
-                  <SelectItem value="paid">Pago</SelectItem>
-                  <SelectItem value="cancelled">Cancelado</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Data de pagamento</label>
-              <Input
-                type="datetime-local"
-                value={editPaidAt}
-                onChange={(e) => setEditPaidAt(e.target.value)}
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Data de vencimento</label>
-              <Input
-                type="datetime-local"
-                value={editDueAt}
-                onChange={(e) => setEditDueAt(e.target.value)}
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Descrição</label>
-              <Input
-                value={editDescription}
-                onChange={(e) => setEditDescription(e.target.value)}
-                placeholder="Descrição opcional"
-              />
-            </div>
-
-            {error && <p className="text-sm text-destructive">{error}</p>}
-
-            <div className="flex justify-end gap-2 pt-2">
-              <Button variant="outline" onClick={() => setEditingRevenue(null)} disabled={isSaving}>
-                Cancelar
-              </Button>
-              <Button onClick={handleSave} disabled={isSaving}>
-                {isSaving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                Salvar
-              </Button>
-            </div>
+      <FormDrawer
+        open={!!editingRevenue}
+        onOpenChange={(open) => { if (!open) setEditingRevenue(null); }}
+        title="Editar faturamento"
+        description="Atualize status e datas de pagamento."
+        submitLabel="Salvar"
+        onSubmit={handleSave}
+        loading={isSaving}
+      >
+        {editingRevenue && (
+          <div className="rounded-lg border border-border/60 bg-muted/30 px-4 py-3 text-sm">
+            <span className="font-semibold">{editingRevenue.opportunity?.title}</span>
+            <span className="text-muted-foreground"> · {fmt(editingRevenue.amount)}</span>
           </div>
-        </DialogContent>
-      </Dialog>
+        )}
+        <div className="space-y-1.5">
+          <Label>Status</Label>
+          <Select value={editStatus} onValueChange={(v) => setEditStatus(v as Revenue["status"])}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="pending">Pendente</SelectItem>
+              <SelectItem value="paid">Pago</SelectItem>
+              <SelectItem value="cancelled">Cancelado</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1.5">
+          <Label>Data de pagamento</Label>
+          <Input type="datetime-local" value={editPaidAt} onChange={(e) => setEditPaidAt(e.target.value)} />
+        </div>
+        <div className="space-y-1.5">
+          <Label>Data de vencimento</Label>
+          <Input type="datetime-local" value={editDueAt} onChange={(e) => setEditDueAt(e.target.value)} />
+        </div>
+        <div className="space-y-1.5">
+          <Label>Descrição</Label>
+          <Input value={editDescription} onChange={(e) => setEditDescription(e.target.value)} placeholder="Descrição opcional" />
+        </div>
+        {error && <p className="text-sm text-destructive">{error}</p>}
+      </FormDrawer>
     </div>
   );
 }

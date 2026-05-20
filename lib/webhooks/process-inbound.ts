@@ -14,6 +14,7 @@ import {
   emitContactCreated,
   emitConversationCreated,
 } from "@/lib/automations/emit";
+import { isAiEnabled } from "@/lib/ai/tenant-settings";
 
 export interface InboundPayload {
   tenantId:           string;
@@ -45,6 +46,7 @@ export async function processInboundMessage(
   // ── 1. Verify tenant ────────────────────────────────────────────────────────
   const tenant = await prisma.tenant.findUnique({ where: { id: tenantId } });
   if (!tenant) throw new Error(`Tenant not found: ${tenantId}`);
+  const aiActive = isAiEnabled(tenant.settings);
 
   // ── 1b. Idempotency — skip duplicate Meta message IDs ───────────────────────
   if (payload.externalMessageId) {
@@ -152,13 +154,15 @@ export async function processInboundMessage(
       phone:  contact.phone,
       status: contact.status,
     });
-    classifyLead({
-      contactId: contact.id,
-      tenantId,
-      name:      contact.name,
-      email:     contact.email,
-      phone:     contact.phone,
-    }).catch(() => {});
+    if (aiActive) {
+      classifyLead({
+        contactId: contact.id,
+        tenantId,
+        name:      contact.name,
+        email:     contact.email,
+        phone:     contact.phone,
+      }).catch(() => {});
+    }
   }
 
   // ── 4. Save message ─────────────────────────────────────────────────────────
@@ -199,39 +203,39 @@ export async function processInboundMessage(
     },
   });
 
-  // ── 7. AI pipeline (fire-and-forget) ─────────────────────────────────────────
-  const convId = conversation.id;
-  Promise.all([
-    summarizeConversation({ conversationId: convId, tenantId }),
+  // ── 7. AI pipeline (fire-and-forget) — só se IA nativa ativa ───────────────
+  if (aiActive) {
+    const convId = conversation.id;
+    Promise.all([
+      summarizeConversation({ conversationId: convId, tenantId }),
 
-    detectIntent({ conversationId: convId, tenantId, contactId: contact.id })
-      .then(async (intentResult) => {
-        // Run suggestNextAction when a buying signal is detected and the contact
-        // has an open opportunity — complements the task detectIntent auto-creates.
-        if (
-          intentResult.intent === "interest" ||
-          intentResult.intent === "quote_request"
-        ) {
-          const opp = await prisma.opportunity.findFirst({
-            where:   { tenantId, contactId: contact.id, status: "open" },
-            include: { stage: true },
-          });
-          if (opp) {
-            const daysSince = Math.floor(
-              (Date.now() - opp.updatedAt.getTime()) / 86_400_000
-            );
-            await suggestNextAction({
-              tenantId,
-              contactId:            contact.id,
-              opportunityId:        opp.id,
-              opportunityStatus:    opp.status,
-              stageName:            opp.stage?.name,
-              daysSinceLastContact: daysSince,
+      detectIntent({ conversationId: convId, tenantId, contactId: contact.id })
+        .then(async (intentResult) => {
+          if (
+            intentResult.intent === "interest" ||
+            intentResult.intent === "quote_request"
+          ) {
+            const opp = await prisma.opportunity.findFirst({
+              where:   { tenantId, contactId: contact.id, status: "open" },
+              include: { stage: true },
             });
+            if (opp) {
+              const daysSince = Math.floor(
+                (Date.now() - opp.updatedAt.getTime()) / 86_400_000
+              );
+              await suggestNextAction({
+                tenantId,
+                contactId:            contact.id,
+                opportunityId:        opp.id,
+                opportunityStatus:    opp.status,
+                stageName:            opp.stage?.name,
+                daysSinceLastContact: daysSince,
+              });
+            }
           }
-        }
-      }),
-  ]).catch(() => {});
+        }),
+    ]).catch(() => {});
+  }
 
   return {
     contactId:           contact.id,
