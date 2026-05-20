@@ -16,6 +16,7 @@
 | **Dono do produto / planejamento** | **[docs/ESTADO-DO-PROJETO-E-PLANO.md](./docs/ESTADO-DO-PROJETO-E-PLANO.md)** — estado real vs visão, lacunas, fases |
 | **Validar sem Evolution API** | **[docs/ENTREGA-SEM-EVOLUTION.md](./docs/ENTREGA-SEM-EVOLUTION.md)** — demo, webhooks simulados, checklist |
 | **WhatsApp produção (Evolution GO)** | **[docs/EVOLUTION-GO.md](./docs/EVOLUTION-GO.md)** — cliente GO, webhook, deploy Render |
+| **Deploy tudo no Render** | **`render.yaml`** na raiz — Blueprint CRM + Postgres + crons |
 | **Auditoria técnica / MVP** | **[docs/AUDITORIA-ARQUITETURA-MVP.md](./docs/AUDITORIA-ARQUITETURA-MVP.md)** — stack, fluxos, gaps, plano hoje |
 | **Desenvolvedor / QA** | [GUIA-DE-TESTES.md](./GUIA-DE-TESTES.md) — validação módulo a módulo |
 | **Arquiteto / produto técnico** | [SDD.md](./SDD.md) — design completo do sistema |
