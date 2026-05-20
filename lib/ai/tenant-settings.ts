@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { prisma } from "@/lib/db/client";
 
 export const tenantAiSettingsSchema = z.object({
   aiEnabled:       z.boolean().optional(),
@@ -38,14 +37,6 @@ export function parseTenantAiSettings(raw: unknown): TenantAiSettings {
 /** IA nativa ativa (switch em Integrações). Default: false. */
 export function isAiEnabled(settings: unknown): boolean {
   return parseTenantAiSettings(settings).aiEnabled === true;
-}
-
-export async function loadTenantAiEnabled(tenantId: string): Promise<boolean> {
-  const tenant = await prisma.tenant.findUnique({
-    where: { id: tenantId },
-    select: { settings: true },
-  });
-  return isAiEnabled(tenant?.settings);
 }
 
 export function validateAiField(
