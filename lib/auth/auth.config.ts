@@ -22,6 +22,7 @@ export const authConfig: NextAuthConfig = {
         "/forgot-password",
         "/reset-password",
         "/api/auth",
+        "/api/setup",
         "/api/webhooks",
       ];
       const isPublic = publicPaths.some((p) => pathname.startsWith(p));
