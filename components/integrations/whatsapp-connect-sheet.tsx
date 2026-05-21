@@ -59,7 +59,8 @@ export function WhatsAppConnectSheet({ open, onOpenChange, onConnected }: Props)
     setSession({ state: "generating_qr" });
     try {
       const res = await apiFetch("/api/integrations/whatsapp/session", { method: "POST" });
-      const json = await res.json();
+      const text = await res.text();
+      const json = text ? (JSON.parse(text) as { error?: string; data?: SessionData }) : {};
       if (!res.ok) throw new Error(json.error ?? "Não foi possível iniciar a conexão.");
       const data = json.data as SessionData;
       setSession(data);

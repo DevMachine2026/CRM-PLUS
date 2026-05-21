@@ -5,6 +5,7 @@
  * Sem URL → modo simulado (dev/demo).
  */
 
+import { randomUUID } from "node:crypto";
 import { webhookPathForChannel } from "@/lib/integrations/provision-integration";
 
 const BASE = process.env.EVOLUTION_API_URL?.replace(/\/$/, "");
@@ -91,7 +92,10 @@ export async function createGoInstance(
   const res = await fetch(`${BASE}/instance/create`, {
     method: "POST",
     headers: headers(),
-    body: JSON.stringify({ name: instanceName }),
+    body: JSON.stringify({
+      name: instanceName,
+      token: randomUUID(),
+    }),
   });
 
   if (!res.ok) {

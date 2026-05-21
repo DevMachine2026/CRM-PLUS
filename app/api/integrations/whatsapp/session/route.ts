@@ -25,60 +25,67 @@ export async function POST() {
   if (!session) return unauthorized();
   if (!can(session.role, "update", "integrations")) return forbidden();
 
-  const instanceName = evolutionInstanceName(session.tenantId);
-  const webhookUrl = resolveCrmWebhookUrl();
+  try {
+    const instanceName = evolutionInstanceName(session.tenantId);
+    const webhookUrl = resolveCrmWebhookUrl();
 
-  const existing = await prisma.integration.findFirst({
-    where: { tenantId: session.tenantId, channelType: "whatsapp", name: "Principal" },
-    select: { credentials: true },
-  });
-  const prev = parseWhatsAppCredentials(existing?.credentials);
+    const existing = await prisma.integration.findFirst({
+      where: { tenantId: session.tenantId, channelType: "whatsapp", name: "Principal" },
+      select: { credentials: true },
+    });
+    const prev = parseWhatsAppCredentials(existing?.credentials);
 
-  await provisionIntegration({
-    tenantId: session.tenantId,
-    channelType: "whatsapp",
-    provider: "evolution",
-    credentials: {
+    await provisionIntegration({
+      tenantId: session.tenantId,
+      channelType: "whatsapp",
       provider: "evolution",
-      evolutionApiVersion: "go",
-      evolutionInstanceName: instanceName,
-      connectionState: "generating_qr",
-    },
-    isActive: true,
-  });
+      credentials: {
+        provider: "evolution",
+        evolutionApiVersion: "go",
+        evolutionInstanceName: instanceName,
+        connectionState: "generating_qr",
+      },
+      isActive: true,
+    });
 
-  const evo = await startGoWhatsAppSession({
-    instanceName,
-    instanceId: prev.evolutionInstanceId,
-    webhookUrl,
-  });
-
-  await provisionIntegration({
-    tenantId: session.tenantId,
-    channelType: "whatsapp",
-    provider: "evolution",
-    credentials: {
-      provider: "evolution",
-      evolutionApiVersion: "go",
-      evolutionInstanceName: instanceName,
-      evolutionInstanceId: evo.instanceId,
-      instanceToken: evo.instanceToken ?? prev.instanceToken ?? "",
-      connectionState: "awaiting_scan",
-      lastQrAt: new Date().toISOString(),
-      ...(evo.qrCodeBase64 ? { lastQrCodeBase64: evo.qrCodeBase64 } : {}),
-    },
-  });
-
-  return NextResponse.json({
-    data: {
+    const evo = await startGoWhatsAppSession({
       instanceName,
-      instanceId: evo.instanceId,
-      state: "awaiting_scan",
-      qrCodeBase64: evo.qrCodeBase64 ?? null,
-      pairingCode: evo.pairingCode ?? null,
-      simulated: SIMULATED,
-    },
-  });
+      instanceId: prev.evolutionInstanceId,
+      webhookUrl,
+    });
+
+    await provisionIntegration({
+      tenantId: session.tenantId,
+      channelType: "whatsapp",
+      provider: "evolution",
+      credentials: {
+        provider: "evolution",
+        evolutionApiVersion: "go",
+        evolutionInstanceName: instanceName,
+        evolutionInstanceId: evo.instanceId,
+        instanceToken: evo.instanceToken ?? prev.instanceToken ?? "",
+        connectionState: "awaiting_scan",
+        lastQrAt: new Date().toISOString(),
+        ...(evo.qrCodeBase64 ? { lastQrCodeBase64: evo.qrCodeBase64 } : {}),
+      },
+    });
+
+    return NextResponse.json({
+      data: {
+        instanceName,
+        instanceId: evo.instanceId,
+        state: "awaiting_scan",
+        qrCodeBase64: evo.qrCodeBase64 ?? null,
+        pairingCode: evo.pairingCode ?? null,
+        simulated: SIMULATED,
+      },
+    });
+  } catch (e: unknown) {
+    const message =
+      e instanceof Error ? e.message : "Não foi possível iniciar a conexão WhatsApp.";
+    console.error("[whatsapp/session POST]", message);
+    return NextResponse.json({ error: message }, { status: 502 });
+  }
 }
 
 export async function GET() {
