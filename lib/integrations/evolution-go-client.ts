@@ -24,11 +24,18 @@ export function isEvolutionGoSimulated(): boolean {
   return !BASE;
 }
 
-function headers(instanceId?: string): HeadersInit {
+/** Admin routes (/instance/create) usam GLOBAL_API_KEY; demais usam token da instância. */
+function adminHeaders(): HeadersInit {
   const h: HeadersInit = { "Content-Type": "application/json" };
   if (API_KEY) h.apikey = API_KEY;
-  if (instanceId) h.instanceId = instanceId;
   return h;
+}
+
+function instanceHeaders(instanceToken: string): HeadersInit {
+  return {
+    "Content-Type": "application/json",
+    apikey: instanceToken,
+  };
 }
 
 /** Nome estável da instância por tenant (idempotente). */
@@ -83,18 +90,19 @@ async function parseJson<T>(res: Response): Promise<GoEnvelope<T>> {
 /** Cria instância GO ou reutiliza UUID existente. */
 export async function createGoInstance(
   instanceName: string,
-  existingInstanceId?: string,
-): Promise<{ instanceId: string; instanceToken?: string }> {
-  if (existingInstanceId) {
-    return { instanceId: existingInstanceId };
+  existing?: { instanceId?: string; instanceToken?: string },
+): Promise<{ instanceId: string; instanceToken: string }> {
+  if (existing?.instanceId && existing.instanceToken) {
+    return { instanceId: existing.instanceId, instanceToken: existing.instanceToken };
   }
 
+  const instanceToken = randomUUID();
   const res = await fetch(`${BASE}/instance/create`, {
     method: "POST",
-    headers: headers(),
+    headers: adminHeaders(),
     body: JSON.stringify({
       name: instanceName,
-      token: randomUUID(),
+      token: instanceToken,
     }),
   });
 
@@ -108,12 +116,12 @@ export async function createGoInstance(
   const instanceId = row?.id;
   if (!instanceId) throw new Error("Evolution GO create: missing instance id");
 
-  return { instanceId, instanceToken: row?.token };
+  return { instanceId, instanceToken: row?.token ?? instanceToken };
 }
 
 /** Conecta instância e registra webhook do CRM na mesma chamada. */
 export async function connectGoInstance(
-  instanceId: string,
+  instanceToken: string,
   webhookUrl: string | null,
 ): Promise<void> {
   const body: Record<string, unknown> = {
@@ -124,7 +132,7 @@ export async function connectGoInstance(
 
   const res = await fetch(`${BASE}/instance/connect`, {
     method: "POST",
-    headers: headers(instanceId),
+    headers: instanceHeaders(instanceToken),
     body: JSON.stringify(body),
   });
 
@@ -134,13 +142,13 @@ export async function connectGoInstance(
   }
 }
 
-export async function fetchGoQrCode(instanceId: string): Promise<{
+export async function fetchGoQrCode(instanceToken: string): Promise<{
   qrCodeBase64?: string;
   pairingCode?: string;
 }> {
   const res = await fetch(`${BASE}/instance/qr`, {
     method: "GET",
-    headers: headers(instanceId),
+    headers: instanceHeaders(instanceToken),
   });
 
   if (!res.ok) return {};
@@ -155,10 +163,13 @@ export async function fetchGoQrCode(instanceId: string): Promise<{
   return { qrCodeBase64, pairingCode };
 }
 
-export async function getGoConnectionState(instanceId: string): Promise<EvolutionGoSession> {
+export async function getGoConnectionState(
+  instanceToken: string,
+  instanceId?: string,
+): Promise<EvolutionGoSession> {
   const res = await fetch(`${BASE}/instance/status`, {
     method: "GET",
-    headers: headers(instanceId),
+    headers: instanceHeaders(instanceToken),
   });
 
   if (!res.ok) {
@@ -183,8 +194,9 @@ export async function getGoConnectionState(instanceId: string): Promise<Evolutio
 export async function startGoWhatsAppSession(params: {
   instanceName: string;
   instanceId?: string;
+  instanceToken?: string;
   webhookUrl?: string | null;
-}): Promise<EvolutionGoSession & { instanceId: string; instanceToken?: string }> {
+}): Promise<EvolutionGoSession & { instanceId: string; instanceToken: string }> {
   if (isEvolutionGoSimulated()) {
     const qrSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><rect fill="#fff" width="256" height="256"/><text x="128" y="120" text-anchor="middle" font-family="system-ui" font-size="12" fill="#111">CRM PLUS — Demo QR (GO)</text><text x="128" y="140" text-anchor="middle" font-family="system-ui" font-size="10" fill="#666">${params.instanceName}</text></svg>`;
     const base64 = Buffer.from(qrSvg).toString("base64");
@@ -197,13 +209,13 @@ export async function startGoWhatsAppSession(params: {
   }
 
   const webhookUrl = params.webhookUrl ?? resolveCrmWebhookUrl();
-  const { instanceId, instanceToken } = await createGoInstance(
-    params.instanceName,
-    params.instanceId,
-  );
+  const { instanceId, instanceToken } = await createGoInstance(params.instanceName, {
+    instanceId: params.instanceId,
+    instanceToken: params.instanceToken,
+  });
 
-  await connectGoInstance(instanceId, webhookUrl);
-  const qr = await fetchGoQrCode(instanceId);
+  await connectGoInstance(instanceToken, webhookUrl);
+  const qr = await fetchGoQrCode(instanceToken);
 
   return {
     instanceName: params.instanceName,
@@ -215,9 +227,9 @@ export async function startGoWhatsAppSession(params: {
   };
 }
 
-export async function refreshGoQrCode(instanceId: string): Promise<string | null> {
+export async function refreshGoQrCode(instanceToken: string): Promise<string | null> {
   if (isEvolutionGoSimulated()) return null;
-  const qr = await fetchGoQrCode(instanceId);
+  const qr = await fetchGoQrCode(instanceToken);
   return qr.qrCodeBase64 ?? null;
 }
 

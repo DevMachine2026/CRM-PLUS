@@ -51,6 +51,7 @@ export async function POST() {
     const evo = await startGoWhatsAppSession({
       instanceName,
       instanceId: prev.evolutionInstanceId,
+      instanceToken: prev.instanceToken,
       webhookUrl,
     });
 
@@ -148,8 +149,8 @@ export async function GET() {
     });
   }
 
-  if (!SIMULATED && instanceId) {
-    const evo = await getGoConnectionState(instanceId);
+  if (!SIMULATED && instanceId && creds.instanceToken) {
+    const evo = await getGoConnectionState(creds.instanceToken, instanceId);
 
     if (evo.state === "open") {
       const phone = evo.phoneNumber ?? creds.phoneNumber ?? "";
@@ -176,7 +177,7 @@ export async function GET() {
     }
 
     const qrCodeBase64 =
-      (await refreshGoQrCode(instanceId)) ??
+      (await refreshGoQrCode(creds.instanceToken)) ??
       creds.lastQrCodeBase64 ??
       null;
 
