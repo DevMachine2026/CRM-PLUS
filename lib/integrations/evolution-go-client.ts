@@ -200,9 +200,12 @@ export async function startGoWhatsAppSession(params: {
   if (isEvolutionGoSimulated()) {
     const qrSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><rect fill="#fff" width="256" height="256"/><text x="128" y="120" text-anchor="middle" font-family="system-ui" font-size="12" fill="#111">CRM PLUS — Demo QR (GO)</text><text x="128" y="140" text-anchor="middle" font-family="system-ui" font-size="10" fill="#666">${params.instanceName}</text></svg>`;
     const base64 = Buffer.from(qrSvg).toString("base64");
+    const simId = params.instanceId ?? `sim-${params.instanceName}`;
+    const simToken = params.instanceToken ?? `sim-${params.instanceName}`;
     return {
       instanceName: params.instanceName,
-      instanceId: params.instanceId ?? `sim-${params.instanceName}`,
+      instanceId: simId,
+      instanceToken: simToken,
       state: "connecting",
       qrCodeBase64: `data:image/svg+xml;base64,${base64}`,
     };
