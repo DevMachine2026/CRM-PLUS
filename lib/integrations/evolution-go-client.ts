@@ -87,15 +87,25 @@ async function parseJson<T>(res: Response): Promise<GoEnvelope<T>> {
   return (await res.json()) as GoEnvelope<T>;
 }
 
-/** Cria instância GO ou reutiliza UUID existente. */
+type GoInstanceRow = { id?: string; name?: string; token?: string };
+
+async function resolveGoInstanceByName(
+  instanceName: string,
+): Promise<{ instanceId: string; instanceToken: string } | null> {
+  const res = await fetch(`${BASE}/instance/all`, { headers: adminHeaders() });
+  if (!res.ok) return null;
+
+  const json = await parseJson<GoInstanceRow[]>(res);
+  const rows = Array.isArray(json.data) ? json.data : [];
+  const row = rows.find((r) => r.name === instanceName);
+  if (!row?.id || !row?.token) return null;
+  return { instanceId: row.id, instanceToken: row.token };
+}
+
+/** Cria instância GO (ou reaproveita a que já existe com o mesmo nome). */
 export async function createGoInstance(
   instanceName: string,
-  existing?: { instanceId?: string; instanceToken?: string },
 ): Promise<{ instanceId: string; instanceToken: string }> {
-  if (existing?.instanceId && existing.instanceToken) {
-    return { instanceId: existing.instanceId, instanceToken: existing.instanceToken };
-  }
-
   const instanceToken = randomUUID();
   const res = await fetch(`${BASE}/instance/create`, {
     method: "POST",
@@ -108,6 +118,10 @@ export async function createGoInstance(
 
   if (!res.ok) {
     const err = await res.text();
+    if (err.includes("already exists")) {
+      const existing = await resolveGoInstanceByName(instanceName);
+      if (existing) return existing;
+    }
     throw new Error(`Evolution GO create failed: ${err}`);
   }
 
@@ -193,29 +207,22 @@ export async function getGoConnectionState(
  */
 export async function startGoWhatsAppSession(params: {
   instanceName: string;
-  instanceId?: string;
-  instanceToken?: string;
   webhookUrl?: string | null;
 }): Promise<EvolutionGoSession & { instanceId: string; instanceToken: string }> {
   if (isEvolutionGoSimulated()) {
     const qrSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><rect fill="#fff" width="256" height="256"/><text x="128" y="120" text-anchor="middle" font-family="system-ui" font-size="12" fill="#111">CRM PLUS — Demo QR (GO)</text><text x="128" y="140" text-anchor="middle" font-family="system-ui" font-size="10" fill="#666">${params.instanceName}</text></svg>`;
     const base64 = Buffer.from(qrSvg).toString("base64");
-    const simId = params.instanceId ?? `sim-${params.instanceName}`;
-    const simToken = params.instanceToken ?? `sim-${params.instanceName}`;
     return {
       instanceName: params.instanceName,
-      instanceId: simId,
-      instanceToken: simToken,
+      instanceId: `sim-${params.instanceName}`,
+      instanceToken: `sim-${params.instanceName}`,
       state: "connecting",
       qrCodeBase64: `data:image/svg+xml;base64,${base64}`,
     };
   }
 
   const webhookUrl = params.webhookUrl ?? resolveCrmWebhookUrl();
-  const { instanceId, instanceToken } = await createGoInstance(params.instanceName, {
-    instanceId: params.instanceId,
-    instanceToken: params.instanceToken,
-  });
+  const { instanceId, instanceToken } = await createGoInstance(params.instanceName);
 
   await connectGoInstance(instanceToken, webhookUrl);
   const qr = await fetchGoQrCode(instanceToken);

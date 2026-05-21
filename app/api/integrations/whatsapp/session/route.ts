@@ -29,12 +29,6 @@ export async function POST() {
     const instanceName = evolutionInstanceName(session.tenantId);
     const webhookUrl = resolveCrmWebhookUrl();
 
-    const existing = await prisma.integration.findFirst({
-      where: { tenantId: session.tenantId, channelType: "whatsapp", name: "Principal" },
-      select: { credentials: true },
-    });
-    const prev = parseWhatsAppCredentials(existing?.credentials);
-
     await provisionIntegration({
       tenantId: session.tenantId,
       channelType: "whatsapp",
@@ -50,8 +44,6 @@ export async function POST() {
 
     const evo = await startGoWhatsAppSession({
       instanceName,
-      instanceId: prev.evolutionInstanceId,
-      instanceToken: prev.instanceToken,
       webhookUrl,
     });
 
@@ -64,7 +56,7 @@ export async function POST() {
         evolutionApiVersion: "go",
         evolutionInstanceName: instanceName,
         evolutionInstanceId: evo.instanceId,
-        instanceToken: evo.instanceToken ?? prev.instanceToken ?? "",
+        instanceToken: evo.instanceToken,
         connectionState: "awaiting_scan",
         lastQrAt: new Date().toISOString(),
         ...(evo.qrCodeBase64 ? { lastQrCodeBase64: evo.qrCodeBase64 } : {}),
