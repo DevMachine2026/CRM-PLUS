@@ -33,19 +33,32 @@ export function TenantBrandingProvider({
   useEffect(() => {
     const root = document.documentElement;
     const vars = brandingToCssVars(branding.primaryColor);
-    const prev: Record<string, string> = {};
-
+    const hasBrand = Object.keys(vars).length > 0;
+    root.toggleAttribute("data-branded", hasBrand);
+    if (!hasBrand) {
+      for (const key of [
+        "--primary",
+        "--primary-foreground",
+        "--ring",
+        "--accent",
+        "--accent-foreground",
+        "--sidebar-primary",
+        "--sidebar-primary-foreground",
+        "--sidebar-accent",
+        "--sidebar-accent-foreground",
+        "--sidebar-ring",
+        "--brand-subtle",
+        "--brand-muted",
+        "--brand-border",
+        "--chart-1",
+      ]) {
+        root.style.removeProperty(key);
+      }
+      return;
+    }
     for (const [key, value] of Object.entries(vars)) {
-      prev[key] = root.style.getPropertyValue(key);
       root.style.setProperty(key, value);
     }
-
-    return () => {
-      for (const key of Object.keys(vars)) {
-        if (prev[key]) root.style.setProperty(key, prev[key]);
-        else root.style.removeProperty(key);
-      }
-    };
   }, [branding.primaryColor]);
 
   const displayName =

@@ -19,6 +19,8 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { FormDrawer } from "@/components/ui/form-drawer";
+import { FormField } from "@/components/ui/form-field";
+import { buildSelectItems, withNoneOption } from "@/lib/ui/select-items";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -847,34 +849,55 @@ export function InboxClient({
         onSubmit={handleCreate}
         loading={creating}
       >
-        <div className="space-y-1.5">
+        <FormField>
           <Label>Contato</Label>
-          <Select value={newContactId || "none"} onValueChange={(v) => setNewContactId(v === "none" ? "" : (v ?? ""))}>
+          <Select
+            items={withNoneOption(
+              "Sem contato",
+              contacts.map((c) => ({
+                value: c.id,
+                label: `${c.name}${c.email ? ` — ${c.email}` : ""}`,
+              })),
+            )}
+            value={newContactId || "none"}
+            onValueChange={(v) => setNewContactId(v === "none" ? "" : (v ?? ""))}
+          >
             <SelectTrigger><SelectValue placeholder="Selecionar contato (opcional)" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="none">Sem contato</SelectItem>
+              <SelectItem value="none" label="Sem contato">Sem contato</SelectItem>
               {contacts.map((c) => (
-                <SelectItem key={c.id} value={c.id}>{c.name}{c.email ? ` — ${c.email}` : ""}</SelectItem>
+                <SelectItem key={c.id} value={c.id} label={`${c.name}${c.email ? ` — ${c.email}` : ""}`}>
+                  {c.name}{c.email ? ` — ${c.email}` : ""}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
-        </div>
-        <div className="space-y-1.5">
+        </FormField>
+        <FormField>
           <Label>Canal</Label>
-          <Select value={newChannel} onValueChange={(v) => setNewChannel(v ?? "manual")}>
+          <Select
+            items={buildSelectItems([
+              { value: "manual", label: "Manual" },
+              { value: "whatsapp", label: "WhatsApp (simulado)" },
+              { value: "instagram", label: "Instagram (simulado)" },
+              { value: "email", label: "E-mail (simulado)" },
+            ])}
+            value={newChannel}
+            onValueChange={(v) => setNewChannel(v ?? "manual")}
+          >
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="manual">Manual</SelectItem>
-              <SelectItem value="whatsapp">WhatsApp (simulado)</SelectItem>
-              <SelectItem value="instagram">Instagram (simulado)</SelectItem>
-              <SelectItem value="email">E-mail (simulado)</SelectItem>
+              <SelectItem value="manual" label="Manual">Manual</SelectItem>
+              <SelectItem value="whatsapp" label="WhatsApp (simulado)">WhatsApp (simulado)</SelectItem>
+              <SelectItem value="instagram" label="Instagram (simulado)">Instagram (simulado)</SelectItem>
+              <SelectItem value="email" label="E-mail (simulado)">E-mail (simulado)</SelectItem>
             </SelectContent>
           </Select>
-        </div>
-        <div className="space-y-1.5">
+        </FormField>
+        <FormField>
           <Label>Assunto</Label>
           <Input value={newSubject} onChange={(e) => setNewSubject(e.target.value)} placeholder="Opcional" />
-        </div>
+        </FormField>
         {createError && <p className="text-sm text-destructive">{createError}</p>}
       </FormDrawer>
     </div>

@@ -34,6 +34,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { FormField, FormFieldRow } from "@/components/ui/form-field";
+import { buildSelectItems, mapById, withNoneOption } from "@/lib/ui/select-items";
 
 type OppStatus = "open" | "won" | "lost";
 
@@ -162,6 +164,23 @@ export function OpportunitiesClient({
     ? pipelines.find((p) => p.id === pipelineFilter) ?? defaultPipeline
     : defaultPipeline;
   const selectedPipelineStages = pipelines.find((p) => p.id === form.pipelineId)?.stages ?? [];
+
+  const pipelineSelectItems = buildSelectItems(mapById(pipelines));
+  const stageSelectItems = buildSelectItems(
+    selectedPipelineStages.map((s) => ({
+      value: s.id,
+      label: `${s.name} (${s.probability}%)`,
+    })),
+  );
+  const contactSelectItems = withNoneOption("Nenhum", mapById(contacts));
+  const companySelectItems = withNoneOption("Nenhuma", mapById(companies));
+  const userSelectItems = withNoneOption("Nenhum", mapById(users));
+  const statusSelectItems = buildSelectItems(
+    (["open", "won", "lost"] as const).map((s) => ({
+      value: s,
+      label: STATUS_LABELS[s],
+    })),
+  );
 
   function buildParams(overrides: Record<string, string> = {}) {
     const p = new URLSearchParams();
@@ -535,14 +554,15 @@ export function OpportunitiesClient({
         loading={saving}
         className="max-w-lg"
       >
-            <div className="space-y-1.5">
+            <FormField>
               <Label>Título *</Label>
               <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Ex: Proposta para Acme Ltda" />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
+            </FormField>
+            <FormFieldRow>
+              <FormField>
                 <Label>Pipeline *</Label>
                 <Select
+                  items={pipelineSelectItems}
                   value={form.pipelineId}
                   onValueChange={(v) => {
                     const pl = pipelines.find((p) => p.id === v);
@@ -551,81 +571,103 @@ export function OpportunitiesClient({
                 >
                   <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
                   <SelectContent>
-                    {pipelines.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                    {pipelines.map((p) => <SelectItem key={p.id} value={p.id} label={p.name}>{p.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
-              </div>
-              <div className="space-y-1.5">
+              </FormField>
+              <FormField>
                 <Label>Etapa *</Label>
-                <Select value={form.stageId} onValueChange={(v) => setForm({ ...form, stageId: v ?? "" })}>
+                <Select
+                  items={stageSelectItems}
+                  value={form.stageId}
+                  onValueChange={(v) => setForm({ ...form, stageId: v ?? "" })}
+                >
                   <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
                   <SelectContent>
                     {selectedPipelineStages.map((s) => (
-                      <SelectItem key={s.id} value={s.id}>{s.name} ({s.probability}%)</SelectItem>
+                      <SelectItem key={s.id} value={s.id} label={`${s.name} (${s.probability}%)`}>
+                        {s.name} ({s.probability}%)
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
+              </FormField>
+            </FormFieldRow>
+            <FormFieldRow>
+              <FormField>
                 <Label>Contato</Label>
-                <Select value={form.contactId || "none"} onValueChange={(v) => setForm({ ...form, contactId: v === "none" ? "" : (v ?? "") })}>
+                <Select
+                  items={contactSelectItems}
+                  value={form.contactId || "none"}
+                  onValueChange={(v) => setForm({ ...form, contactId: v === "none" ? "" : (v ?? "") })}
+                >
                   <SelectTrigger><SelectValue placeholder="Nenhum" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">Nenhum</SelectItem>
-                    {contacts.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                    <SelectItem value="none" label="Nenhum">Nenhum</SelectItem>
+                    {contacts.map((c) => <SelectItem key={c.id} value={c.id} label={c.name}>{c.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
-              </div>
-              <div className="space-y-1.5">
+              </FormField>
+              <FormField>
                 <Label>Empresa</Label>
-                <Select value={form.companyId || "none"} onValueChange={(v) => setForm({ ...form, companyId: v === "none" ? "" : (v ?? "") })}>
+                <Select
+                  items={companySelectItems}
+                  value={form.companyId || "none"}
+                  onValueChange={(v) => setForm({ ...form, companyId: v === "none" ? "" : (v ?? "") })}
+                >
                   <SelectTrigger><SelectValue placeholder="Nenhuma" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">Nenhuma</SelectItem>
-                    {companies.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                    <SelectItem value="none" label="Nenhuma">Nenhuma</SelectItem>
+                    {companies.map((c) => <SelectItem key={c.id} value={c.id} label={c.name}>{c.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
+              </FormField>
+            </FormFieldRow>
+            <FormFieldRow>
+              <FormField>
                 <Label>Valor (R$)</Label>
                 <Input value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} placeholder="0,00" />
-              </div>
-              <div className="space-y-1.5">
+              </FormField>
+              <FormField>
                 <Label>Previsão de fechamento</Label>
                 <Input type="date" value={form.expectedCloseAt} onChange={(e) => setForm({ ...form, expectedCloseAt: e.target.value })} />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
+              </FormField>
+            </FormFieldRow>
+            <FormFieldRow>
+              <FormField>
                 <Label>Responsável</Label>
-                <Select value={form.assignedUserId || "none"} onValueChange={(v) => setForm({ ...form, assignedUserId: v === "none" ? "" : (v ?? "") })}>
+                <Select
+                  items={userSelectItems}
+                  value={form.assignedUserId || "none"}
+                  onValueChange={(v) => setForm({ ...form, assignedUserId: v === "none" ? "" : (v ?? "") })}
+                >
                   <SelectTrigger><SelectValue placeholder="Nenhum" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">Nenhum</SelectItem>
-                    {users.map((u) => <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>)}
+                    <SelectItem value="none" label="Nenhum">Nenhum</SelectItem>
+                    {users.map((u) => <SelectItem key={u.id} value={u.id} label={u.name}>{u.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
-              </div>
-              <div className="space-y-1.5">
+              </FormField>
+              <FormField>
                 <Label>Status</Label>
-                <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: (v ?? "open") as OppStatus })}>
+                <Select
+                  items={statusSelectItems}
+                  value={form.status}
+                  onValueChange={(v) => setForm({ ...form, status: (v ?? "open") as OppStatus })}
+                >
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="open">Aberta</SelectItem>
-                    <SelectItem value="won">Ganha</SelectItem>
-                    <SelectItem value="lost">Perdida</SelectItem>
+                    <SelectItem value="open" label="Aberta">Aberta</SelectItem>
+                    <SelectItem value="won" label="Ganha">Ganha</SelectItem>
+                    <SelectItem value="lost" label="Perdida">Perdida</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-            </div>
-            <div className="space-y-1.5">
+              </FormField>
+            </FormFieldRow>
+            <FormField>
               <Label>Notas</Label>
               <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Observações sobre a oportunidade..." className="resize-none" rows={2} />
-            </div>
+            </FormField>
         {error && <p className="text-sm text-destructive">{error}</p>}
       </FormDrawer>
 
@@ -703,22 +745,34 @@ export function OpportunitiesClient({
             {allProducts.length > 0 && canEdit && (
               <div className="space-y-2 border-t pt-3">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Adicionar produto</p>
-                <div className="flex gap-2">
-                  <Select value={addProductId || "none"} onValueChange={(v) => {
-                    const id = v === "none" ? "" : (v ?? "");
-                    setAddProductId(id);
-                    const p = allProducts.find((x) => x.id === id);
-                    if (p) setAddUnitPrice(String(Number(p.price)));
-                  }}>
-                    <SelectTrigger className="flex-1">
+                <div className="flex min-w-0 gap-2">
+                  <Select
+                    items={withNoneOption(
+                      "Selecionar produto...",
+                      allProducts
+                        .filter((p) => !productDialogOpp?.products.some((i) => i.productId === p.id))
+                        .map((p) => ({
+                          value: p.id,
+                          label: `${p.name} — ${formatCurrency(p.price)}`,
+                        })),
+                    )}
+                    value={addProductId || "none"}
+                    onValueChange={(v) => {
+                      const id = v === "none" ? "" : (v ?? "");
+                      setAddProductId(id);
+                      const p = allProducts.find((x) => x.id === id);
+                      if (p) setAddUnitPrice(String(Number(p.price)));
+                    }}
+                  >
+                    <SelectTrigger className="min-w-0 flex-1">
                       <SelectValue placeholder="Selecionar produto..." />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">Selecionar produto...</SelectItem>
+                      <SelectItem value="none" label="Selecionar produto...">Selecionar produto...</SelectItem>
                       {allProducts
                         .filter((p) => !productDialogOpp?.products.some((i) => i.productId === p.id))
                         .map((p) => (
-                          <SelectItem key={p.id} value={p.id}>
+                          <SelectItem key={p.id} value={p.id} label={`${p.name} — ${formatCurrency(p.price)}`}>
                             {p.name} — {formatCurrency(p.price)}
                           </SelectItem>
                         ))}

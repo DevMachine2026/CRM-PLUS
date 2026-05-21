@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { SidebarNav } from "@/components/layout/sidebar-nav";
 import { useTenantBranding } from "@/components/tenant/tenant-branding-provider";
+import { isDefaultBrandColor } from "@/lib/tenant/branding-settings";
 
 const SIDEBAR_NAV_ID = "dashboard-sidebar-nav";
 
@@ -24,6 +25,7 @@ export function Sidebar({
   onNavigate,
 }: SidebarProps) {
   const { branding, tenantName } = useTenantBranding();
+  const hasBrand = !isDefaultBrandColor(branding.primaryColor);
 
   const handleNavigate = () => {
     onNavigate?.();
@@ -34,6 +36,7 @@ export function Sidebar({
     <aside
       className={cn(
         "flex h-full w-56 max-w-[85vw] flex-col border-r border-border/60 bg-background",
+        hasBrand && "border-l-[3px] border-l-primary",
         mobile &&
           "fixed inset-y-0 left-0 z-50 shadow-2xl transition-transform duration-300 ease-in-out",
         mobile && (open ? "translate-x-0" : "-translate-x-full pointer-events-none"),
@@ -41,7 +44,12 @@ export function Sidebar({
       )}
       aria-hidden={mobile && !open ? true : undefined}
     >
-      <div className="flex h-14 shrink-0 items-center justify-between gap-2 border-b px-4">
+      <div
+        className={cn(
+          "flex h-14 shrink-0 items-center justify-between gap-2 border-b px-4",
+          hasBrand && "border-b-primary/15 bg-primary/[0.03]",
+        )}
+      >
         <div className="flex min-w-0 items-center gap-2">
           {branding.logoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -51,9 +59,14 @@ export function Sidebar({
               className="h-8 max-w-[120px] shrink-0 object-contain object-left"
             />
           ) : (
-            <Bot className="h-6 w-6 shrink-0 text-primary" aria-hidden />
+            <span
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10"
+              aria-hidden
+            >
+              <Bot className="h-5 w-5 text-primary" />
+            </span>
           )}
-          <span className="truncate text-base font-semibold tracking-tight">
+          <span className="truncate text-base font-semibold tracking-tight text-foreground">
             {tenantName}
           </span>
         </div>

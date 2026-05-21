@@ -11,12 +11,13 @@ export const ds = {
   navLink:
     "flex min-h-10 items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ease-out",
   navLinkActive:
-    "bg-foreground/[0.06] text-foreground shadow-none",
+    "bg-primary/10 font-medium text-primary shadow-[inset_3px_0_0_0_var(--primary)]",
   navLinkInactive:
-    "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+    "text-muted-foreground hover:bg-primary/5 hover:text-foreground",
   navLinkFooter:
-    "flex min-h-9 items-center gap-2.5 rounded-md px-2.5 py-2 text-[13px] font-medium text-muted-foreground transition-colors duration-200 hover:bg-muted/50 hover:text-foreground",
-  navLinkFooterActive: "bg-muted/80 text-foreground",
+    "flex min-h-9 items-center gap-2.5 rounded-md px-2.5 py-2 text-[13px] font-medium text-muted-foreground transition-colors duration-200 hover:bg-primary/5 hover:text-foreground",
+  navLinkFooterActive:
+    "bg-primary/10 font-medium text-primary shadow-[inset_2px_0_0_0_var(--primary)]",
   navSectionLabel:
     "mb-1 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/80",
 
@@ -27,7 +28,11 @@ export const ds = {
     "cursor-pointer hover:border-border hover:shadow-md active:scale-[0.995]",
   listStack: "flex flex-col gap-3 md:gap-4",
   metricGrid: "grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4",
-  emptyState: "rounded-xl border border-dashed border-border/80 bg-muted/20 px-6 py-16 text-center",
+  emptyState:
+    "rounded-xl border border-dashed border-border/80 bg-muted/20 px-6 py-16 text-center",
+  /** Ícone de página / módulo — destaque com cor da marca */
+  pageIconWell:
+    "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary [&_svg]:size-5",
 
   /** Actions */
   primaryAction:

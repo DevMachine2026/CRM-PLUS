@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db/client";
 import { getSession, unauthorized, forbidden} from "@/lib/auth/get-session";
 import { can } from "@/lib/auth/permissions";
+import { mergeTenantBranding } from "@/lib/tenant/branding-settings";
 
 // GET /api/settings — read own tenant
 export async function GET(_req: NextRequest) {
@@ -40,15 +41,23 @@ export async function PATCH(req: NextRequest) {
   });
   if (!current) return NextResponse.json({ error: "Tenant não encontrado." }, { status: 404 });
 
-  const mergedSettings = parsed.data.settings
-    ? { ...(current.settings as Record<string, unknown>), ...parsed.data.settings }
-    : undefined;
+  let mergedSettings: Record<string, unknown> | undefined;
+  if (parsed.data.settings) {
+    const prev = (current.settings ?? {}) as Record<string, unknown>;
+    const patch = parsed.data.settings;
+    mergedSettings = { ...prev, ...patch };
+    if (patch.branding !== undefined) {
+      mergedSettings.branding = mergeTenantBranding(prev, patch.branding);
+    }
+  }
 
   const tenant = await prisma.tenant.update({
     where: { id: session.tenantId },
     data:  {
       ...(parsed.data.name ? { name: parsed.data.name } : {}),
-      ...(mergedSettings   ? { settings: mergedSettings as Record<string, string | number | boolean | null> } : {}),
+      ...(mergedSettings
+        ? { settings: mergedSettings as unknown as Record<string, string | number | boolean | null> }
+        : {}),
     },
     select: { id: true, name: true, slug: true, plan: true, status: true, settings: true, updatedAt: true },
   });

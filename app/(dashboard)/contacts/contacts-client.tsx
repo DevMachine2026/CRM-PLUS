@@ -20,6 +20,8 @@ import {
 import { PageHeader } from "@/components/layout/page-header";
 import { Fab } from "@/components/ui/fab";
 import { FormDrawer } from "@/components/ui/form-drawer";
+import { FormField } from "@/components/ui/form-field";
+import { buildSelectItems } from "@/lib/ui/select-items";
 import { ListCard } from "@/components/ui/list-card";
 import { PrimaryActionButton } from "@/components/ui/primary-action-button";
 import { ds } from "@/lib/design-system";
@@ -323,29 +325,37 @@ export function ContactsClient({ contacts, allTags, total, page, search, canCrea
         onSubmit={handleSave}
         loading={saving}
       >
-        <div className="space-y-1.5">
+        <FormField>
           <Label>Nome *</Label>
           <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="João Silva" />
-        </div>
-        <div className="space-y-1.5">
+        </FormField>
+        <FormField>
           <Label>E-mail</Label>
           <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="joao@empresa.com" />
-        </div>
-        <div className="space-y-1.5">
+        </FormField>
+        <FormField>
           <Label>Telefone</Label>
           <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="(11) 99999-9999" />
-        </div>
-        <div className="space-y-1.5">
+        </FormField>
+        <FormField>
           <Label>Status</Label>
-          <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v as ContactStatus })}>
+          <Select
+            items={buildSelectItems([
+              { value: "lead", label: "Lead" },
+              { value: "customer", label: "Cliente" },
+              { value: "inactive", label: "Inativo" },
+            ])}
+            value={form.status}
+            onValueChange={(v) => setForm({ ...form, status: v as ContactStatus })}
+          >
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="lead">Lead</SelectItem>
-              <SelectItem value="customer">Cliente</SelectItem>
-              <SelectItem value="inactive">Inativo</SelectItem>
+              <SelectItem value="lead" label="Lead">Lead</SelectItem>
+              <SelectItem value="customer" label="Cliente">Cliente</SelectItem>
+              <SelectItem value="inactive" label="Inativo">Inativo</SelectItem>
             </SelectContent>
           </Select>
-        </div>
+        </FormField>
         {error && <p className="text-sm text-destructive">{error}</p>}
       </FormDrawer>
 

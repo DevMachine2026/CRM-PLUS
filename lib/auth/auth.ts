@@ -4,6 +4,8 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db/client";
 import type { UserRole } from "@/lib/generated/prisma/enums";
 import { authConfig } from "./auth.config";
+import { DatabaseUnavailable } from "./credentials-errors";
+import { isDbConnectionError } from "./is-db-connection-error";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
@@ -21,33 +23,41 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const email = String(credentials.email).trim().toLowerCase();
         const password = String(credentials.password);
 
-        const user = await prisma.user.findFirst({
-          where: {
-            email,
-            isActive: true,
-          },
-          include: { tenant: true },
-        });
+        try {
+          const user = await prisma.user.findFirst({
+            where: {
+              email,
+              isActive: true,
+            },
+            include: { tenant: true },
+          });
 
-        if (!user || !user.passwordHash) return null;
+          if (!user || !user.passwordHash) return null;
 
-        const valid = await bcrypt.compare(password, user.passwordHash);
-        if (!valid) return null;
+          const valid = await bcrypt.compare(password, user.passwordHash);
+          if (!valid) return null;
 
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { lastLoginAt: new Date() },
-        });
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { lastLoginAt: new Date() },
+          });
 
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          image: user.avatarUrl,
-          tenantId: user.tenantId,
-          tenantSlug: user.tenant.slug,
-          role: user.role,
-        };
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            image: user.avatarUrl,
+            tenantId: user.tenantId,
+            tenantSlug: user.tenant.slug,
+            role: user.role,
+          };
+        } catch (err) {
+          if (isDbConnectionError(err)) {
+            console.error("[auth] Falha de conexão com o banco:", err);
+            throw new DatabaseUnavailable();
+          }
+          throw err;
+        }
       },
     }),
   ],

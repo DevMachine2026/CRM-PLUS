@@ -20,6 +20,8 @@ import { PageHeader } from "@/components/layout/page-header";
 import { MetricCard, MetricGrid } from "@/components/ui/metric-card";
 import { FilterBar } from "@/components/layout/filter-bar";
 import { FormDrawer } from "@/components/ui/form-drawer";
+import { FormField } from "@/components/ui/form-field";
+import { buildSelectItems } from "@/lib/ui/select-items";
 import { ListCard } from "@/components/ui/list-card";
 import { ds } from "@/lib/design-system";
 import { cn } from "@/lib/utils";
@@ -256,17 +258,25 @@ export function BillingClient({ revenues, total, page, limit, canUpdate }: Props
             <span className="text-muted-foreground"> · {fmt(editingRevenue.amount)}</span>
           </div>
         )}
-        <div className="space-y-1.5">
+        <FormField>
           <Label>Status</Label>
-          <Select value={editStatus} onValueChange={(v) => setEditStatus(v as Revenue["status"])}>
+          <Select
+            items={buildSelectItems([
+              { value: "pending", label: "Pendente" },
+              { value: "paid", label: "Pago" },
+              { value: "cancelled", label: "Cancelado" },
+            ])}
+            value={editStatus}
+            onValueChange={(v) => setEditStatus(v as Revenue["status"])}
+          >
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="pending">Pendente</SelectItem>
-              <SelectItem value="paid">Pago</SelectItem>
-              <SelectItem value="cancelled">Cancelado</SelectItem>
+              <SelectItem value="pending" label="Pendente">Pendente</SelectItem>
+              <SelectItem value="paid" label="Pago">Pago</SelectItem>
+              <SelectItem value="cancelled" label="Cancelado">Cancelado</SelectItem>
             </SelectContent>
           </Select>
-        </div>
+        </FormField>
         <div className="space-y-1.5">
           <Label>Data de pagamento</Label>
           <Input type="datetime-local" value={editPaidAt} onChange={(e) => setEditPaidAt(e.target.value)} />

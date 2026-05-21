@@ -2,6 +2,11 @@ import { signIn } from "@/lib/auth/auth";
 import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
 import { seedDemo } from "@/lib/demo/seed";
+import {
+  isDatabaseUnavailableError,
+  loginErrorFromQuery,
+} from "@/lib/auth/resolve-login-error";
+import { loginErrorMessage } from "@/lib/auth/login-error-message";
 import { Bot, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +19,7 @@ export default async function LoginPage({
   searchParams: Promise<{
     callbackUrl?: string;
     error?: string;
+    code?: string;
     reason?: string;
     demo?: string;
     registered?: string;
@@ -23,14 +29,17 @@ export default async function LoginPage({
   const params = await searchParams;
   const callbackUrl = params.callbackUrl ?? "/dashboard";
   const error       = params.error;
+  const code        = params.code;
   const reason      = params.reason;
   const isDemo      = params.demo === "1";
   const registered  = params.registered === "true";
   const resetOk     = params.reset === "true";
 
+  const errorMessage = loginErrorMessage(loginErrorFromQuery(error, code));
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
-      <div className="w-full max-w-sm space-y-6">
+    <div className="min-h-dvh bg-muted/40 px-4 py-8 pb-24 sm:pb-8">
+      <div className="mx-auto flex w-full max-w-sm flex-col gap-6">
         {/* Logo */}
         <div className="flex flex-col items-center gap-2">
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
@@ -81,6 +90,9 @@ export default async function LoginPage({
                     redirectTo: "/dashboard",
                   });
                 } catch (err) {
+                  if (isDatabaseUnavailableError(err)) {
+                    redirect("/login?error=DatabaseUnavailable&demo=1");
+                  }
                   if (err instanceof AuthError) redirect("/login?error=DemoUnavailable");
                   throw err;
                 }
@@ -97,12 +109,20 @@ export default async function LoginPage({
           </div>
         )}
 
-        <Card>
+        <Card className="overflow-visible">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg">Entrar</CardTitle>
             <CardDescription>Acesse sua conta</CardDescription>
           </CardHeader>
           <CardContent>
+            {errorMessage && (
+              <p
+                role="alert"
+                className="mb-4 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive"
+              >
+                {errorMessage}
+              </p>
+            )}
             <form
               action={async (formData: FormData) => {
                 "use server";
@@ -113,8 +133,15 @@ export default async function LoginPage({
                     redirectTo: callbackUrl,
                   });
                 } catch (err) {
+                  if (isDatabaseUnavailableError(err)) {
+                    redirect(
+                      `/login?error=DatabaseUnavailable&callbackUrl=${encodeURIComponent(callbackUrl)}`,
+                    );
+                  }
                   if (err instanceof AuthError) {
-                    redirect(`/login?error=InvalidCredentials&callbackUrl=${callbackUrl}`);
+                    redirect(
+                      `/login?error=InvalidCredentials&callbackUrl=${encodeURIComponent(callbackUrl)}`,
+                    );
                   }
                   throw err;
                 }
@@ -144,20 +171,12 @@ export default async function LoginPage({
                 />
               </div>
 
-              {error && (
-                <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                  {error === "DemoUnavailable"
-                    ? "Conta demo indisponível no momento. Tente novamente."
-                    : "E-mail ou senha incorretos."}
-                </p>
-              )}
-
               <Button type="submit" className="w-full">
                 Entrar
               </Button>
             </form>
 
-            <div className="mt-4 space-y-2 text-center text-sm text-muted-foreground">
+            <div className="mt-4 space-y-2 pb-1 text-center text-sm text-muted-foreground">
               <div>
                 <a href="/forgot-password" className="text-xs hover:text-primary hover:underline">
                   Esqueceu a senha?

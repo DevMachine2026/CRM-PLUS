@@ -196,7 +196,7 @@ function GestaoGroup({
         )}
       >
         <div className="overflow-hidden">
-          <ul className="mt-0.5 space-y-0.5 border-l border-border/60 ml-5 pl-2">
+          <ul className="mt-0.5 space-y-0.5 border-l border-primary/25 ml-5 pl-2">
             {GESTAO_NAV_ITEMS.map((item) => {
               const active = isNavItemActive(pathname, item.href, item.exact);
               return (

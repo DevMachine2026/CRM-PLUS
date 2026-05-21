@@ -31,6 +31,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { FormField, FormFieldRow } from "@/components/ui/form-field";
+import { buildSelectItems } from "@/lib/ui/select-items";
 import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "next/navigation";
 import type {
@@ -145,22 +147,27 @@ function ActionEditor({
               className="text-xs h-8"
             />
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div>
+          <FormFieldRow className="gap-2 sm:grid-cols-2">
+            <FormField>
               <Label className="text-xs">Prioridade</Label>
               <Select
+                items={buildSelectItems([
+                  { value: "low", label: "Baixa" },
+                  { value: "medium", label: "Média" },
+                  { value: "high", label: "Alta" },
+                ])}
                 value={action.priority ?? "medium"}
                 onValueChange={(v) => onChange({ ...action, priority: v as "low" | "medium" | "high" })}
               >
                 <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="low">Baixa</SelectItem>
-                  <SelectItem value="medium">Média</SelectItem>
-                  <SelectItem value="high">Alta</SelectItem>
+                  <SelectItem value="low" label="Baixa">Baixa</SelectItem>
+                  <SelectItem value="medium" label="Média">Média</SelectItem>
+                  <SelectItem value="high" label="Alta">Alta</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-            <div>
+            </FormField>
+            <FormField>
               <Label className="text-xs">Prazo (dias)</Label>
               <Input
                 type="number" min={0} max={365}
@@ -169,8 +176,8 @@ function ActionEditor({
                 placeholder="3"
                 className="text-xs h-8"
               />
-            </div>
-          </div>
+            </FormField>
+          </FormFieldRow>
         </div>
       );
 
@@ -239,13 +246,19 @@ function ActionEditor({
         <div>
           <Label className="text-xs">Etapa de destino</Label>
           <Select
+            items={buildSelectItems(
+              stages.map((s) => ({
+                value: s.id,
+                label: `${s.pipelineName} → ${s.name}`,
+              })),
+            )}
             value={action.stageId ?? ""}
             onValueChange={(v) => onChange({ type: "update_opportunity_stage", stageId: v ?? "" })}
           >
             <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Selecionar etapa" /></SelectTrigger>
             <SelectContent>
               {stages.map((s) => (
-                <SelectItem key={s.id} value={s.id}>
+                <SelectItem key={s.id} value={s.id} label={`${s.pipelineName} → ${s.name}`}>
                   {s.pipelineName} → {s.name}
                 </SelectItem>
               ))}

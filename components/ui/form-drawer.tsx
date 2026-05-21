@@ -70,7 +70,7 @@ export function FormDrawer({
         <SheetBody ref={bodyRef}>
           <form
             id={formId}
-            className="space-y-5"
+            className="min-w-0 space-y-5"
             onSubmit={(e) => {
               e.preventDefault();
               void onSubmit();

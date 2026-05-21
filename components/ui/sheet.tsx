@@ -89,7 +89,7 @@ const SheetBody = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">>(
       <div
         ref={ref}
         data-slot="sheet-body"
-        className={cn("flex-1 overflow-y-auto px-6 py-6", className)}
+        className={cn("min-w-0 flex-1 overflow-x-hidden overflow-y-auto px-6 py-6", className)}
         {...props}
       />
     );

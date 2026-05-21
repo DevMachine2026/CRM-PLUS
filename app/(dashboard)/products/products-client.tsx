@@ -21,6 +21,8 @@ import { PageHeader } from "@/components/layout/page-header";
 import { FilterBar } from "@/components/layout/filter-bar";
 import { Fab } from "@/components/ui/fab";
 import { FormDrawer } from "@/components/ui/form-drawer";
+import { FormField } from "@/components/ui/form-field";
+import { buildSelectItems } from "@/lib/ui/select-items";
 import { ListCard } from "@/components/ui/list-card";
 import { PrimaryActionButton } from "@/components/ui/primary-action-button";
 import { ds } from "@/lib/design-system";
@@ -356,19 +358,23 @@ export function ProductsClient({
             rows={3}
           />
         </div>
-        <div className="space-y-1.5">
+        <FormField>
           <Label>Status</Label>
           <Select
+            items={buildSelectItems([
+              { value: "active", label: "Ativo" },
+              { value: "inactive", label: "Inativo" },
+            ])}
             value={form.status}
             onValueChange={(v) => setForm({ ...form, status: v as ProductStatus })}
           >
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="active">Ativo</SelectItem>
-              <SelectItem value="inactive">Inativo</SelectItem>
+              <SelectItem value="active" label="Ativo">Ativo</SelectItem>
+              <SelectItem value="inactive" label="Inativo">Inativo</SelectItem>
             </SelectContent>
           </Select>
-        </div>
+        </FormField>
         {error && <p className="text-sm text-destructive">{error}</p>}
       </FormDrawer>
     </div>

@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { PageHeader } from "@/components/layout/page-header";
 import { Fab } from "@/components/ui/fab";
 import { FormDrawer } from "@/components/ui/form-drawer";
+import { FormField, FormFieldRow } from "@/components/ui/form-field";
 import { ListCard } from "@/components/ui/list-card";
 import { PrimaryActionButton } from "@/components/ui/primary-action-button";
 import { ds } from "@/lib/design-system";
@@ -361,16 +362,16 @@ export function PipelineClient({ pipelines, canCreate, canEdit, canDelete }: Pro
         onSubmit={handleSaveStage}
         loading={stageSaving}
       >
-        <div className="space-y-1.5">
+        <FormField>
           <Label>Nome *</Label>
           <Input
             value={stageForm.name}
             onChange={(e) => setStageForm({ ...stageForm, name: e.target.value })}
             placeholder="Prospecção, Proposta, Fechamento..."
           />
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1.5">
+        </FormField>
+        <FormFieldRow>
+          <FormField>
             <Label>Ordem *</Label>
             <Input
               type="number"
@@ -379,8 +380,8 @@ export function PipelineClient({ pipelines, canCreate, canEdit, canDelete }: Pro
               onChange={(e) => setStageForm({ ...stageForm, order: e.target.value })}
               placeholder="1"
             />
-          </div>
-          <div className="space-y-1.5">
+          </FormField>
+          <FormField>
             <Label>Probabilidade (%)</Label>
             <Input
               type="number"
@@ -390,8 +391,8 @@ export function PipelineClient({ pipelines, canCreate, canEdit, canDelete }: Pro
               onChange={(e) => setStageForm({ ...stageForm, probability: e.target.value })}
               placeholder="0"
             />
-          </div>
-        </div>
+          </FormField>
+        </FormFieldRow>
         {stageError && <p className="text-sm text-destructive">{stageError}</p>}
       </FormDrawer>
     </div>

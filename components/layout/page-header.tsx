@@ -1,3 +1,4 @@
+import { ds } from "@/lib/design-system";
 import { cn } from "@/lib/utils";
 
 type PageHeaderProps = {
@@ -24,7 +25,7 @@ export function PageHeader({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex min-w-0 flex-1 items-start gap-3">
           {icon && (
-            <div className="mt-0.5 shrink-0 text-muted-foreground" aria-hidden>
+            <div className={cn(ds.pageIconWell, "mt-0.5")} aria-hidden>
               {icon}
             </div>
           )}

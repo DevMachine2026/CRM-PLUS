@@ -22,6 +22,8 @@ import { FilterBar } from "@/components/layout/filter-bar";
 import { MetricCard, MetricGrid } from "@/components/ui/metric-card";
 import { Fab } from "@/components/ui/fab";
 import { FormDrawer } from "@/components/ui/form-drawer";
+import { FormField } from "@/components/ui/form-field";
+import { buildSelectItems } from "@/lib/ui/select-items";
 import { ListCard } from "@/components/ui/list-card";
 import { PrimaryActionButton } from "@/components/ui/primary-action-button";
 import { ds } from "@/lib/design-system";
@@ -354,17 +356,25 @@ export function TasksClient({
           <Label>Descrição</Label>
           <Textarea value={editDesc} onChange={(e) => setEditDesc(e.target.value)} rows={3} />
         </div>
-        <div className="space-y-1.5">
+        <FormField>
           <Label>Prioridade</Label>
-          <Select value={editPriority} onValueChange={(v) => setEditPriority((v ?? "medium") as Task["priority"])}>
+          <Select
+            items={buildSelectItems([
+              { value: "high", label: "Alta" },
+              { value: "medium", label: "Média" },
+              { value: "low", label: "Baixa" },
+            ])}
+            value={editPriority}
+            onValueChange={(v) => setEditPriority((v ?? "medium") as Task["priority"])}
+          >
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="high">Alta</SelectItem>
-              <SelectItem value="medium">Média</SelectItem>
-              <SelectItem value="low">Baixa</SelectItem>
+              <SelectItem value="high" label="Alta">Alta</SelectItem>
+              <SelectItem value="medium" label="Média">Média</SelectItem>
+              <SelectItem value="low" label="Baixa">Baixa</SelectItem>
             </SelectContent>
           </Select>
-        </div>
+        </FormField>
         <div className="space-y-1.5">
           <Label>Prazo</Label>
           <Input type="datetime-local" value={editDueAt} onChange={(e) => setEditDueAt(e.target.value)} />
@@ -389,17 +399,25 @@ export function TasksClient({
           <Label>Descrição</Label>
           <Textarea value={newDesc} onChange={(e) => setNewDesc(e.target.value)} rows={2} />
         </div>
-        <div className="space-y-1.5">
+        <FormField>
           <Label>Prioridade</Label>
-          <Select value={newPriority} onValueChange={(v) => setNewPriority((v ?? "medium") as Task["priority"])}>
+          <Select
+            items={buildSelectItems([
+              { value: "high", label: "Alta" },
+              { value: "medium", label: "Média" },
+              { value: "low", label: "Baixa" },
+            ])}
+            value={newPriority}
+            onValueChange={(v) => setNewPriority((v ?? "medium") as Task["priority"])}
+          >
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="high">Alta</SelectItem>
-              <SelectItem value="medium">Média</SelectItem>
-              <SelectItem value="low">Baixa</SelectItem>
+              <SelectItem value="high" label="Alta">Alta</SelectItem>
+              <SelectItem value="medium" label="Média">Média</SelectItem>
+              <SelectItem value="low" label="Baixa">Baixa</SelectItem>
             </SelectContent>
           </Select>
-        </div>
+        </FormField>
         <div className="space-y-1.5">
           <Label>Prazo</Label>
           <Input type="datetime-local" value={newDueAt} onChange={(e) => setNewDueAt(e.target.value)} />

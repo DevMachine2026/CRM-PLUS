@@ -133,4 +133,13 @@
   html {
     @apply font-sans;
   }
+
+  /* Marca do tenant — anel de foco e links */
+  html[data-branded] a:not([class*="button"]):hover {
+    color: var(--primary);
+  }
+  html[data-branded] [data-slot="input"]:focus-visible,
+  html[data-branded] [data-slot="textarea"]:focus-visible {
+    border-color: color-mix(in oklab, var(--primary) 45%, transparent);
+  }
 }

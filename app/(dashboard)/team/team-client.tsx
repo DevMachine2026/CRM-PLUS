@@ -12,6 +12,8 @@ import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/layout/page-header";
 import { Fab } from "@/components/ui/fab";
 import { FormDrawer } from "@/components/ui/form-drawer";
+import { FormField } from "@/components/ui/form-field";
+import { buildSelectItems } from "@/lib/ui/select-items";
 import { ListCard } from "@/components/ui/list-card";
 import { PrimaryActionButton } from "@/components/ui/primary-action-button";
 import {
@@ -130,17 +132,23 @@ function MemberDrawer({
         <Label>Telefone</Label>
         <Input value={form.phone} onChange={f("phone")} placeholder="(opcional)" />
       </div>
-      <div className="space-y-1.5">
+      <FormField>
         <Label>Perfil</Label>
-        <Select value={form.role} onValueChange={(v) => setForm((p) => ({ ...p, role: v as AssignableRole }))}>
+        <Select
+          items={buildSelectItems(
+            ASSIGNABLE_ROLES.map((r) => ({ value: r, label: ROLE_LABEL[r] ?? r })),
+          )}
+          value={form.role}
+          onValueChange={(v) => setForm((p) => ({ ...p, role: v as AssignableRole }))}
+        >
           <SelectTrigger><SelectValue /></SelectTrigger>
           <SelectContent>
             {ASSIGNABLE_ROLES.map((r) => (
-              <SelectItem key={r} value={r}>{ROLE_LABEL[r]}</SelectItem>
+              <SelectItem key={r} value={r} label={ROLE_LABEL[r]}>{ROLE_LABEL[r]}</SelectItem>
             ))}
           </SelectContent>
         </Select>
-      </div>
+      </FormField>
       {error && <p className="text-sm text-destructive">{error}</p>}
     </FormDrawer>
   );
