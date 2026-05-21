@@ -55,11 +55,28 @@ Sem `EVOLUTION_API_URL`: modo **demo** — QR SVG simulado e auto-conexão após
 
 ## Deploy Evolution GO (Render)
 
-1. Criar Web Service Docker a partir do repo `EvolutionAPI/evolution-go`
-2. Adicionar Postgres e Redis (variáveis do compose oficial)
-3. Definir `GLOBAL_API_KEY` (mesmo valor de `EVOLUTION_API_KEY` no CRM)
-4. Ativar licença na primeira subida (Magic Link)
-5. Apontar `EVOLUTION_API_URL` no CRM para a URL pública do Render
+1. Web Service **Docker** do repo `evolution-foundation/evolution-go` (não é o CRM)
+2. Postgres: dois bancos no mesmo cluster (`evogo_auth`, `evogo_users`) — **não** usar só `DATABASE_URL`
+3. Variáveis obrigatórias no **Environment** (valores de exemplo):
+
+```env
+POSTGRES_AUTH_DB=postgresql://USER:PASS@dpg-xxx-a/evogo_auth?sslmode=require
+POSTGRES_USERS_DB=postgresql://USER:PASS@dpg-xxx-a/evogo_users?sslmode=require
+DATABASE_SAVE_MESSAGES=false
+GLOBAL_API_KEY=<openssl rand -hex 32>
+CLIENT_NAME=evolution
+MINIO_ENABLED=false
+AMQP_GLOBAL_ENABLED=false
+SERVER_PORT=10000
+```
+
+Use a **Internal Database URL** do Postgres no Render (hostname `dpg-...-a`). `SERVER_PORT` deve ser igual ao `PORT` que o Render injeta (geralmente **10000** em web services — não 8080). `GLOBAL_API_KEY` = `EVOLUTION_API_KEY` no CRM.
+
+4. **Save** → **Manual Deploy** → status **Live**
+5. Abrir a URL pública uma vez para ativar licença (Magic Link)
+6. No CRM: `EVOLUTION_API_URL` + `EVOLUTION_API_KEY` + `NEXTAUTH_URL`
+
+Se o deploy falhar com **Exited with status 1**, abra **Logs** (runtime, não build): mensagens comuns são `required database configuration variables are missing`, `required configuration variable is missing` (`DATABASE_SAVE_MESSAGES` ou `GLOBAL_API_KEY`), ou MinIO com `MINIO_ENABLED=true` sem credenciais.
 
 ## Webhook GO → CRM
 
