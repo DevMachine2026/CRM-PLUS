@@ -6,6 +6,7 @@ import { useState, useTransition } from "react";
 import {
   Building2, Users, Save, Plus, Pencil, Trash2,
   Loader2, UserCheck, UserX, Shield, Wand2, CheckCircle2, Plug,
+  Palette, FileSpreadsheet,
 } from "lucide-react";
 import Link from "next/link";
 import { Button }   from "@/components/ui/button";
@@ -30,6 +31,9 @@ import { mobileLayout } from "@/lib/mobile-design";
 import { ds } from "@/lib/design-system";
 import { AiAgentConfig } from "@/components/settings/ai-agent-config";
 import type { TenantAiSettings } from "@/lib/ai/tenant-settings";
+import type { TenantBranding } from "@/lib/tenant/branding-settings";
+import { BrandingSection } from "@/components/settings/branding-section";
+import { DataImportSection } from "@/components/settings/data-import-section";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -47,6 +51,7 @@ type TeamUser = {
 type Props = {
   tenant:             Tenant;
   aiSettings:         TenantAiSettings;
+  brandingSettings:   TenantBranding;
   users:              TeamUser[];
   currentUserId:      string;
   canUpdateSettings:  boolean;
@@ -54,6 +59,8 @@ type Props = {
   canCreateTeam:      boolean;
   canUpdateTeam:      boolean;
   canDeleteTeam:      boolean;
+  canImportContacts:  boolean;
+  canImportProducts:  boolean;
 };
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -235,10 +242,11 @@ function DeleteDialog({
 // ── Main component ─────────────────────────────────────────────────────────────
 
 export function SettingsClient({
-  tenant, aiSettings, users: initialUsers, currentUserId,
+  tenant, aiSettings, brandingSettings, users: initialUsers, currentUserId,
   canUpdateSettings, canReadTeam, canCreateTeam, canUpdateTeam, canDeleteTeam,
+  canImportContacts, canImportProducts,
 }: Props) {
-  const [tab, setTab] = useState<"empresa" | "equipe">("empresa");
+  const [tab, setTab] = useState<"empresa" | "marca" | "migrar" | "equipe">("empresa");
 
   // ── Empresa state ────────────────────────────────────────────────────────────
   const [tenantName, setTenantName] = useState(tenant.name);
@@ -346,8 +354,14 @@ export function SettingsClient({
   }
 
   // ── Render ───────────────────────────────────────────────────────────────────
-  const tabs: { key: "empresa" | "equipe"; label: string; icon: React.ReactNode }[] = [
-    { key: "empresa", label: "Empresa",  icon: <Building2 className="h-4 w-4" /> },
+  const tabs: {
+    key: "empresa" | "marca" | "migrar" | "equipe";
+    label: string;
+    icon: React.ReactNode;
+  }[] = [
+    { key: "empresa", label: "Empresa", icon: <Building2 className="h-4 w-4" /> },
+    { key: "marca", label: "Marca", icon: <Palette className="h-4 w-4" /> },
+    { key: "migrar", label: "Migrar", icon: <FileSpreadsheet className="h-4 w-4" /> },
     ...(canReadTeam ? [{ key: "equipe" as const, label: "Equipe", icon: <Users className="h-4 w-4" /> }] : []),
   ];
 
@@ -490,6 +504,17 @@ export function SettingsClient({
           </CardContent>
         </Card>
         </>
+      )}
+
+      {tab === "marca" && (
+        <BrandingSection initial={brandingSettings} canEdit={canUpdateSettings} />
+      )}
+
+      {tab === "migrar" && (
+        <DataImportSection
+          canImportContacts={canImportContacts}
+          canImportProducts={canImportProducts}
+        />
       )}
 
       {/* ── Equipe tab ───────────────────────────────────────────────────────── */}

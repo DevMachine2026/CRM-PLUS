@@ -4,6 +4,7 @@ import { can } from "@/lib/auth/permissions";
 import { redirect } from "next/navigation";
 import { SettingsClient } from "./settings-client";
 import { parseTenantAiSettings } from "@/lib/ai/tenant-settings";
+import { parseTenantBranding } from "@/lib/tenant/branding-settings";
 
 export default async function SettingsPage() {
   const session = await requirePageSession();
@@ -34,6 +35,7 @@ export default async function SettingsPage() {
     <SettingsClient
       tenant={{ ...tenant, createdAt: tenant.createdAt.toISOString() }}
       aiSettings={parseTenantAiSettings(tenant.settings)}
+      brandingSettings={parseTenantBranding(tenant.settings)}
       users={users.map((u) => ({
         ...u,
         lastLoginAt: u.lastLoginAt?.toISOString() ?? null,
@@ -45,6 +47,8 @@ export default async function SettingsPage() {
       canCreateTeam={can(session.role, "create", "team")}
       canUpdateTeam={can(session.role, "update", "team")}
       canDeleteTeam={can(session.role, "delete", "team")}
+      canImportContacts={can(session.role, "create", "contacts")}
+      canImportProducts={can(session.role, "create", "products")}
     />
   );
 }

@@ -4,6 +4,7 @@ import { Bot, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { SidebarNav } from "@/components/layout/sidebar-nav";
+import { useTenantBranding } from "@/components/tenant/tenant-branding-provider";
 
 const SIDEBAR_NAV_ID = "dashboard-sidebar-nav";
 
@@ -22,6 +23,8 @@ export function Sidebar({
   onClose,
   onNavigate,
 }: SidebarProps) {
+  const { branding, tenantName } = useTenantBranding();
+
   const handleNavigate = () => {
     onNavigate?.();
     onClose?.();
@@ -40,9 +43,18 @@ export function Sidebar({
     >
       <div className="flex h-14 shrink-0 items-center justify-between gap-2 border-b px-4">
         <div className="flex min-w-0 items-center gap-2">
-          <Bot className="h-6 w-6 shrink-0 text-primary" aria-hidden />
+          {branding.logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={branding.logoUrl}
+              alt=""
+              className="h-8 max-w-[120px] shrink-0 object-contain object-left"
+            />
+          ) : (
+            <Bot className="h-6 w-6 shrink-0 text-primary" aria-hidden />
+          )}
           <span className="truncate text-base font-semibold tracking-tight">
-            CRM PLUS
+            {tenantName}
           </span>
         </div>
         {mobile && onClose && (
