@@ -518,6 +518,8 @@ model Conversation {
   lastMessageAt  DateTime?           @map("last_message_at")
   summaryText    String?             @map("summary_text")
   detectedIntent String?             @map("detected_intent")
+  priorityScore  Int                 @default(0) @map("priority_score")
+  nextBestAction String?             @map("next_best_action")
   createdAt      DateTime            @default(now()) @map("created_at")
   updatedAt      DateTime            @updatedAt @map("updated_at")
 
@@ -531,6 +533,7 @@ model Conversation {
   @@index([contactId])
   @@index([status])
   @@index([lastMessageAt])
+  @@index([tenantId, priorityScore])
   @@map("conversations")
 }
 

@@ -25,17 +25,13 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { MessageBubble } from "@/components/inbox/message-bubble";
+import { ConversationCard, type ConversationCardData } from "@/components/inbox/conversation-card";
 import { type ConvMessage, normalizeMessage } from "@/lib/inbox/message-types";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-type ConvSummary = {
-  id: string; channel: string; status: string; subject: string | null;
-  lastMessageAt: string | null; createdAt: string;
-  detectedIntent: string | null; summaryText: string | null;
-  contact:      { id: string; name: string; email: string | null } | null;
+type ConvSummary = ConversationCardData & {
   assignedUser: { id: string; name: string } | null;
-  messages:     { content: string; direction: string; sentAt: string }[];
 };
 
 type ActiveConv = Omit<ConvSummary, "messages"> & { messages: ConvMessage[] };
@@ -49,6 +45,8 @@ type Props = {
   conversations:      ConvSummary[];
   contacts:           Contact[];
   statusCounts:       Record<string, number>;
+  hotTodayCount:      number;
+  priorityFilter:     "high" | "all";
   activeConversation: ActiveConv | null;
   currentUserId:      string;
   canCreate:          boolean;
@@ -78,6 +76,10 @@ const INTENT_META: Record<string, { label: string; color: string; icon: React.Re
   complaint:       { label: "Reclamação",        color: "bg-red-100 text-red-700 border-red-200",        icon: <ThumbsDown className="w-3 h-3" />     },
   urgency:         { label: "Urgência",           color: "bg-orange-100 text-orange-700 border-orange-200",icon: <Flame className="w-3 h-3" />          },
   quote_request:   { label: "Pedido de orçamento",color: "bg-blue-100 text-blue-700 border-blue-200",    icon: <ShoppingCart className="w-3 h-3" />   },
+  purchase:        { label: "Quer comprar",       color: "bg-green-100 text-green-700 border-green-200", icon: <TrendingUp className="w-3 h-3" />     },
+  scheduling:      { label: "Agendamento",        color: "bg-purple-100 text-purple-700 border-purple-200", icon: <MessageSquare className="w-3 h-3" /> },
+  information:     { label: "Informação",         color: "bg-yellow-100 text-yellow-700 border-yellow-200",icon: <HelpCircle className="w-3 h-3" />   },
+  other:           { label: "Outro",              color: "bg-slate-100 text-slate-500 border-slate-200", icon: <MessageSquare className="w-3 h-3" />  },
   losing_interest: { label: "Perda de interesse", color: "bg-slate-100 text-slate-600 border-slate-200", icon: <X className="w-3 h-3" />              },
   interest:        { label: "Interesse de compra",color: "bg-green-100 text-green-700 border-green-200", icon: <TrendingUp className="w-3 h-3" />     },
   doubt:           { label: "Dúvida",             color: "bg-yellow-100 text-yellow-700 border-yellow-200",icon: <HelpCircle className="w-3 h-3" />   },
@@ -95,6 +97,7 @@ function fmtTime(iso: string | null) {
 
 export function InboxClient({
   conversations: initialConvs, contacts, statusCounts,
+  hotTodayCount, priorityFilter,
   activeConversation: initialActive, currentUserId, canCreate, canUpdate,
 }: Props) {
   const router = useRouter();
@@ -102,6 +105,10 @@ export function InboxClient({
   const [isPending, startTransition] = useTransition();
 
   const [conversations, setConversations] = useState<ConvSummary[]>(initialConvs);
+
+  useEffect(() => {
+    setConversations(initialConvs);
+  }, [initialConvs]);
   const [active, setActive] = useState<ActiveConv | null>(
     initialActive
       ? { ...initialActive, messages: initialActive.messages.map(normalizeMessage) }
@@ -158,7 +165,7 @@ export function InboxClient({
   useEffect(() => {
     setAiReply(null); setReplyUsed(null);
     // Pre-populate intent from server if available
-    if (active?.detectedIntent && active.detectedIntent !== "neutral") {
+    if (active?.detectedIntent && !["neutral", "other", "information"].includes(active.detectedIntent)) {
       setAiIntent({ intent: active.detectedIntent, confidence: 0, details: "", taskCreated: false });
     } else {
       setAiIntent(null);
@@ -179,7 +186,8 @@ export function InboxClient({
 
   function pushParam(key: string, value: string) {
     const p = new URLSearchParams(sp.toString());
-    if (value) p.set(key, value); else p.delete(key);
+    if (value) p.set(key, value);
+    else p.delete(key);
     p.delete("convId");
     startTransition(() => router.push(`?${p.toString()}`));
   }
@@ -367,8 +375,17 @@ export function InboxClient({
     setCreating(false);
     if (!res.ok) { setCreateError(json.error ?? "Erro ao criar."); return; }
     setShowNew(false); setNewContactId(""); setNewChannel("manual"); setNewSubject("");
-    setConversations((prev) => [json.data, ...prev]);
-    setActive({ ...json.data, messages: [] });
+    const created: ConvSummary = {
+      ...json.data,
+      priorityScore:  json.data.priorityScore ?? 0,
+      nextBestAction: json.data.nextBestAction ?? null,
+      summaryText:    json.data.summaryText ?? null,
+      detectedIntent: json.data.detectedIntent ?? null,
+      messages:       [],
+      assignedUser:   json.data.assignedUser ?? null,
+    };
+    setConversations((prev) => [created, ...prev]);
+    setActive({ ...created, messages: [] });
   }
 
   const openCount     = statusCounts["open"]     ?? 0;
@@ -386,18 +403,45 @@ export function InboxClient({
         active && "hidden md:flex"
       )}>
         <div className="flex items-center justify-between px-4 py-3 border-b">
-          <div className="flex items-center gap-2">
-            <MessageSquare className="w-4 h-4" />
-            <span className="font-semibold text-sm">Inbox</span>
-            {openCount > 0 && (
-              <Badge className="h-4 min-w-4 px-1 text-[10px] bg-primary">{openCount}</Badge>
-            )}
+          <div className="flex flex-col gap-0.5 min-w-0">
+            <div className="flex items-center gap-2">
+              <MessageSquare className="w-4 h-4 shrink-0" />
+              <span className="font-semibold text-sm">Inbox</span>
+              {openCount > 0 && (
+                <Badge className="h-4 min-w-4 px-1 text-[10px] bg-primary">{openCount}</Badge>
+              )}
+            </div>
+            <p className="text-[11px] text-muted-foreground pl-6">
+              Quentes hoje ({hotTodayCount})
+            </p>
           </div>
           {canCreate && (
             <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setShowNew(true)}>
               <Plus className="w-4 h-4" />
             </Button>
           )}
+        </div>
+
+        {/* Prioridade (padrão: alta) */}
+        <div className="flex gap-1 px-3 py-2 border-b bg-muted/30">
+          {[
+            { key: "high" as const, label: "Prioridade Alta" },
+            { key: "all"  as const, label: "Todas" },
+          ].map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => pushParam("priority", tab.key === "high" ? "" : "all")}
+              className={cn(
+                "flex-1 text-xs px-2 py-1.5 rounded-md transition-colors",
+                priorityFilter === tab.key
+                  ? "bg-primary text-primary-foreground font-medium shadow-sm"
+                  : "text-muted-foreground hover:bg-muted"
+              )}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
         {/* Status tabs */}
@@ -438,58 +482,21 @@ export function InboxClient({
         {/* List */}
         <div className="flex-1 overflow-y-auto">
           {conversations.length === 0 ? (
-            <p className="text-center text-xs text-muted-foreground py-8">Nenhuma conversa.</p>
+            <p className="text-center text-xs text-muted-foreground py-8 px-3">
+              {priorityFilter === "high"
+                ? "Nenhuma conversa com prioridade alta. Veja em Todas."
+                : "Nenhuma conversa."}
+            </p>
           ) : (
-            conversations.map((conv) => {
-              const lastMsg     = conv.messages[0];
-              const isActive    = active?.id === conv.id;
-              const needsReply  = conv.status === "open" && lastMsg?.direction === "inbound";
-              const intentMeta  = conv.detectedIntent && conv.detectedIntent !== "neutral"
-                ? INTENT_META[conv.detectedIntent] : null;
-              const isGroupConv = conv.subject?.startsWith("wa-group:");
-              return (
-                <button key={conv.id} onClick={() => selectConversation(conv)}
-                  className={cn(
-                    "w-full text-left px-4 py-3 border-b hover:bg-muted/50 transition-colors",
-                    isActive && "bg-muted",
-                    needsReply && !isActive && "border-l-2 border-l-orange-400"
-                  )}>
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      {CHANNEL_ICON[conv.channel]}
-                      <span className="font-medium text-sm truncate">
-                        {conv.contact?.name ?? conv.subject ?? "Sem contato"}
-                        {isGroupConv ? " (grupo)" : ""}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      {needsReply && (
-                        <span className="h-2 w-2 rounded-full bg-orange-400 shrink-0" title="Aguarda resposta" />
-                      )}
-                      <span className="text-[10px] text-muted-foreground">
-                        {fmtTime(conv.lastMessageAt ?? conv.createdAt)}
-                      </span>
-                    </div>
-                  </div>
-                  {lastMsg && (
-                    <p className="text-xs text-muted-foreground truncate mt-0.5 flex items-center gap-1">
-                      {lastMsg.direction === "outbound" && <CheckCheck className="w-3 h-3 shrink-0" />}
-                      {lastMsg.content}
-                    </p>
-                  )}
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className={cn("text-[10px] rounded-full px-1.5 py-0.5", STATUS_COLOR[conv.status])}>
-                      {STATUS_LABEL[conv.status]}
-                    </span>
-                    {intentMeta && (
-                      <span className={cn("text-[10px] rounded-full px-1.5 py-0.5 border flex items-center gap-0.5", intentMeta.color)}>
-                        {intentMeta.icon}{intentMeta.label}
-                      </span>
-                    )}
-                  </div>
-                </button>
-              );
-            })
+            conversations.map((conv) => (
+              <ConversationCard
+                key={conv.id}
+                conv={conv}
+                channelIcon={CHANNEL_ICON[conv.channel]}
+                isActive={active?.id === conv.id}
+                onSelect={() => selectConversation(conv)}
+              />
+            ))
           )}
           {isPending && <div className="text-center py-2"><Loader2 className="w-4 h-4 animate-spin mx-auto text-muted-foreground" /></div>}
         </div>

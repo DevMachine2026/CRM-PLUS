@@ -1,17 +1,28 @@
 import { prisma } from "@/lib/db/client";
 import { requirePageSession, requirePagePermission } from "@/lib/auth/get-session";
 import { can } from "@/lib/auth/permissions";
-import { redirect } from "next/navigation";
 import { InboxClient } from "./inbox-client";
+import {
+  HIGH_PRIORITY_MIN,
+  HOT_PRIORITY_MIN,
+} from "@/lib/inbox/conversation-priority";
 import type { ConversationStatus, ConversationChannel } from "@/lib/generated/prisma/enums";
 
 const VALID_STATUSES:  ConversationStatus[]  = ["open", "pending", "resolved"];
 const VALID_CHANNELS:  ConversationChannel[] = ["manual", "whatsapp", "instagram", "email"];
+const VALID_PRIORITY = ["high", "all"] as const;
+type PriorityFilter = (typeof VALID_PRIORITY)[number];
+
+function startOfToday(): Date {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
 
 export default async function InboxPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; channel?: string; convId?: string }>;
+  searchParams: Promise<{ status?: string; channel?: string; convId?: string; priority?: string }>;
 }) {
   const session = await requirePageSession();
   requirePagePermission(session, "read", "conversations");
@@ -27,27 +38,49 @@ export default async function InboxPage({
     p.channel && VALID_CHANNELS.includes(p.channel as ConversationChannel)
       ? (p.channel as ConversationChannel) : undefined;
 
+  const priorityFilter: PriorityFilter =
+    p.priority === "all" ? "all" : "high";
+
+  const highPriorityWhere = {
+    OR: [
+      { priorityScore: { gte: HIGH_PRIORITY_MIN } },
+      { contact: { leadScore: { gte: HIGH_PRIORITY_MIN } } },
+    ],
+  };
+
   const where = {
     tenantId,
     ...(statusFilter  ? { status:  statusFilter  } : {}),
     ...(channelFilter ? { channel: channelFilter } : {}),
+    ...(priorityFilter === "high" ? highPriorityWhere : {}),
   };
 
-  const [conversations, contacts, statusCounts] = await Promise.all([
+  const todayStart = startOfToday();
+
+  const [conversations, contacts, statusCounts, hotTodayCount] = await Promise.all([
     prisma.conversation.findMany({
       where,
-      orderBy: [{ lastMessageAt: "desc" }, { createdAt: "desc" }],
+      orderBy: [
+        { priorityScore: "desc" },
+        { contact: { leadScore: "desc" } },
+        { lastMessageAt: "desc" },
+        { createdAt: "desc" },
+      ],
       take: 60,
       select: {
-        id:            true,
-        channel:       true,
-        status:        true,
-        subject:       true,
-        lastMessageAt: true,
-        createdAt:     true,
+        id:             true,
+        channel:        true,
+        status:         true,
+        subject:        true,
+        lastMessageAt:  true,
+        createdAt:      true,
         detectedIntent: true,
         summaryText:    true,
-        contact:      { select: { id: true, name: true, email: true } },
+        priorityScore:  true,
+        nextBestAction: true,
+        contact: {
+          select: { id: true, name: true, email: true, leadScore: true },
+        },
         assignedUser: { select: { id: true, name: true } },
         messages: {
           orderBy: { sentAt: "desc" },
@@ -66,14 +99,25 @@ export default async function InboxPage({
       where: { tenantId },
       _count: { _all: true },
     }),
+    prisma.conversation.count({
+      where: {
+        tenantId,
+        status: { in: ["open", "pending"] },
+        lastMessageAt: { gte: todayStart },
+        OR: [
+          { priorityScore: { gte: HOT_PRIORITY_MIN } },
+          { contact: { leadScore: { gte: HOT_PRIORITY_MIN } } },
+        ],
+      },
+    }),
   ]);
 
-  // If convId in URL, load that conversation's messages
   let activeConversation: {
     id: string; channel: string; status: string; subject: string | null;
     lastMessageAt: Date | null; createdAt: Date;
     detectedIntent: string | null; summaryText: string | null;
-    contact: { id: string; name: string; email: string | null } | null;
+    priorityScore: number; nextBestAction: string | null;
+    contact: { id: string; name: string; email: string | null; leadScore: number } | null;
     assignedUser: { id: string; name: string } | null;
     messages: {
       id: string; content: string; direction: string; senderType: string;
@@ -88,7 +132,8 @@ export default async function InboxPage({
         id: true, channel: true, status: true, subject: true,
         lastMessageAt: true, createdAt: true,
         detectedIntent: true, summaryText: true,
-        contact:      { select: { id: true, name: true, email: true } },
+        priorityScore: true, nextBestAction: true,
+        contact: { select: { id: true, name: true, email: true, leadScore: true } },
         assignedUser: { select: { id: true, name: true } },
         messages: {
           orderBy: { sentAt: "asc" },
@@ -106,7 +151,6 @@ export default async function InboxPage({
   const canCreate = can(session.role, "create", "conversations");
   const canUpdate = can(session.role, "update", "conversations");
 
-  // JSON.parse/stringify converts Date → ISO string at runtime; cast to satisfy TS
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const s = (v: unknown) => JSON.parse(JSON.stringify(v)) as any;
 
@@ -115,6 +159,8 @@ export default async function InboxPage({
       conversations={s(conversations)}
       contacts={contacts}
       statusCounts={sc}
+      hotTodayCount={hotTodayCount}
+      priorityFilter={priorityFilter}
       activeConversation={activeConversation ? s(activeConversation) : null}
       currentUserId={session.id}
       canCreate={canCreate}

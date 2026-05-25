@@ -8,8 +8,6 @@
 import { prisma } from "@/lib/db/client";
 import { classifyLead } from "@/lib/ai/actions/classify-lead";
 import { summarizeConversation } from "@/lib/ai/actions/summarize-conversation";
-import { detectIntent }           from "@/lib/ai/actions/detect-intent";
-import { suggestNextAction }      from "@/lib/ai/actions/suggest-next-action";
 import {
   emitContactCreated,
   emitConversationCreated,
@@ -169,15 +167,6 @@ export async function processInboundMessage(
       phone:  contact.phone,
       status: contact.status,
     });
-    if (aiActive) {
-      classifyLead({
-        contactId: contact.id,
-        tenantId,
-        name:      contact.name,
-        email:     contact.email,
-        phone:     contact.phone,
-      }).catch(() => {});
-    }
   }
 
   // ── 4. Save message ─────────────────────────────────────────────────────────
@@ -220,36 +209,28 @@ export async function processInboundMessage(
   });
 
   // ── 7. AI pipeline (fire-and-forget) — só se IA nativa ativa ───────────────
-  if (aiActive) {
+  if (aiActive && !isOutbound) {
     const convId = conversation.id;
+    const recentMessages = await prisma.message.findMany({
+      where:   { conversationId: convId, tenantId },
+      orderBy: { sentAt: "desc" },
+      take:    10,
+      select:  { content: true, direction: true },
+    });
+
     Promise.all([
       summarizeConversation({ conversationId: convId, tenantId }),
-
-      detectIntent({ conversationId: convId, tenantId, contactId: contact.id })
-        .then(async (intentResult) => {
-          if (
-            intentResult.intent === "interest" ||
-            intentResult.intent === "quote_request"
-          ) {
-            const opp = await prisma.opportunity.findFirst({
-              where:   { tenantId, contactId: contact.id, status: "open" },
-              include: { stage: true },
-            });
-            if (opp) {
-              const daysSince = Math.floor(
-                (Date.now() - opp.updatedAt.getTime()) / 86_400_000
-              );
-              await suggestNextAction({
-                tenantId,
-                contactId:            contact.id,
-                opportunityId:        opp.id,
-                opportunityStatus:    opp.status,
-                stageName:            opp.stage?.name,
-                daysSinceLastContact: daysSince,
-              });
-            }
-          }
-        }),
+      classifyLead({
+        contactId:       contact.id,
+        tenantId,
+        name:            contact.name,
+        email:           contact.email,
+        phone:           contact.phone,
+        companyId:       contact.companyId,
+        conversationId:  convId,
+        lastMessage:     content,
+        recentMessages:  [...recentMessages].reverse(),
+      }),
     ]).catch(() => {});
   }
 

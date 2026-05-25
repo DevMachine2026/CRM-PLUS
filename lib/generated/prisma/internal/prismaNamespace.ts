@@ -2946,6 +2946,8 @@ export const ConversationScalarFieldEnum = {
   lastMessageAt: 'lastMessageAt',
   summaryText: 'summaryText',
   detectedIntent: 'detectedIntent',
+  priorityScore: 'priorityScore',
+  nextBestAction: 'nextBestAction',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
