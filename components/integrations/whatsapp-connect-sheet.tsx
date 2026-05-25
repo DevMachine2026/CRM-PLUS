@@ -53,13 +53,15 @@ export function WhatsAppConnectSheet({
   const [phone, setPhone] = useState("");
   const [resetInstance, setResetInstance] = useState(true);
   const [qrKey, setQrKey] = useState(0);
+  const [qrHard, setQrHard] = useState(false);
   const [qrLoaded, setQrLoaded] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  function bumpQrImage() {
+  const bumpQrImage = useCallback((hard = false) => {
     setQrLoaded(false);
     setQrKey((k) => k + 1);
-  }
+    setQrHard(hard);
+  }, []);
 
   const stopPoll = useCallback(() => {
     if (pollRef.current) {
@@ -84,7 +86,7 @@ export function WhatsAppConnectSheet({
   async function startConnect(chosenMethod: ConnectMethod) {
     setLoading(true);
     setError(null);
-    setSession({ state: "generating_qr", method: chosenMethod });
+    setQrLoaded(false);
     try {
       const res = await apiFetch("/api/integrations/whatsapp/session", {
         method: "POST",
@@ -135,6 +137,14 @@ export function WhatsAppConnectSheet({
   const activeMethod = session?.method ?? method;
   const pending =
     state === "generating_qr" || state === "awaiting_scan" || state === "awaiting_pairing";
+  const canLoadQrImg =
+    activeMethod === "qr" && state === "awaiting_scan" && !loading && !!session?.qrUrl;
+
+  useEffect(() => {
+    if (!open || !canLoadQrImg || qrLoaded) return;
+    const id = setInterval(() => bumpQrImage(), 3500);
+    return () => clearInterval(id);
+  }, [open, canLoadQrImg, qrLoaded, bumpQrImage]);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -269,32 +279,37 @@ export function WhatsAppConnectSheet({
                 se não ler.
               </p>
               <div className="mx-auto inline-block rounded-2xl border-[3px] border-neutral-900 bg-white p-5 shadow-md">
-                {!qrLoaded && (
+                {!canLoadQrImg || !qrLoaded ? (
                   <div className="flex size-[280px] flex-col items-center justify-center gap-2">
                     <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" />
-                    <p className="text-xs text-muted-foreground">Carregando QR…</p>
+                    <p className="text-xs text-muted-foreground">
+                      {loading || state === "generating_qr"
+                        ? "Preparando sessão…"
+                        : "Carregando QR…"}
+                    </p>
                   </div>
-                )}
-                {/* PNG nativo do Evolution — 280×280px, quiet zone branca, sem recompressão */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  key={qrKey}
-                  src={`${session?.qrUrl ?? WHATSAPP_QR_IMAGE_PATH}?r=${qrKey}`}
-                  alt="QR Code WhatsApp"
-                  width={280}
-                  height={280}
-                  className={`block size-[280px] [image-rendering:pixelated]${qrLoaded ? "" : " sr-only"}`}
-                  onLoad={() => {
-                    setQrLoaded(true);
-                    setError(null);
-                  }}
-                  onError={() => {
-                    setQrLoaded(false);
-                    setError(
-                      "QR ainda não disponível. Aguarde 3 segundos e toque em Atualizar QR.",
-                    );
-                  }}
-                />
+                ) : null}
+                {canLoadQrImg ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    key={qrKey}
+                    src={`${session?.qrUrl ?? WHATSAPP_QR_IMAGE_PATH}?r=${qrKey}${qrHard ? "&hard=1" : ""}`}
+                    alt="QR Code WhatsApp"
+                    width={280}
+                    height={280}
+                    className={`block size-[280px] [image-rendering:pixelated]${qrLoaded ? "" : " sr-only"}`}
+                    onLoad={() => {
+                      setQrLoaded(true);
+                      setError(null);
+                    }}
+                    onError={() => {
+                      setQrLoaded(false);
+                      setError(
+                        "QR ainda não disponível. Aguarde 3 segundos e toque em Atualizar QR.",
+                      );
+                    }}
+                  />
+                ) : null}
               </div>
               <div className="flex flex-col gap-2">
                 <Button
@@ -304,7 +319,7 @@ export function WhatsAppConnectSheet({
                   className="gap-2"
                   disabled={loading}
                   onClick={() => {
-                    bumpQrImage();
+                    bumpQrImage(true);
                     void pollStatus();
                   }}
                 >

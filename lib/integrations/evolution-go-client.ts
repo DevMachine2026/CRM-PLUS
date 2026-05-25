@@ -305,7 +305,7 @@ export async function waitForGoQrCode(
   return {};
 }
 
-/** PNG bruto do Evolution — para rota /api/integrations/whatsapp/qr */
+/** PNG/JPEG bruto do Evolution — para rota /api/integrations/whatsapp/qr */
 export async function fetchNativeGoQrPng(instanceToken: string): Promise<Buffer | null> {
   if (!BASE) return null;
   const res = await fetch(`${BASE}/instance/qr`, {
@@ -314,8 +314,35 @@ export async function fetchNativeGoQrPng(instanceToken: string): Promise<Buffer 
     cache: "no-store",
   });
   if (!res.ok) return null;
-  const json = await parseJson<QrData>(res);
-  return extractNativeGoQrPng(json.data);
+
+  const contentType = res.headers.get("content-type") ?? "";
+  if (contentType.includes("image/")) {
+    const buf = Buffer.from(await res.arrayBuffer());
+    return buf.length >= 200 ? buf : null;
+  }
+
+  try {
+    const json = await parseJson<QrData>(res);
+    return extractNativeGoQrPng(json.data);
+  } catch {
+    return null;
+  }
+}
+
+/** Tenta buscar QR no Evolution por até ~30s (QR demora após connect). */
+export async function fetchNativeGoQrPngWithRetry(
+  instanceToken: string,
+  options: { attempts?: number; delayMs?: number } = {},
+): Promise<Buffer | null> {
+  const attempts = options.attempts ?? 15;
+  const delayMs = options.delayMs ?? 2000;
+
+  for (let i = 0; i < attempts; i++) {
+    const png = await fetchNativeGoQrPng(instanceToken);
+    if (png) return png;
+    if (i < attempts - 1) await sleep(delayMs);
+  }
+  return null;
 }
 
 function sleep(ms: number): Promise<void> {

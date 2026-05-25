@@ -43,23 +43,6 @@ export async function POST(req: Request) {
     const awaitingState =
       body.method === "pairing" ? ("awaiting_pairing" as const) : ("awaiting_scan" as const);
 
-    await provisionIntegration({
-      tenantId: session.tenantId,
-      channelType: "whatsapp",
-      provider: "evolution",
-      credentials: {
-        provider: "evolution",
-        evolutionApiVersion: "go",
-        evolutionInstanceName: instanceName,
-        connectionState: "generating_qr",
-        connectMethod: body.method ?? "qr",
-        phoneNumber: "",
-        phoneNumberId: "",
-        targetPhone: body.method === "pairing" && body.phone ? body.phone.replace(/\D/g, "") : "",
-      },
-      isActive: true,
-    });
-
     const evo = await startWhatsAppConnectSession(instanceName, body);
 
     await provisionIntegration({

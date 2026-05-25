@@ -10,14 +10,14 @@ import { prisma } from "@/lib/db/client";
 import { parseWhatsAppCredentials } from "@/lib/integrations/connection-state";
 import { extractNativeGoQrPng } from "@/lib/integrations/evolution-go/qr-image";
 import {
-  fetchNativeGoQrPng,
+  fetchNativeGoQrPngWithRetry,
   isEvolutionGoSimulated,
   resolveGoLiveConnection,
 } from "@/lib/integrations/evolution-go-client";
 
 const SIMULATED = isEvolutionGoSimulated();
 
-export async function GET() {
+export async function GET(req: Request) {
   const session = await getSession();
   if (!session) return unauthorized();
   if (!can(session.role, "read", "integrations")) return forbidden();
@@ -49,7 +49,11 @@ export async function GET() {
     return NextResponse.json({ error: "WhatsApp já conectado." }, { status: 409 });
   }
 
-  let png = await fetchNativeGoQrPng(token);
+  const hard = new URL(req.url).searchParams.get("hard") === "1";
+  let png = await fetchNativeGoQrPngWithRetry(token, {
+    attempts: hard ? 12 : 6,
+    delayMs: hard ? 2000 : 1200,
+  });
 
   if (!png && creds.lastQrCodeBase64) {
     png = extractNativeGoQrPng({ code: creds.lastQrCodeBase64 });

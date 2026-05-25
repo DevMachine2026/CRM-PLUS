@@ -10,7 +10,6 @@ import {
   createGoInstance,
   deleteGoInstanceByName,
   isEvolutionGoSimulated,
-  waitForGoQrCode,
   requestGoPairingCode,
   resolveCrmWebhookUrl,
 } from "../evolution-go-client";
@@ -79,19 +78,12 @@ export async function startWhatsAppConnectSession(
     };
   }
 
-  const qr = await waitForGoQrCode(instanceToken, { attempts: 20, delayMs: 2000 });
-  if (!qr.qrCodeBase64) {
-    throw new Error(
-      "O Evolution GO não retornou a imagem do QR Code. Aguarde 5 segundos e clique em Gerar QR Code novamente.",
-    );
-  }
+  // QR via GET /api/integrations/whatsapp/qr (polling no Evolution — não bloquear POST ~40s)
   return {
     instanceName,
     instanceId,
     instanceToken,
     method,
-    qrCodeBase64: qr.qrCodeBase64,
-    pairingCode: qr.pairingCode,
   };
 }
 
