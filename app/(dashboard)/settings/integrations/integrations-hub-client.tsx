@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api/client-fetch";
@@ -111,9 +111,35 @@ export function IntegrationsHubClient({
   const [waOpen, setWaOpen] = useState(false);
   const [igOpen, setIgOpen] = useState(false);
 
-  function refresh() {
+  const refresh = useCallback(() => {
     router.refresh();
-  }
+  }, [router]);
+
+  const whatsappPending =
+    whatsapp.state === "awaiting_scan" ||
+    whatsapp.state === "generating_qr" ||
+    whatsapp.state === "awaiting_pairing";
+
+  useEffect(() => {
+    if (!whatsappPending || waOpen) return;
+
+    let cancelled = false;
+
+    async function tick() {
+      const res = await apiFetch("/api/integrations/whatsapp/session");
+      const json = await res.json().catch(() => ({}));
+      if (cancelled || !res.ok) return;
+      const data = (json as { data?: { state?: string } }).data;
+      if (data?.state === "connected") refresh();
+    }
+
+    void tick();
+    const id = setInterval(() => void tick(), 3000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [whatsappPending, waOpen, refresh]);
 
   async function replaceWhatsApp() {
     const res = await apiFetch("/api/integrations", {

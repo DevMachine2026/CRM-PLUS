@@ -110,8 +110,73 @@ type StatusData = {
 /** WhatsApp autenticado: pareamento concluído (não só socket aberto aguardando QR). */
 export function isGoWhatsAppSessionOpen(row: StatusData | undefined): boolean {
   const status = normalizeGoStatusRow(row);
-  if (!status.LoggedIn) return false;
-  return !!phoneFromWhatsAppJid(status.myJid);
+  const phone = phoneFromWhatsAppJid(status.myJid);
+  if (!phone) return false;
+  return status.LoggedIn === true || status.Connected === true;
+}
+
+type GoInstanceListRow = GoInstanceRow & {
+  jid?: string;
+  Jid?: string;
+  connected?: boolean;
+  Connected?: boolean;
+  loggedIn?: boolean;
+  LoggedIn?: boolean;
+};
+
+async function fetchGoInstanceListRow(instanceId: string): Promise<GoInstanceListRow | null> {
+  if (!BASE) return null;
+  const res = await fetch(`${BASE}/instance/all`, { headers: adminHeaders() });
+  if (!res.ok) return null;
+  const json = await parseJson<GoInstanceListRow[]>(res);
+  const rows = Array.isArray(json.data) ? json.data : [];
+  return rows.find((r) => r.id === instanceId) ?? null;
+}
+
+/** Status ao vivo: /instance/status + fallback em /instance/all (jid da instância). */
+export async function resolveGoLiveConnection(
+  instanceToken: string,
+  instanceId?: string,
+): Promise<EvolutionGoSession> {
+  const res = await fetch(`${BASE}/instance/status`, {
+    method: "GET",
+    headers: instanceHeaders(instanceToken),
+  });
+
+  if (!res.ok) {
+    if (instanceId) {
+      const listRow = await fetchGoInstanceListRow(instanceId);
+      const phone = phoneFromWhatsAppJid(listRow?.jid ?? listRow?.Jid);
+      const up = listRow?.connected === true || listRow?.Connected === true;
+      if (phone && up) {
+        return { instanceName: "", instanceId, state: "open", phoneNumber: phone };
+      }
+    }
+    return { instanceName: "", instanceId, state: "disconnected" };
+  }
+
+  const json = await parseJson<StatusData>(res);
+  const row = normalizeGoStatusRow(json.data);
+  let phoneNumber = phoneFromWhatsAppJid(row.myJid);
+
+  if (isGoWhatsAppSessionOpen(row) && phoneNumber) {
+    return { instanceName: "", instanceId, state: "open", phoneNumber };
+  }
+
+  if (instanceId) {
+    const listRow = await fetchGoInstanceListRow(instanceId);
+    phoneNumber = phoneFromWhatsAppJid(listRow?.jid ?? listRow?.Jid);
+    const up =
+      listRow?.loggedIn === true ||
+      listRow?.LoggedIn === true ||
+      listRow?.connected === true ||
+      listRow?.Connected === true;
+    if (phoneNumber && up) {
+      return { instanceName: "", instanceId, state: "open", phoneNumber };
+    }
+  }
+
+  return { instanceName: "", instanceId, state: "connecting" };
 }
 
 async function parseJson<T>(res: Response): Promise<GoEnvelope<T>> {
@@ -258,26 +323,10 @@ export async function getGoConnectionState(
   instanceToken: string,
   instanceId?: string,
 ): Promise<EvolutionGoSession> {
-  const res = await fetch(`${BASE}/instance/status`, {
-    method: "GET",
-    headers: instanceHeaders(instanceToken),
-  });
-
-  if (!res.ok) {
-    return { instanceName: "", instanceId, state: "disconnected" };
+  if (isEvolutionGoSimulated()) {
+    return { instanceName: "", instanceId, state: "connecting" };
   }
-
-  const json = await parseJson<StatusData>(res);
-  const row = normalizeGoStatusRow(json.data);
-  const open = isGoWhatsAppSessionOpen(row);
-  const phoneNumber = phoneFromWhatsAppJid(row.myJid);
-
-  return {
-    instanceName: "",
-    instanceId,
-    state: open ? "open" : "connecting",
-    phoneNumber,
-  };
+  return resolveGoLiveConnection(instanceToken, instanceId);
 }
 
 /**

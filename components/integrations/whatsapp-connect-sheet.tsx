@@ -100,9 +100,16 @@ export function WhatsAppConnectSheet({ open, onOpenChange, onConnected }: Props)
       stopPoll();
       setSession(null);
       setError(null);
+      return () => stopPoll();
     }
+
+    void pollStatus().catch((e) => setError(e instanceof Error ? e.message : "Erro."));
+    pollRef.current = setInterval(() => {
+      void pollStatus().catch((e) => setError(e instanceof Error ? e.message : "Erro."));
+    }, 2500);
+
     return () => stopPoll();
-  }, [open, stopPoll]);
+  }, [open, pollStatus, stopPoll]);
 
   const state = session?.state ?? "disconnected";
   const activeMethod = session?.method ?? method;

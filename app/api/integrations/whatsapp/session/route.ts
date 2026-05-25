@@ -175,16 +175,14 @@ export async function GET() {
       });
     }
 
-    if (creds.connectionState === "connected") {
-      await provisionIntegration({
-        tenantId: session.tenantId,
-        channelType: "whatsapp",
-        provider: "evolution",
-        credentials: {
-          connectionState: "awaiting_scan",
-          phoneNumber: "",
-          phoneNumberId: "",
-          targetPhone: "",
+    const storedPhone = creds.phoneNumber?.replace(/\D/g, "") ?? "";
+    if (creds.connectionState === "connected" && storedPhone.length >= 10) {
+      return NextResponse.json({
+        data: {
+          state: "connected",
+          phoneNumber: storedPhone,
+          instanceName,
+          instanceId,
         },
       });
     }
