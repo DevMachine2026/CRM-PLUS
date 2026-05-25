@@ -14,7 +14,9 @@ export function phoneFromWhatsAppJid(jid: string | undefined): string | undefine
   }
   if (domain !== "s.whatsapp.net" && domain !== "c.us") return undefined;
 
-  const digits = local.replace(/\D/g, "");
+  // Multi-device JID: 5511999999999:5@s.whatsapp.net — só a parte antes de ":"
+  const userPart = local.includes(":") ? (local.split(":")[0] ?? local) : local;
+  const digits = userPart.replace(/\D/g, "");
   if (digits.length < 10 || digits.length > 15) return undefined;
   return digits;
 }

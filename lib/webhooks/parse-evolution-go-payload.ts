@@ -63,12 +63,12 @@ export function parseEvolutionGoWebhook(body: unknown): EvolutionGoWebhookEvent 
 
   if (event === "Connected" || event === "PairSuccess") {
     const jidCandidates = [
-      data?.myJid,
-      data?.MyJid,
       data?.jid,
       data?.Jid,
       data?.ID,
       data?.id,
+      data?.myJid,
+      data?.MyJid,
       data?.remoteJid,
     ];
     let phoneNumber: string | undefined;

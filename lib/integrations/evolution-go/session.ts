@@ -10,11 +10,9 @@ import {
   createGoInstance,
   deleteGoInstanceByName,
   fetchGoQrCode,
-  getGoConnectionState,
   isEvolutionGoSimulated,
   requestGoPairingCode,
   resolveCrmWebhookUrl,
-  resolveGoInstanceByName,
 } from "../evolution-go-client";
 
 function simulatedResult(
@@ -57,16 +55,8 @@ export async function startWhatsAppConnectSession(
     throw new Error("Informe o número do WhatsApp para gerar o código de pareamento.");
   }
 
-  if (options.reset) {
+  if (method === "qr" || options.reset) {
     await deleteGoInstanceByName(instanceName);
-  } else if (method === "qr") {
-    const existing = await resolveGoInstanceByName(instanceName);
-    if (existing) {
-      const prior = await getGoConnectionState(existing.instanceToken, existing.instanceId);
-      if (prior.state === "open") {
-        await deleteGoInstanceByName(instanceName);
-      }
-    }
   }
 
   const targetPhone =

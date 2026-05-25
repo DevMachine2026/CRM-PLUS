@@ -113,18 +113,6 @@ export async function GET() {
   const instanceName = creds.evolutionInstanceName ?? evolutionInstanceName(session.tenantId);
   const instanceId = creds.evolutionInstanceId;
 
-  const storedPhone = creds.phoneNumber?.replace(/\D/g, "") ?? "";
-  if (creds.connectionState === "connected" && storedPhone.length >= 10) {
-    return NextResponse.json({
-      data: {
-        state: "connected",
-        phoneNumber: storedPhone,
-        instanceName,
-        instanceId,
-      },
-    });
-  }
-
   if (
     SIMULATED &&
     creds.connectionState === "awaiting_scan" &&
@@ -175,6 +163,7 @@ export async function GET() {
           evolutionInstanceId: instanceId,
           connectionState: "connected",
           phoneNumber: phone,
+          phoneNumberId: "",
           targetPhone: "",
           instanceToken: creds.instanceToken ?? "",
         },
@@ -183,6 +172,20 @@ export async function GET() {
 
       return NextResponse.json({
         data: { state: "connected", phoneNumber: phone, instanceName, instanceId },
+      });
+    }
+
+    if (creds.connectionState === "connected") {
+      await provisionIntegration({
+        tenantId: session.tenantId,
+        channelType: "whatsapp",
+        provider: "evolution",
+        credentials: {
+          connectionState: "awaiting_scan",
+          phoneNumber: "",
+          phoneNumberId: "",
+          targetPhone: "",
+        },
       });
     }
 

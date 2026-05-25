@@ -5,7 +5,7 @@ Arquitetura escalável para CRM PLUS e outros projetos que usam o mesmo padrão.
 ## Princípios
 
 1. **Sem link externo** — QR e código gerados na própria UI do CRM.
-2. **Dois métodos** — código no celular (mais confiável) e QR (alternativa).
+2. **Dois métodos** — QR (recomendado; número = aparelho que escaneia) e código no celular (alternativa).
 3. **Uma instância por tenant** — nome estável `crmplus-<tenantId>`.
 4. **Auth correta** — `GLOBAL_API_KEY` só em rotas admin (`/instance/create`); demais rotas usam **token da instância**.
 5. **Webhook automático** — `POST /instance/connect` registra `{NEXTAUTH_URL}/api/webhooks/evolution`.
@@ -20,13 +20,16 @@ lib/integrations/evolution-go-client.ts              → HTTP Evolution GO
 lib/integrations/evolution-go/phone.ts               → normalização E.164 BR
 ```
 
-## Método recomendado: código no celular (pairing)
+## Método recomendado: QR Code
 
-Evita falhas comuns de QR expirado ou link quebrado.
+O número conectado **não é digitado no CRM** — vem do `myJid` do Evolution GO após o celular
+escanear o QR (aparelho que leu o código).
+
+## Método alternativo: código no celular (pairing)
 
 **Fluxo:**
 
-1. Usuário informa número (ex.: Eduardo `5511...`).
+1. Usuário informa número (só para gerar o código de 8 dígitos).
 2. CRM cria instância + `connect` + `POST /instance/pair`.
 3. UI exibe **8 dígitos**.
 4. No celular: WhatsApp → Aparelhos conectados → Conectar com número → digitar código.
@@ -47,24 +50,23 @@ Content-Type: application/json
 
 `reset: true` remove instância antiga no GO antes de criar (troca de número).
 
-## Método alternativo: QR Code
+## QR Code (API)
 
 ```http
 POST /api/integrations/whatsapp/session
 { "method": "qr", "reset": true }
 ```
 
-Polling renova QR via `GET /instance/qr` (token da instância).
+Polling renova QR via `GET /instance/qr` (token da instância). Ao conectar, o telefone salvo
+vem só do JID do aparelho que escaneou.
 
-## Teste com número do Eduardo
+## Teste em produção (QR)
 
-1. Desconecte no manager Evolution se existir instância antiga.
-2. CRM → Integrações → Conectar WhatsApp.
-3. Escolha **Código no celular**.
-4. Digite o número do Eduardo: `55` + DDD + número (só dígitos).
-5. Marque **Limpar conexão anterior**.
-6. Eduardo digita o código no WhatsApp dele.
-7. Valide Inbox com mensagem de teste de outro celular.
+1. CRM → Integrações → **Trocar número** (se já houver conexão).
+2. **Conectar WhatsApp** → **QR Code** → marque **Limpar conexão anterior**.
+3. No celular da empresa: WhatsApp → Aparelhos conectados → Escanear QR.
+4. Confira no card o **+número** exibido (deve ser o do aparelho que escaneou).
+5. Valide Inbox com mensagem de teste de outro celular.
 
 ## Variáveis (produção)
 

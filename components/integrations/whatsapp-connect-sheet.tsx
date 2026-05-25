@@ -137,18 +137,6 @@ export function WhatsAppConnectSheet({ open, onOpenChange, onConnected }: Props)
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
-                  onClick={() => setMethod("pairing")}
-                  className={`rounded-xl border p-3 text-left text-sm transition-colors ${
-                    method === "pairing"
-                      ? "border-green-600 bg-green-50 ring-1 ring-green-600"
-                      : "border-border hover:bg-muted/40"
-                  }`}
-                >
-                  <p className="font-semibold">Código no celular</p>
-                  <p className="mt-1 text-xs text-muted-foreground">Mais estável (recomendado)</p>
-                </button>
-                <button
-                  type="button"
                   onClick={() => setMethod("qr")}
                   className={`rounded-xl border p-3 text-left text-sm transition-colors ${
                     method === "qr"
@@ -157,7 +145,19 @@ export function WhatsAppConnectSheet({ open, onOpenChange, onConnected }: Props)
                   }`}
                 >
                   <p className="font-semibold">QR Code</p>
-                  <p className="mt-1 text-xs text-muted-foreground">Escanear na câmera</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Recomendado — define o número</p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMethod("pairing")}
+                  className={`rounded-xl border p-3 text-left text-sm transition-colors ${
+                    method === "pairing"
+                      ? "border-green-600 bg-green-50 ring-1 ring-green-600"
+                      : "border-border hover:bg-muted/40"
+                  }`}
+                >
+                  <p className="font-semibold">Código no celular</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Alternativa (8 dígitos)</p>
                 </button>
               </div>
 
@@ -174,7 +174,8 @@ export function WhatsAppConnectSheet({ open, onOpenChange, onConnected }: Props)
                     autoComplete="tel"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Ex.: número do Eduardo — só dígitos, com 55 no início.
+                    Só para gerar o código — o número final ainda vem do aparelho que confirmar no
+                    WhatsApp.
                   </p>
                 </div>
               )}
@@ -231,9 +232,10 @@ export function WhatsAppConnectSheet({ open, onOpenChange, onConnected }: Props)
 
           {pending && activeMethod === "qr" && (
             <div className="space-y-4 text-center">
-              <p className="text-sm font-medium">Escaneie o QR Code</p>
+              <p className="text-sm font-medium">Escaneie o QR Code no celular da empresa</p>
               <p className="text-xs text-muted-foreground">
-                WhatsApp → Aparelhos conectados → Conectar dispositivo
+                WhatsApp → Aparelhos conectados → Conectar dispositivo → Escanear QR. O CRM usa o
+                número desse aparelho automaticamente.
               </p>
               <div className="mx-auto flex h-56 w-56 items-center justify-center rounded-xl border bg-white p-3 shadow-sm">
                 {session?.qrCodeBase64 ? (
@@ -267,7 +269,9 @@ export function WhatsAppConnectSheet({ open, onOpenChange, onConnected }: Props)
               {session?.phoneNumber && (
                 <>
                   <p className="mt-2 text-xs text-green-800/80">
-                    Número do aparelho que escaneou o QR ou confirmou o código:
+                    {activeMethod === "qr"
+                      ? "Número vinculado (celular que escaneou o QR):"
+                      : "Número vinculado (aparelho confirmado no WhatsApp):"}
                   </p>
                   <p className="mt-1 text-sm font-medium text-green-700">
                     {formatPhoneDisplay(session.phoneNumber)}

@@ -42,6 +42,7 @@ export async function syncIntegrationFromGoEvent(
         evolutionInstanceId: event.instanceId ?? "",
         connectionState: "connected",
         phoneNumber: phone,
+        phoneNumberId: "",
         targetPhone: "",
         ...(event.instanceToken ? { instanceToken: event.instanceToken } : {}),
       },
