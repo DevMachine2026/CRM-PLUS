@@ -9,6 +9,7 @@ import { nativeGoQrPngToDataUrl, type GoQrRow } from "@/lib/integrations/evoluti
 export type EvolutionGoWebhookEvent = {
   kind: "message" | "connected" | "qrcode" | "ignored";
   instanceId?: string;
+  instanceName?: string;
   instanceToken?: string;
   phoneNumber?: string;
   senderPhone?: string;
@@ -23,13 +24,16 @@ type GoWebhookBody = {
   event?: string;
   instanceId?: string;
   instanceToken?: string;
-  data?: Record<string, unknown>;
-  /** Legado Evolution API v2 (Baileys) */
   instance?: string;
+  data?: Record<string, unknown>;
 };
 
 function asRecord(v: unknown): Record<string, unknown> | null {
   return v && typeof v === "object" ? (v as Record<string, unknown>) : null;
+}
+
+function normalizeEventName(event: string): string {
+  return event.trim().toUpperCase();
 }
 
 function extractMessageText(message: Record<string, unknown> | null): string | null {
@@ -41,27 +45,117 @@ function extractMessageText(message: Record<string, unknown> | null): string | n
   if (ext && typeof ext.text === "string" && ext.text.trim()) return ext.text.trim();
   const img = asRecord(message.imageMessage);
   if (img && typeof img.caption === "string" && img.caption.trim()) return img.caption.trim();
+  const video = asRecord(message.videoMessage);
+  if (video && typeof video.caption === "string" && video.caption.trim()) return video.caption.trim();
   return null;
 }
 
-/** Evolution GO — { event, instanceId, data } */
+/** Formato webhook GO: data.key + data.message (event MESSAGE). */
+function parseMessageFromKeyFormat(
+  data: Record<string, unknown>,
+  ctx: { instanceId?: string; instanceToken?: string },
+): EvolutionGoWebhookEvent | null {
+  const key = asRecord(data.key) ?? asRecord(data.Key);
+  const message = asRecord(data.message) ?? asRecord(data.Message);
+  if (!key || !message) return null;
+
+  if (key.fromMe === true || key.FromMe === true) {
+    return { kind: "ignored", rawEvent: "MESSAGE" };
+  }
+
+  const remoteJid = (key.remoteJid ?? key.RemoteJid) as string | undefined;
+  const senderPhone = phoneFromWhatsAppJid(remoteJid);
+  const content = extractMessageText(message);
+  if (!senderPhone || !content) return null;
+
+  const senderName =
+    (typeof data.pushName === "string" ? data.pushName : undefined) ??
+    (typeof data.PushName === "string" ? data.PushName : undefined);
+
+  const externalMessageId =
+    (typeof key.id === "string" ? key.id : undefined) ??
+    (typeof key.ID === "string" ? key.ID : undefined);
+
+  return {
+    kind: "message",
+    instanceId: ctx.instanceId,
+    instanceToken: ctx.instanceToken,
+    senderPhone,
+    senderName,
+    content,
+    externalMessageId,
+    rawEvent: "MESSAGE",
+  };
+}
+
+/** Formato API GO: data.Info + data.Message (event Message). */
+function parseMessageFromInfoFormat(
+  data: Record<string, unknown>,
+  ctx: { instanceId?: string; instanceToken?: string },
+): EvolutionGoWebhookEvent | null {
+  const info = asRecord(data.Info);
+  if (!info) return null;
+
+  if (info.IsFromMe === true) return { kind: "ignored", rawEvent: "Message" };
+  if (info.IsGroup === true) return { kind: "ignored", rawEvent: "Message" };
+
+  const message = asRecord(data.Message);
+  const content = extractMessageText(message);
+  if (!content) return null;
+
+  const senderJid = (info.Sender ?? info.Chat) as string | undefined;
+  const senderPhone = phoneFromWhatsAppJid(senderJid);
+  if (!senderPhone) return null;
+
+  return {
+    kind: "message",
+    instanceId: ctx.instanceId,
+    instanceToken: ctx.instanceToken,
+    senderPhone,
+    senderName: typeof info.PushName === "string" ? info.PushName : undefined,
+    content,
+    externalMessageId: typeof info.ID === "string" ? info.ID : undefined,
+    rawEvent: "Message",
+  };
+}
+
+/** Evolution GO — { event, instanceId, instance, data } */
 export function parseEvolutionGoWebhook(body: unknown): EvolutionGoWebhookEvent {
   const root = asRecord(body);
   if (!root) return { kind: "ignored" };
 
   const event = String(root.event ?? "");
+  const eventNorm = normalizeEventName(event);
   const instanceId = typeof root.instanceId === "string" ? root.instanceId : undefined;
   const instanceToken =
     typeof root.instanceToken === "string" ? root.instanceToken : undefined;
+  const instanceName =
+    typeof root.instance === "string"
+      ? root.instance
+      : typeof root.instanceName === "string"
+        ? root.instanceName
+        : undefined;
   const data = asRecord(root.data);
+  const ctx = { instanceId, instanceToken };
 
-  if (event === "QRCode" && data) {
+  if (eventNorm === "QRCODE" && data) {
     const qrCodeBase64 = nativeGoQrPngToDataUrl(data as GoQrRow);
     if (!qrCodeBase64) return { kind: "ignored", rawEvent: event };
-    return { kind: "qrcode", instanceId, instanceToken, qrCodeBase64, rawEvent: event };
+    return {
+      kind: "qrcode",
+      instanceId,
+      instanceName,
+      instanceToken,
+      qrCodeBase64,
+      rawEvent: event,
+    };
   }
 
-  if (event === "Connected" || event === "PairSuccess") {
+  if (
+    eventNorm === "CONNECTED" ||
+    eventNorm === "PAIRSUCCESS" ||
+    eventNorm === "CONNECTION"
+  ) {
     const jidCandidates = [
       data?.jid,
       data?.Jid,
@@ -80,38 +174,30 @@ export function parseEvolutionGoWebhook(body: unknown): EvolutionGoWebhookEvent 
     return {
       kind: "connected",
       instanceId,
+      instanceName,
       instanceToken,
       phoneNumber,
       rawEvent: event,
     };
   }
 
-  if (event === "Message" && data) {
-    const info = asRecord(data.Info);
-    if (info?.IsFromMe === true) return { kind: "ignored", rawEvent: event };
-    if (info?.IsGroup === true) return { kind: "ignored", rawEvent: event };
+  if (eventNorm === "MESSAGE" && data) {
+    const fromKey = parseMessageFromKeyFormat(data, ctx);
+    if (fromKey && fromKey.kind === "message") {
+      return { ...fromKey, instanceName };
+    }
+    if (fromKey?.kind === "ignored") return fromKey;
 
-    const message = asRecord(data.Message);
-    const content = extractMessageText(message);
-    if (!content) return { kind: "ignored", rawEvent: event };
+    const fromInfo = parseMessageFromInfoFormat(data, ctx);
+    if (fromInfo && fromInfo.kind === "message") {
+      return { ...fromInfo, instanceName };
+    }
+    if (fromInfo?.kind === "ignored") return fromInfo;
 
-    const senderJid = (info?.Sender ?? info?.Chat) as string | undefined;
-    const senderPhone = phoneFromWhatsAppJid(senderJid);
-    if (!senderPhone) return { kind: "ignored", rawEvent: event };
-
-    return {
-      kind: "message",
-      instanceId,
-      instanceToken,
-      senderPhone,
-      senderName: typeof info?.PushName === "string" ? info.PushName : undefined,
-      content,
-      externalMessageId: typeof info?.ID === "string" ? info.ID : undefined,
-      rawEvent: event,
-    };
+    return { kind: "ignored", rawEvent: event };
   }
 
-  // Legado Evolution API v2 (Baileys) — compat dev
+  // Legado Evolution API v2 (Baileys)
   if (
     (event.includes("MESSAGES") || event.includes("messages")) &&
     data &&
@@ -125,6 +211,7 @@ export function parseEvolutionGoWebhook(body: unknown): EvolutionGoWebhookEvent 
       return {
         kind: "message",
         instanceId: root.instance,
+        instanceName: root.instance,
         senderPhone: from,
         content: text,
         externalMessageId: typeof key?.id === "string" ? key.id : undefined,
@@ -133,5 +220,5 @@ export function parseEvolutionGoWebhook(body: unknown): EvolutionGoWebhookEvent 
     }
   }
 
-  return { kind: "ignored", instanceId, rawEvent: event || undefined };
+  return { kind: "ignored", instanceId, instanceName, rawEvent: event || undefined };
 }

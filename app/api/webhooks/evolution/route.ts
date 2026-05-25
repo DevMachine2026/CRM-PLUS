@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { processInboundMessage } from "@/lib/webhooks/process-inbound";
-import { ingestWebhook, enqueueWebhookProcessing } from "@/lib/webhooks/ingest";
+import { ingestWebhook } from "@/lib/webhooks/ingest";
 import { checkRateLimit, WEBHOOK_LIMIT } from "@/lib/rate-limit";
 import { parseEvolutionGoWebhook } from "@/lib/webhooks/parse-evolution-go-payload";
 import {
@@ -31,22 +31,19 @@ export async function POST(req: NextRequest) {
 
   const parsed = parseEvolutionGoWebhook(body);
 
-  const instanceKey =
-    parsed.instanceId ??
+  const instanceName =
+    parsed.instanceName ??
     (typeof (body as Record<string, unknown>).instance === "string"
       ? String((body as Record<string, unknown>).instance)
       : undefined);
+
+  const instanceKey = parsed.instanceId ?? instanceName;
 
   if (!instanceKey && parsed.kind === "ignored") {
     return NextResponse.json({ ok: true, skipped: true });
   }
 
-  const resolved = await findTenantByEvolutionInstance(
-    parsed.instanceId,
-    typeof (body as Record<string, unknown>).instance === "string"
-      ? String((body as Record<string, unknown>).instance)
-      : undefined,
-  );
+  const resolved = await findTenantByEvolutionInstance(parsed.instanceId, instanceName);
 
   if (!resolved) {
     return NextResponse.json(
@@ -66,24 +63,27 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, skipped: parsed.rawEvent ?? "ignored" });
   }
 
-  enqueueWebhookProcessing(async () => {
-    await ingestWebhook({
-      tenantId,
-      integrationId,
-      channel: "whatsapp",
-      payload: body,
-      process: () =>
-        processInboundMessage({
-          tenantId,
-          channel: "whatsapp",
-          senderPhone: parsed.senderPhone!,
-          senderName: parsed.senderName,
-          content: parsed.content!,
-          externalMessageId: parsed.externalMessageId,
-          timestamp: new Date(),
-        }),
-    });
+  const result = await ingestWebhook({
+    tenantId,
+    integrationId,
+    channel: "whatsapp",
+    payload: body,
+    process: () =>
+      processInboundMessage({
+        tenantId,
+        channel: "whatsapp",
+        senderPhone: parsed.senderPhone!,
+        senderName: parsed.senderName,
+        content: parsed.content!,
+        externalMessageId: parsed.externalMessageId,
+        timestamp: new Date(),
+      }),
   });
 
-  return NextResponse.json({ ok: true, queued: true });
+  return NextResponse.json({
+    ok: true,
+    processed: true,
+    conversationId: result.conversationId,
+    duplicate: result.duplicate ?? false,
+  });
 }
