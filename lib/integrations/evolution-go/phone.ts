@@ -2,24 +2,39 @@
  * Extrai E.164 só de JID WhatsApp real (ex.: 5511999999999@s.whatsapp.net).
  * Ignora PushName, targetPhone digitado no formulário e JIDs @lid.
  */
-/** Resolve telefone do remetente em webhooks (remoteJid, @lid + sender, participant). */
+export function isWhatsAppGroupJid(jid: string | undefined): boolean {
+  return !!jid && jid.includes("@g.us");
+}
+
+/** Resolve telefone do remetente em webhooks (grupo: participant; 1:1: remoteJid/sender). */
 export function resolveInboundSenderPhone(
   sources: {
     key?: Record<string, unknown> | null;
     data?: Record<string, unknown> | null;
     root?: Record<string, unknown> | null;
+    info?: Record<string, unknown> | null;
   },
 ): string | undefined {
-  const { key, data, root } = sources;
+  const { key, data, root, info } = sources;
   const candidates: (string | undefined)[] = [
-    key?.remoteJid as string | undefined,
-    key?.RemoteJid as string | undefined,
-    key?.remoteJidAlt as string | undefined,
-    key?.RemoteJidAlt as string | undefined,
+    key?.participant_pn as string | undefined,
+    key?.Participant_pn as string | undefined,
     key?.participant as string | undefined,
     key?.Participant as string | undefined,
+    info?.SenderAlt as string | undefined,
+    info?.senderAlt as string | undefined,
+    info?.Sender as string | undefined,
+    info?.sender as string | undefined,
+    info?.Participant as string | undefined,
+    info?.participant as string | undefined,
+    data?.participant_pn as string | undefined,
+    data?.participant as string | undefined,
     data?.sender as string | undefined,
     root?.sender as string | undefined,
+    key?.remoteJidAlt as string | undefined,
+    key?.RemoteJidAlt as string | undefined,
+    key?.remoteJid as string | undefined,
+    key?.RemoteJid as string | undefined,
   ];
   for (const jid of candidates) {
     const phone = phoneFromWhatsAppJid(jid);

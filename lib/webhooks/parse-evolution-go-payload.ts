@@ -4,6 +4,7 @@
  */
 
 import {
+  isWhatsAppGroupJid,
   phoneFromWhatsAppJid,
   resolveInboundSenderPhone,
 } from "@/lib/integrations/evolution-go/phone";
@@ -17,6 +18,8 @@ export type EvolutionGoWebhookEvent = {
   phoneNumber?: string;
   senderPhone?: string;
   senderName?: string;
+  isGroup?: boolean;
+  groupJid?: string;
   content?: string;
   externalMessageId?: string;
   qrCodeBase64?: string;
@@ -50,36 +53,49 @@ function extractMessageText(message: Record<string, unknown> | null): string | n
   if (img && typeof img.caption === "string" && img.caption.trim()) return img.caption.trim();
   const video = asRecord(message.videoMessage);
   if (video && typeof video.caption === "string" && video.caption.trim()) return video.caption.trim();
+  if (asRecord(message.imageMessage)) return "[Imagem]";
+  if (asRecord(message.videoMessage)) return "[Vídeo]";
+  if (asRecord(message.audioMessage)) return "[Áudio]";
+  if (asRecord(message.documentMessage)) return "[Documento]";
+  if (asRecord(message.stickerMessage)) return "[Sticker]";
   return null;
 }
 
-/** Formato webhook: data.key + data.message (MESSAGE / messages.upsert). */
-function parseMessageFromKeyFormat(
+/** Unifica data.key + data.Info + data.message (formato Evolution GO Message). */
+function parseInboundMessage(
   data: Record<string, unknown>,
   root: Record<string, unknown>,
   ctx: { instanceId?: string; instanceToken?: string },
   rawEvent: string,
 ): EvolutionGoWebhookEvent | null {
   const key = asRecord(data.key) ?? asRecord(data.Key);
+  const info = asRecord(data.Info);
   const message = asRecord(data.message) ?? asRecord(data.Message);
-  if (!key || !message) return null;
+  if (!message) return null;
 
-  if (key.fromMe === true || key.FromMe === true) {
-    return { kind: "ignored", rawEvent, skipReason: "fromMe" };
-  }
+  const fromMe =
+    info?.IsFromMe === true || key?.fromMe === true || key?.FromMe === true;
+  if (fromMe) return { kind: "ignored", rawEvent, skipReason: "fromMe" };
 
-  const senderPhone = resolveInboundSenderPhone({ key, data, root });
+  const chatJid = (info?.Chat ?? info?.chat ?? key?.remoteJid ?? key?.RemoteJid) as
+    | string
+    | undefined;
+  const isGroup = info?.IsGroup === true || isWhatsAppGroupJid(chatJid);
+
+  const senderPhone = resolveInboundSenderPhone({ key, data, root, info });
   const content = extractMessageText(message);
   if (!senderPhone) return { kind: "ignored", rawEvent, skipReason: "no_sender_phone" };
   if (!content) return { kind: "ignored", rawEvent, skipReason: "no_text_content" };
 
   const senderName =
+    (typeof info?.PushName === "string" ? info.PushName : undefined) ??
     (typeof data.pushName === "string" ? data.pushName : undefined) ??
     (typeof data.PushName === "string" ? data.PushName : undefined);
 
   const externalMessageId =
-    (typeof key.id === "string" ? key.id : undefined) ??
-    (typeof key.ID === "string" ? key.ID : undefined);
+    (typeof info?.ID === "string" ? info.ID : undefined) ??
+    (typeof key?.id === "string" ? key.id : undefined) ??
+    (typeof key?.ID === "string" ? key.ID : undefined);
 
   return {
     kind: "message",
@@ -87,40 +103,10 @@ function parseMessageFromKeyFormat(
     instanceToken: ctx.instanceToken,
     senderPhone,
     senderName,
+    isGroup,
+    groupJid: isGroup && chatJid ? chatJid : undefined,
     content,
     externalMessageId,
-    rawEvent,
-  };
-}
-
-/** Formato API: data.Info + data.Message. */
-function parseMessageFromInfoFormat(
-  data: Record<string, unknown>,
-  ctx: { instanceId?: string; instanceToken?: string },
-  rawEvent: string,
-): EvolutionGoWebhookEvent | null {
-  const info = asRecord(data.Info);
-  if (!info) return null;
-
-  if (info.IsFromMe === true) return { kind: "ignored", rawEvent, skipReason: "fromMe" };
-  if (info.IsGroup === true) return { kind: "ignored", rawEvent, skipReason: "group" };
-
-  const message = asRecord(data.Message);
-  const content = extractMessageText(message);
-  if (!content) return { kind: "ignored", rawEvent, skipReason: "no_text_content" };
-
-  const senderJid = (info.Sender ?? info.Chat) as string | undefined;
-  const senderPhone = phoneFromWhatsAppJid(senderJid);
-  if (!senderPhone) return { kind: "ignored", rawEvent, skipReason: "no_sender_phone" };
-
-  return {
-    kind: "message",
-    instanceId: ctx.instanceId,
-    instanceToken: ctx.instanceToken,
-    senderPhone,
-    senderName: typeof info.PushName === "string" ? info.PushName : undefined,
-    content,
-    externalMessageId: typeof info.ID === "string" ? info.ID : undefined,
     rawEvent,
   };
 }
@@ -197,18 +183,8 @@ export function parseEvolutionGoWebhook(body: unknown): EvolutionGoWebhookEvent 
   }
 
   if (isInboundMessageEvent(event, eventNorm) && data) {
-    const fromKey = parseMessageFromKeyFormat(data, root, ctx, event);
-    if (fromKey?.kind === "message") {
-      return { ...fromKey, instanceName };
-    }
-    if (fromKey?.kind === "ignored") return { ...fromKey, instanceName };
-
-    const fromInfo = parseMessageFromInfoFormat(data, ctx, event);
-    if (fromInfo?.kind === "message") {
-      return { ...fromInfo, instanceName };
-    }
-    if (fromInfo?.kind === "ignored") return { ...fromInfo, instanceName };
-
+    const parsed = parseInboundMessage(data, root, ctx, event);
+    if (parsed) return { ...parsed, instanceName };
     return { kind: "ignored", rawEvent: event, skipReason: "unparsed_message_shape" };
   }
 

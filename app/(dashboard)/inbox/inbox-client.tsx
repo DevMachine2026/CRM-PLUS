@@ -446,6 +446,7 @@ export function InboxClient({
               const needsReply  = conv.status === "open" && lastMsg?.direction === "inbound";
               const intentMeta  = conv.detectedIntent && conv.detectedIntent !== "neutral"
                 ? INTENT_META[conv.detectedIntent] : null;
+              const isGroupConv = conv.subject?.startsWith("wa-group:");
               return (
                 <button key={conv.id} onClick={() => selectConversation(conv)}
                   className={cn(
@@ -458,6 +459,7 @@ export function InboxClient({
                       {CHANNEL_ICON[conv.channel]}
                       <span className="font-medium text-sm truncate">
                         {conv.contact?.name ?? conv.subject ?? "Sem contato"}
+                        {isGroupConv ? " (grupo)" : ""}
                       </span>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">

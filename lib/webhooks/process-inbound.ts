@@ -25,6 +25,8 @@ export interface InboundPayload {
   content:            string;
   externalMessageId?: string;      // wamid / mid — logged, not stored yet
   timestamp?:         Date;
+  /** Grupo WhatsApp (@g.us) — uma conversa por groupJid no inbox */
+  groupJid?:          string;
 }
 
 export interface InboundResult {
@@ -120,20 +122,31 @@ export async function processInboundMessage(
 
   // ── 3. Find or create open conversation ─────────────────────────────────────
   let conversationCreated = false;
-  let conversation = await prisma.conversation.findFirst({
-    where:   { tenantId, contactId: contact.id, channel, status: { in: ["open", "pending"] } },
-    orderBy: { lastMessageAt: "desc" },
-  });
+  const groupSubject =
+    payload.groupJid && channel === "whatsapp" ? `wa-group:${payload.groupJid}` : null;
+
+  let conversation = groupSubject
+    ? await prisma.conversation.findFirst({
+        where: { tenantId, channel, subject: groupSubject, status: { in: ["open", "pending"] } },
+        orderBy: { lastMessageAt: "desc" },
+      })
+    : await prisma.conversation.findFirst({
+        where: { tenantId, contactId: contact.id, channel, status: { in: ["open", "pending"] } },
+        orderBy: { lastMessageAt: "desc" },
+      });
 
   if (!conversation) {
     const channelLabel = channel === "whatsapp" ? "WhatsApp" : "Instagram";
+    const subject = groupSubject
+      ? groupSubject
+      : `${channelLabel} — ${contact.name}`;
     conversation = await prisma.conversation.create({
       data: {
         tenantId,
         contactId:     contact.id,
         channel,
         status:        "open",
-        subject:       `${channelLabel} — ${contact.name}`,
+        subject,
         lastMessageAt: sentAt,
       },
     });

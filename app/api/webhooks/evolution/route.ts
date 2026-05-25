@@ -93,6 +93,7 @@ export async function POST(req: NextRequest) {
         senderName: parsed.senderName,
         content: parsed.content!,
         externalMessageId: parsed.externalMessageId,
+        groupJid: parsed.groupJid,
         timestamp: new Date(),
       }),
   });
