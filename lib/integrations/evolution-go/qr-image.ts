@@ -1,6 +1,7 @@
 /**
- * QR WhatsApp — PNG do Evolution GO (/instance/qr).
- * Prioridade: bytes image/png da resposta, depois campo `code`, nunca texto `qrcode` no <img>.
+ * QR WhatsApp — Evolution GO (/instance/qr).
+ * 1) PNG em qualquer campo (code, Qrcode, qrCode, image/*)
+ * 2) Fallback: gera PNG do payload texto (2@…) quando o GO não manda imagem
  */
 
 export type GoQrRow = {
@@ -8,6 +9,7 @@ export type GoQrRow = {
   Code?: string;
   qrcode?: string;
   Qrcode?: string;
+  qrCode?: string;
   [key: string]: unknown;
 };
 
@@ -20,6 +22,10 @@ function bufferLooksLikeImage(buf: Buffer): boolean {
   return false;
 }
 
+function isWhatsAppSessionPayload(value: string): boolean {
+  return value.includes("@") && !value.startsWith("data:");
+}
+
 function decodeBase64Image(raw: string): Buffer | null {
   const trimmed = raw.trim();
   let b64 = trimmed;
@@ -28,9 +34,9 @@ function decodeBase64Image(raw: string): Buffer | null {
     const comma = trimmed.indexOf(",");
     if (comma < 0) return null;
     b64 = trimmed.slice(comma + 1);
+  } else if (isWhatsAppSessionPayload(trimmed)) {
+    return null;
   }
-
-  if (trimmed.includes("@")) return null;
 
   b64 = b64.replace(/\s/g, "");
   if (!/^[A-Za-z0-9+/]+=*$/.test(b64) || b64.length < 80) return null;
@@ -44,21 +50,53 @@ function decodeBase64Image(raw: string): Buffer | null {
 }
 
 function extractFromRow(row: GoQrRow): Buffer | null {
-  const codeField = row.code ?? row.Code;
-  if (codeField) {
-    const direct = decodeBase64Image(codeField);
-    if (direct) return direct;
+  const priority = [
+    row.code,
+    row.Code,
+    row.Qrcode,
+    row.qrcode,
+    row.qrCode,
+  ];
+  for (const value of priority) {
+    if (typeof value !== "string") continue;
+    const buf = decodeBase64Image(value);
+    if (buf) return buf;
   }
 
   for (const [key, value] of Object.entries(row)) {
     if (typeof value !== "string") continue;
-    const lower = key.toLowerCase();
-    if (lower === "qrcode" || lower === "pairingcode") continue;
-    if (value.includes("@")) continue;
+    if (key.toLowerCase() === "pairingcode") continue;
+    if (isWhatsAppSessionPayload(value)) continue;
     const buf = decodeBase64Image(value);
     if (buf) return buf;
   }
   return null;
+}
+
+/** Payload de sessão WhatsApp (2@…) para gerar QR quando não há PNG na resposta. */
+export function extractWhatsAppQrText(row: GoQrRow | undefined): string | null {
+  if (!row) return null;
+  const priority = [row.qrcode, row.Qrcode, row.code, row.Code];
+  for (const value of priority) {
+    if (typeof value === "string" && isWhatsAppSessionPayload(value)) return value;
+  }
+  return null;
+}
+
+/** Normaliza envelope JSON do Evolution GO. */
+export function normalizeGoQrRow(body: unknown): GoQrRow | null {
+  if (!body || typeof body !== "object") return null;
+  const root = body as Record<string, unknown>;
+
+  if (typeof root.qrCode === "string") {
+    return { code: root.qrCode };
+  }
+
+  const data = root.data;
+  if (typeof data === "string") return { code: data };
+  if (data && typeof data === "object") return data as GoQrRow;
+
+  return root as GoQrRow;
 }
 
 /** Extrai PNG/JPEG binário da resposta JSON do Evolution. */

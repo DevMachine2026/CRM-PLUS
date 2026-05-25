@@ -11,7 +11,9 @@ import { phoneFromWhatsAppJid } from "@/lib/integrations/evolution-go/phone";
 import {
   extractNativeGoQrPng,
   nativeGoQrPngToDataUrl,
+  normalizeGoQrRow,
 } from "@/lib/integrations/evolution-go/qr-image";
+import { renderWhatsAppQrPngFromRow } from "@/lib/integrations/evolution-go/qr-render";
 
 const BASE = process.env.EVOLUTION_API_URL?.replace(/\/$/, "");
 const API_KEY = process.env.EVOLUTION_API_KEY ?? "";
@@ -283,8 +285,9 @@ export async function fetchGoQrCode(instanceToken: string): Promise<{
 
   if (!res.ok) return {};
 
-  const json = await parseJson<QrData>(res);
-  const qrCodeBase64 = nativeGoQrPngToDataUrl(json.data);
+  const json = (await res.json()) as unknown;
+  const row = normalizeGoQrRow(json);
+  const qrCodeBase64 = nativeGoQrPngToDataUrl(row ?? undefined);
 
   return { qrCodeBase64, pairingCode: undefined };
 }
@@ -322,8 +325,11 @@ export async function fetchNativeGoQrPng(instanceToken: string): Promise<Buffer 
   }
 
   try {
-    const json = await parseJson<QrData>(res);
-    return extractNativeGoQrPng(json.data);
+    const json = (await res.json()) as unknown;
+    const row = normalizeGoQrRow(json);
+    const native = extractNativeGoQrPng(row ?? undefined);
+    if (native) return native;
+    return await renderWhatsAppQrPngFromRow(row ?? undefined);
   } catch {
     return null;
   }

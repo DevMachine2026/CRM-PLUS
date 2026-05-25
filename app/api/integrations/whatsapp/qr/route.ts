@@ -9,6 +9,7 @@ import { can } from "@/lib/auth/permissions";
 import { prisma } from "@/lib/db/client";
 import { parseWhatsAppCredentials } from "@/lib/integrations/connection-state";
 import { extractNativeGoQrPng } from "@/lib/integrations/evolution-go/qr-image";
+import { renderWhatsAppQrPngFromRow } from "@/lib/integrations/evolution-go/qr-render";
 import {
   fetchNativeGoQrPngWithRetry,
   isEvolutionGoSimulated,
@@ -56,7 +57,9 @@ export async function GET(req: Request) {
   });
 
   if (!png && creds.lastQrCodeBase64) {
-    png = extractNativeGoQrPng({ code: creds.lastQrCodeBase64 });
+    const cached = { code: creds.lastQrCodeBase64, qrcode: creds.lastQrCodeBase64 };
+    png = extractNativeGoQrPng(cached);
+    if (!png) png = await renderWhatsAppQrPngFromRow(cached);
   }
 
   if (!png) {

@@ -4,7 +4,7 @@
  */
 
 import { phoneFromWhatsAppJid } from "@/lib/integrations/evolution-go/phone";
-import { nativeGoQrPngToDataUrl } from "@/lib/integrations/evolution-go/qr-image";
+import { nativeGoQrPngToDataUrl, type GoQrRow } from "@/lib/integrations/evolution-go/qr-image";
 
 export type EvolutionGoWebhookEvent = {
   kind: "message" | "connected" | "qrcode" | "ignored";
@@ -56,10 +56,7 @@ export function parseEvolutionGoWebhook(body: unknown): EvolutionGoWebhookEvent 
   const data = asRecord(root.data);
 
   if (event === "QRCode" && data) {
-    const qrCodeBase64 = nativeGoQrPngToDataUrl({
-      code: data.code as string | undefined,
-      Code: data.Code as string | undefined,
-    });
+    const qrCodeBase64 = nativeGoQrPngToDataUrl(data as GoQrRow);
     if (!qrCodeBase64) return { kind: "ignored", rawEvent: event };
     return { kind: "qrcode", instanceId, instanceToken, qrCodeBase64, rawEvent: event };
   }
