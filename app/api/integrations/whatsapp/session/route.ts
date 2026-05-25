@@ -17,6 +17,7 @@ import { startWhatsAppConnectSession } from "@/lib/integrations/evolution-go/ses
 import type { GoConnectRequest } from "@/lib/integrations/evolution-go/types";
 import { provisionIntegration } from "@/lib/integrations/provision-integration";
 import { parseWhatsAppCredentials } from "@/lib/integrations/connection-state";
+import { isValidQrDataUrl } from "@/lib/integrations/evolution-go/qr-image";
 
 const SIMULATED = isEvolutionGoSimulated();
 
@@ -74,7 +75,9 @@ export async function POST(req: Request) {
         connectMethod: evo.method,
         ...(evo.targetPhone ? { targetPhone: evo.targetPhone } : {}),
         lastQrAt: new Date().toISOString(),
-        ...(evo.qrCodeBase64 ? { lastQrCodeBase64: evo.qrCodeBase64 } : {}),
+        ...(evo.qrCodeBase64 && isValidQrDataUrl(evo.qrCodeBase64)
+          ? { lastQrCodeBase64: evo.qrCodeBase64 }
+          : {}),
         ...(evo.pairingCode ? { lastPairingCode: evo.pairingCode } : {}),
       },
     });
@@ -187,10 +190,15 @@ export async function GET() {
       });
     }
 
-    const qrCodeBase64 =
-      creds.connectMethod === "qr"
-        ? ((await refreshGoQrCode(creds.instanceToken)) ?? creds.lastQrCodeBase64 ?? null)
-        : null;
+    let qrCodeBase64: string | null = null;
+    if (creds.connectMethod === "qr") {
+      const fresh = await refreshGoQrCode(creds.instanceToken);
+      qrCodeBase64 = isValidQrDataUrl(fresh)
+        ? fresh
+        : isValidQrDataUrl(creds.lastQrCodeBase64)
+          ? creds.lastQrCodeBase64!
+          : null;
+    }
 
     const pendingState =
       creds.connectionState === "awaiting_pairing"
@@ -216,7 +224,7 @@ export async function GET() {
   return NextResponse.json({
     data: {
       state: creds.connectionState === "generating_qr" ? "generating_qr" : "awaiting_scan",
-      qrCodeBase64: creds.lastQrCodeBase64 ?? null,
+      qrCodeBase64: isValidQrDataUrl(creds.lastQrCodeBase64) ? creds.lastQrCodeBase64! : null,
       pairingCode: creds.lastPairingCode ?? null,
       instanceName,
       instanceId,

@@ -8,6 +8,7 @@
 import { randomUUID } from "node:crypto";
 import { webhookPathForChannel } from "@/lib/integrations/provision-integration";
 import { phoneFromWhatsAppJid } from "@/lib/integrations/evolution-go/phone";
+import { isValidQrDataUrl, resolveQrDisplayFromGoRow } from "@/lib/integrations/evolution-go/qr-image";
 
 const BASE = process.env.EVOLUTION_API_URL?.replace(/\/$/, "");
 const API_KEY = process.env.EVOLUTION_API_KEY ?? "";
@@ -115,15 +116,6 @@ export function isGoWhatsAppSessionOpen(row: StatusData | undefined): boolean {
   const phone = phoneFromWhatsAppJid(status.myJid);
   if (!phone) return false;
   return status.LoggedIn === true;
-}
-
-function normalizeQrImageBase64(raw: string | undefined): string | undefined {
-  if (!raw?.trim()) return undefined;
-  const s = raw.trim();
-  if (s.startsWith("data:")) return s;
-  // String de pareamento WhatsApp (ex.: 2@xxx) — não é imagem
-  if (s.includes("@") && s.length < 120) return undefined;
-  return `data:image/png;base64,${s}`;
 }
 
 type GoInstanceListRow = GoInstanceRow & {
@@ -289,18 +281,12 @@ export async function fetchGoQrCode(instanceToken: string): Promise<{
   if (!res.ok) return {};
 
   const json = await parseJson<QrData>(res);
-  const row = json.data;
-  // Evolution GO: campo "code" = PNG base64; "qrcode" = string de pareamento (não é imagem)
-  const qrCodeBase64 = normalizeQrImageBase64(
-    row?.code ?? row?.Code ?? row?.Qrcode ?? row?.qrcode,
-  );
-  const rawPair = row?.pairingCode ?? row?.PairingCode;
-  const pairingCode =
-    typeof rawPair === "string" && rawPair.length <= 12
-      ? rawPair.replace(/\D/g, "").slice(0, 8)
-      : undefined;
+  const resolved = await resolveQrDisplayFromGoRow(json.data);
+  const qrCodeBase64 = isValidQrDataUrl(resolved.qrCodeBase64)
+    ? resolved.qrCodeBase64
+    : undefined;
 
-  return { qrCodeBase64, pairingCode };
+  return { qrCodeBase64, pairingCode: undefined };
 }
 
 /** QR demora alguns segundos após POST /instance/connect. */

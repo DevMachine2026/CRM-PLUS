@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiFetch } from "@/lib/api/client-fetch";
 import { formatPhoneDisplay } from "@/lib/integrations/evolution-go/phone";
+import { isValidQrDataUrl } from "@/lib/integrations/evolution-go/qr-image";
 import { Loader2, RefreshCw, Smartphone, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -254,15 +255,18 @@ export function WhatsAppConnectSheet({
                 número desse aparelho automaticamente.
               </p>
               <div className="mx-auto flex h-56 w-56 items-center justify-center rounded-xl border bg-white p-3 shadow-sm">
-                {session?.qrCodeBase64 ? (
+                {isValidQrDataUrl(session?.qrCodeBase64) ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={session.qrCodeBase64}
+                    src={session!.qrCodeBase64!}
                     alt="QR Code WhatsApp"
                     className="h-full w-full object-contain"
                   />
                 ) : (
-                  <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" />
+                  <div className="space-y-2 text-center">
+                    <Loader2 className="mx-auto h-10 w-10 animate-spin text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">Gerando QR Code…</p>
+                  </div>
                 )}
               </div>
               <Button
