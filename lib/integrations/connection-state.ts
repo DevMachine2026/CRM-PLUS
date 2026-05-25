@@ -3,6 +3,7 @@ export type ChannelConnectionState =
   | "disconnected"
   | "generating_qr"
   | "awaiting_scan"
+  | "awaiting_pairing"
   | "connected"
   | "error";
 
@@ -22,6 +23,9 @@ export type WhatsAppCredentials = {
   verifyToken?: string;
   lastQrAt?: string;
   lastQrCodeBase64?: string;
+  connectMethod?: "qr" | "pairing";
+  targetPhone?: string;
+  lastPairingCode?: string;
 };
 
 export type InstagramCredentials = {
@@ -50,11 +54,17 @@ export function whatsappUiState(creds: WhatsAppCredentials): ChannelConnectionSt
   if (
     creds.provider === "evolution" &&
     creds.evolutionInstanceId &&
-    (creds.connectionState === "awaiting_scan" || creds.connectionState === "generating_qr")
+    (creds.connectionState === "awaiting_scan" ||
+      creds.connectionState === "awaiting_pairing" ||
+      creds.connectionState === "generating_qr")
   ) {
     return creds.connectionState ?? "awaiting_scan";
   }
-  if (creds.connectionState === "generating_qr" || creds.connectionState === "awaiting_scan") {
+  if (
+    creds.connectionState === "generating_qr" ||
+    creds.connectionState === "awaiting_scan" ||
+    creds.connectionState === "awaiting_pairing"
+  ) {
     return creds.connectionState;
   }
   if (creds.connectionState === "error") return "error";
@@ -74,6 +84,7 @@ export const CHANNEL_STATE_LABEL: Record<ChannelConnectionState, string> = {
   disconnected:    "Desconectado",
   generating_qr:   "Gerando QR Code…",
   awaiting_scan:   "Aguardando leitura…",
+  awaiting_pairing: "Aguardando código no celular…",
   connected:       "Conectado",
   error:           "Erro na conexão",
 };

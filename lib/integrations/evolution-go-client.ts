@@ -133,16 +133,34 @@ export async function createGoInstance(
   return { instanceId, instanceToken: row?.token ?? instanceToken };
 }
 
+/** Remove instância pelo nome (admin) — útil antes de reconectar outro número. */
+export async function deleteGoInstanceByName(instanceName: string): Promise<void> {
+  if (isEvolutionGoSimulated() || !BASE) return;
+  const row = await resolveGoInstanceByName(instanceName);
+  if (!row) return;
+
+  const res = await fetch(`${BASE}/instance/delete/${row.instanceId}`, {
+    method: "DELETE",
+    headers: adminHeaders(),
+  });
+  if (!res.ok && res.status !== 404) {
+    const err = await res.text();
+    throw new Error(`Evolution GO delete failed: ${err}`);
+  }
+}
+
 /** Conecta instância e registra webhook do CRM na mesma chamada. */
 export async function connectGoInstance(
   instanceToken: string,
   webhookUrl: string | null,
+  phone?: string,
 ): Promise<void> {
   const body: Record<string, unknown> = {
     immediate: true,
     subscribe: ["MESSAGE", "QRCODE", "CONNECTION"],
   };
   if (webhookUrl) body.webhookUrl = webhookUrl;
+  if (phone) body.phone = phone;
 
   const res = await fetch(`${BASE}/instance/connect`, {
     method: "POST",
@@ -177,6 +195,34 @@ export async function fetchGoQrCode(instanceToken: string): Promise<{
   return { qrCodeBase64, pairingCode };
 }
 
+/** Código de 8 dígitos — WhatsApp → Aparelhos conectados → Conectar com número. */
+export async function requestGoPairingCode(
+  instanceToken: string,
+  phone: string,
+): Promise<string> {
+  const res = await fetch(`${BASE}/instance/pair`, {
+    method: "POST",
+    headers: instanceHeaders(instanceToken),
+    body: JSON.stringify({
+      phone,
+      subscribe: ["MESSAGE", "QRCODE", "CONNECTION"],
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Evolution GO pair failed: ${err}`);
+  }
+
+  const json = (await res.json()) as {
+    data?: { code?: string; pairingCode?: string; PairingCode?: string };
+  };
+  const row = json.data;
+  const code = row?.code ?? row?.pairingCode ?? row?.PairingCode;
+  if (!code) throw new Error("Evolution GO pair: código não retornado");
+  return code.replace(/\D/g, "").slice(0, 8);
+}
+
 export async function getGoConnectionState(
   instanceToken: string,
   instanceId?: string,
@@ -203,37 +249,24 @@ export async function getGoConnectionState(
 }
 
 /**
- * Fluxo completo: create → connect (webhook) → QR.
+ * @deprecated Prefer `startWhatsAppConnectSession` from `@/lib/integrations/evolution-go/session`.
+ * Mantido para compatibilidade — fluxo QR apenas.
  */
 export async function startGoWhatsAppSession(params: {
   instanceName: string;
   webhookUrl?: string | null;
 }): Promise<EvolutionGoSession & { instanceId: string; instanceToken: string }> {
-  if (isEvolutionGoSimulated()) {
-    const qrSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><rect fill="#fff" width="256" height="256"/><text x="128" y="120" text-anchor="middle" font-family="system-ui" font-size="12" fill="#111">CRM PLUS — Demo QR (GO)</text><text x="128" y="140" text-anchor="middle" font-family="system-ui" font-size="10" fill="#666">${params.instanceName}</text></svg>`;
-    const base64 = Buffer.from(qrSvg).toString("base64");
-    return {
-      instanceName: params.instanceName,
-      instanceId: `sim-${params.instanceName}`,
-      instanceToken: `sim-${params.instanceName}`,
-      state: "connecting",
-      qrCodeBase64: `data:image/svg+xml;base64,${base64}`,
-    };
-  }
-
-  const webhookUrl = params.webhookUrl ?? resolveCrmWebhookUrl();
-  const { instanceId, instanceToken } = await createGoInstance(params.instanceName);
-
-  await connectGoInstance(instanceToken, webhookUrl);
-  const qr = await fetchGoQrCode(instanceToken);
-
+  const { startWhatsAppConnectSession } = await import("./evolution-go/session");
+  const result = await startWhatsAppConnectSession(params.instanceName, {
+    method: "qr",
+  });
   return {
-    instanceName: params.instanceName,
-    instanceId,
-    instanceToken,
+    instanceName: result.instanceName,
+    instanceId: result.instanceId,
+    instanceToken: result.instanceToken,
     state: "connecting",
-    qrCodeBase64: qr.qrCodeBase64,
-    pairingCode: qr.pairingCode,
+    qrCodeBase64: result.qrCodeBase64,
+    pairingCode: result.pairingCode,
   };
 }
 

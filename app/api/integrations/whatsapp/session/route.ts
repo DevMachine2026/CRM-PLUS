@@ -1,6 +1,6 @@
 /**
- * POST — inicia sessão QR (Evolution GO)
- * GET  — polling de status + QR
+ * POST — inicia sessão WhatsApp (QR ou código de pareamento)
+ * GET  — polling de status + QR/código
  */
 
 import { NextResponse } from "next/server";
@@ -12,22 +12,34 @@ import {
   getGoConnectionState,
   isEvolutionGoSimulated,
   refreshGoQrCode,
-  resolveCrmWebhookUrl,
-  startGoWhatsAppSession,
 } from "@/lib/integrations/evolution-go-client";
+import { startWhatsAppConnectSession } from "@/lib/integrations/evolution-go/session";
+import type { GoConnectRequest } from "@/lib/integrations/evolution-go/types";
 import { provisionIntegration } from "@/lib/integrations/provision-integration";
 import { parseWhatsAppCredentials } from "@/lib/integrations/connection-state";
 
 const SIMULATED = isEvolutionGoSimulated();
 
-export async function POST() {
+function parseConnectBody(raw: unknown): GoConnectRequest {
+  if (!raw || typeof raw !== "object") return { method: "qr" };
+  const b = raw as Record<string, unknown>;
+  return {
+    method: b.method === "pairing" ? "pairing" : "qr",
+    phone: typeof b.phone === "string" ? b.phone : undefined,
+    reset: b.reset === true,
+  };
+}
+
+export async function POST(req: Request) {
   const session = await getSession();
   if (!session) return unauthorized();
   if (!can(session.role, "update", "integrations")) return forbidden();
 
   try {
+    const body = parseConnectBody(await req.json().catch(() => ({})));
     const instanceName = evolutionInstanceName(session.tenantId);
-    const webhookUrl = resolveCrmWebhookUrl();
+    const awaitingState =
+      body.method === "pairing" ? ("awaiting_pairing" as const) : ("awaiting_scan" as const);
 
     await provisionIntegration({
       tenantId: session.tenantId,
@@ -38,14 +50,13 @@ export async function POST() {
         evolutionApiVersion: "go",
         evolutionInstanceName: instanceName,
         connectionState: "generating_qr",
+        connectMethod: body.method ?? "qr",
+        ...(body.phone ? { targetPhone: body.phone.replace(/\D/g, "") } : {}),
       },
       isActive: true,
     });
 
-    const evo = await startGoWhatsAppSession({
-      instanceName,
-      webhookUrl,
-    });
+    const evo = await startWhatsAppConnectSession(instanceName, body);
 
     await provisionIntegration({
       tenantId: session.tenantId,
@@ -57,9 +68,12 @@ export async function POST() {
         evolutionInstanceName: instanceName,
         evolutionInstanceId: evo.instanceId,
         instanceToken: evo.instanceToken,
-        connectionState: "awaiting_scan",
+        connectionState: awaitingState,
+        connectMethod: evo.method,
+        ...(evo.targetPhone ? { targetPhone: evo.targetPhone } : {}),
         lastQrAt: new Date().toISOString(),
         ...(evo.qrCodeBase64 ? { lastQrCodeBase64: evo.qrCodeBase64 } : {}),
+        ...(evo.pairingCode ? { lastPairingCode: evo.pairingCode } : {}),
       },
     });
 
@@ -67,9 +81,11 @@ export async function POST() {
       data: {
         instanceName,
         instanceId: evo.instanceId,
-        state: "awaiting_scan",
+        state: awaitingState,
+        method: evo.method,
         qrCodeBase64: evo.qrCodeBase64 ?? null,
         pairingCode: evo.pairingCode ?? null,
+        targetPhone: evo.targetPhone ?? null,
         simulated: SIMULATED,
       },
     });
@@ -106,7 +122,6 @@ export async function GET() {
     });
   }
 
-  // Modo demo: auto-conectar após ~5s
   if (
     SIMULATED &&
     creds.connectionState === "awaiting_scan" &&
@@ -145,7 +160,7 @@ export async function GET() {
     const evo = await getGoConnectionState(creds.instanceToken, instanceId);
 
     if (evo.state === "open") {
-      const phone = evo.phoneNumber ?? creds.phoneNumber ?? "";
+      const phone = evo.phoneNumber ?? creds.phoneNumber ?? creds.targetPhone ?? "";
       await provisionIntegration({
         tenantId: session.tenantId,
         channelType: "whatsapp",
@@ -169,14 +184,24 @@ export async function GET() {
     }
 
     const qrCodeBase64 =
-      (await refreshGoQrCode(creds.instanceToken)) ??
-      creds.lastQrCodeBase64 ??
-      null;
+      creds.connectMethod === "qr"
+        ? ((await refreshGoQrCode(creds.instanceToken)) ?? creds.lastQrCodeBase64 ?? null)
+        : null;
+
+    const pendingState =
+      creds.connectionState === "awaiting_pairing"
+        ? "awaiting_pairing"
+        : creds.connectionState === "generating_qr"
+          ? "generating_qr"
+          : "awaiting_scan";
 
     return NextResponse.json({
       data: {
-        state: creds.connectionState === "generating_qr" ? "generating_qr" : "awaiting_scan",
+        state: pendingState,
         qrCodeBase64,
+        pairingCode: creds.lastPairingCode ?? null,
+        targetPhone: creds.targetPhone ?? null,
+        method: creds.connectMethod ?? "qr",
         instanceName,
         instanceId,
         simulated: false,
@@ -184,12 +209,11 @@ export async function GET() {
     });
   }
 
-  const qrCodeBase64 = creds.lastQrCodeBase64 ?? null;
-
   return NextResponse.json({
     data: {
       state: creds.connectionState === "generating_qr" ? "generating_qr" : "awaiting_scan",
-      qrCodeBase64,
+      qrCodeBase64: creds.lastQrCodeBase64 ?? null,
+      pairingCode: creds.lastPairingCode ?? null,
       instanceName,
       instanceId,
       simulated: SIMULATED,

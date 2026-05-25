@@ -9,12 +9,14 @@ const STYLES: Record<ChannelConnectionState, string> = {
   disconnected:    "bg-muted text-muted-foreground",
   generating_qr:   "bg-amber-100 text-amber-800",
   awaiting_scan:   "bg-amber-100 text-amber-800",
+  awaiting_pairing: "bg-amber-100 text-amber-800",
   connected:       "bg-green-100 text-green-800",
   error:           "bg-red-100 text-red-800",
 };
 
 export function ConnectionStatusPill({ state }: { state: ChannelConnectionState }) {
-  const spinning = state === "generating_qr" || state === "awaiting_scan";
+  const spinning =
+    state === "generating_qr" || state === "awaiting_scan" || state === "awaiting_pairing";
   return (
     <span
       className={cn(
