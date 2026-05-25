@@ -141,6 +141,11 @@ export function IntegrationsHubClient({
     };
   }, [whatsappPending, waOpen, refresh]);
 
+  useEffect(() => {
+    if (whatsapp.state !== "connected") return;
+    void apiFetch("/api/integrations/whatsapp/sync-webhook", { method: "POST" }).catch(() => {});
+  }, [whatsapp.state]);
+
   async function replaceWhatsApp() {
     const res = await apiFetch("/api/integrations", {
       method: "DELETE",

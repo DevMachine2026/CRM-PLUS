@@ -257,7 +257,14 @@ export async function connectGoInstance(
 ): Promise<void> {
   const body: Record<string, unknown> = {
     immediate: true,
-    subscribe: ["MESSAGE", "QRCODE", "CONNECTION"],
+    subscribe: [
+      "MESSAGE",
+      "messages.upsert",
+      "MESSAGES_UPSERT",
+      "QRCODE",
+      "CONNECTION",
+      "connection.update",
+    ],
   };
   if (webhookUrl) body.webhookUrl = webhookUrl;
   if (phone) body.phone = phone;
@@ -365,7 +372,14 @@ export async function requestGoPairingCode(
     headers: instanceHeaders(instanceToken),
     body: JSON.stringify({
       phone,
-      subscribe: ["MESSAGE", "QRCODE", "CONNECTION"],
+      subscribe: [
+      "MESSAGE",
+      "messages.upsert",
+      "MESSAGES_UPSERT",
+      "QRCODE",
+      "CONNECTION",
+      "connection.update",
+    ],
     }),
   });
 

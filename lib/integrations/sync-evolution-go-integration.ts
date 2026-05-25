@@ -67,6 +67,9 @@ export async function findTenantByEvolutionInstance(
     if (instanceId && creds.evolutionInstanceId === instanceId) {
       return { tenantId: row.tenantId, integrationId: row.id };
     }
+    if (instanceId && creds.evolutionInstanceName === instanceId) {
+      return { tenantId: row.tenantId, integrationId: row.id };
+    }
     if (instanceName && creds.evolutionInstanceName === instanceName) {
       return { tenantId: row.tenantId, integrationId: row.id };
     }

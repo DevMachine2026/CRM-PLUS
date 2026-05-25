@@ -46,6 +46,11 @@ export async function POST(req: NextRequest) {
   const resolved = await findTenantByEvolutionInstance(parsed.instanceId, instanceName);
 
   if (!resolved) {
+    console.warn("[webhook/evolution] integration not found", {
+      instanceId: parsed.instanceId,
+      instanceName,
+      event: parsed.rawEvent,
+    });
     return NextResponse.json(
       { error: "Integration not found for instance." },
       { status: 404 },
@@ -60,7 +65,19 @@ export async function POST(req: NextRequest) {
   }
 
   if (parsed.kind !== "message" || !parsed.content || !parsed.senderPhone) {
-    return NextResponse.json({ ok: true, skipped: parsed.rawEvent ?? "ignored" });
+    if (parsed.kind === "ignored" && parsed.rawEvent) {
+      console.warn("[webhook/evolution] skipped", {
+        event: parsed.rawEvent,
+        reason: parsed.skipReason,
+        instanceId: parsed.instanceId,
+        instanceName: parsed.instanceName,
+      });
+    }
+    return NextResponse.json({
+      ok: true,
+      skipped: parsed.rawEvent ?? "ignored",
+      reason: parsed.skipReason,
+    });
   }
 
   const result = await ingestWebhook({

@@ -2,6 +2,32 @@
  * Extrai E.164 só de JID WhatsApp real (ex.: 5511999999999@s.whatsapp.net).
  * Ignora PushName, targetPhone digitado no formulário e JIDs @lid.
  */
+/** Resolve telefone do remetente em webhooks (remoteJid, @lid + sender, participant). */
+export function resolveInboundSenderPhone(
+  sources: {
+    key?: Record<string, unknown> | null;
+    data?: Record<string, unknown> | null;
+    root?: Record<string, unknown> | null;
+  },
+): string | undefined {
+  const { key, data, root } = sources;
+  const candidates: (string | undefined)[] = [
+    key?.remoteJid as string | undefined,
+    key?.RemoteJid as string | undefined,
+    key?.remoteJidAlt as string | undefined,
+    key?.RemoteJidAlt as string | undefined,
+    key?.participant as string | undefined,
+    key?.Participant as string | undefined,
+    data?.sender as string | undefined,
+    root?.sender as string | undefined,
+  ];
+  for (const jid of candidates) {
+    const phone = phoneFromWhatsAppJid(jid);
+    if (phone) return phone;
+  }
+  return undefined;
+}
+
 export function phoneFromWhatsAppJid(jid: string | undefined): string | undefined {
   if (!jid || typeof jid !== "string") return undefined;
   const trimmed = jid.trim();

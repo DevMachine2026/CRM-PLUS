@@ -109,6 +109,11 @@ export function InboxClient({
   );
   const [loadingMsgs, setLoadingMsgs] = useState(false);
 
+  useEffect(() => {
+    const id = setInterval(() => router.refresh(), 8000);
+    return () => clearInterval(id);
+  }, [router]);
+
   const baseMessages = active?.messages ?? [];
   const [displayMessages, addOptimisticMessage] = useOptimistic(
     baseMessages,

@@ -1,9 +1,12 @@
 /**
- * Parser de webhooks Evolution GO.
+ * Parser de webhooks Evolution GO (+ compat messages.upsert / Baileys).
  * @see https://docs.evolutionfoundation.com.br/evolution-go/webhooks
  */
 
-import { phoneFromWhatsAppJid } from "@/lib/integrations/evolution-go/phone";
+import {
+  phoneFromWhatsAppJid,
+  resolveInboundSenderPhone,
+} from "@/lib/integrations/evolution-go/phone";
 import { nativeGoQrPngToDataUrl, type GoQrRow } from "@/lib/integrations/evolution-go/qr-image";
 
 export type EvolutionGoWebhookEvent = {
@@ -18,14 +21,7 @@ export type EvolutionGoWebhookEvent = {
   externalMessageId?: string;
   qrCodeBase64?: string;
   rawEvent?: string;
-};
-
-type GoWebhookBody = {
-  event?: string;
-  instanceId?: string;
-  instanceToken?: string;
-  instance?: string;
-  data?: Record<string, unknown>;
+  skipReason?: string;
 };
 
 function asRecord(v: unknown): Record<string, unknown> | null {
@@ -34,6 +30,13 @@ function asRecord(v: unknown): Record<string, unknown> | null {
 
 function normalizeEventName(event: string): string {
   return event.trim().toUpperCase();
+}
+
+function isInboundMessageEvent(event: string, eventNorm: string): boolean {
+  if (eventNorm === "MESSAGE") return true;
+  if (eventNorm === "MESSAGES.UPSERT" || eventNorm === "MESSAGES_UPSERT") return true;
+  const lower = event.toLowerCase();
+  return lower.includes("messages.upsert") || lower.includes("messages_upsert");
 }
 
 function extractMessageText(message: Record<string, unknown> | null): string | null {
@@ -50,23 +53,25 @@ function extractMessageText(message: Record<string, unknown> | null): string | n
   return null;
 }
 
-/** Formato webhook GO: data.key + data.message (event MESSAGE). */
+/** Formato webhook: data.key + data.message (MESSAGE / messages.upsert). */
 function parseMessageFromKeyFormat(
   data: Record<string, unknown>,
+  root: Record<string, unknown>,
   ctx: { instanceId?: string; instanceToken?: string },
+  rawEvent: string,
 ): EvolutionGoWebhookEvent | null {
   const key = asRecord(data.key) ?? asRecord(data.Key);
   const message = asRecord(data.message) ?? asRecord(data.Message);
   if (!key || !message) return null;
 
   if (key.fromMe === true || key.FromMe === true) {
-    return { kind: "ignored", rawEvent: "MESSAGE" };
+    return { kind: "ignored", rawEvent, skipReason: "fromMe" };
   }
 
-  const remoteJid = (key.remoteJid ?? key.RemoteJid) as string | undefined;
-  const senderPhone = phoneFromWhatsAppJid(remoteJid);
+  const senderPhone = resolveInboundSenderPhone({ key, data, root });
   const content = extractMessageText(message);
-  if (!senderPhone || !content) return null;
+  if (!senderPhone) return { kind: "ignored", rawEvent, skipReason: "no_sender_phone" };
+  if (!content) return { kind: "ignored", rawEvent, skipReason: "no_text_content" };
 
   const senderName =
     (typeof data.pushName === "string" ? data.pushName : undefined) ??
@@ -84,28 +89,29 @@ function parseMessageFromKeyFormat(
     senderName,
     content,
     externalMessageId,
-    rawEvent: "MESSAGE",
+    rawEvent,
   };
 }
 
-/** Formato API GO: data.Info + data.Message (event Message). */
+/** Formato API: data.Info + data.Message. */
 function parseMessageFromInfoFormat(
   data: Record<string, unknown>,
   ctx: { instanceId?: string; instanceToken?: string },
+  rawEvent: string,
 ): EvolutionGoWebhookEvent | null {
   const info = asRecord(data.Info);
   if (!info) return null;
 
-  if (info.IsFromMe === true) return { kind: "ignored", rawEvent: "Message" };
-  if (info.IsGroup === true) return { kind: "ignored", rawEvent: "Message" };
+  if (info.IsFromMe === true) return { kind: "ignored", rawEvent, skipReason: "fromMe" };
+  if (info.IsGroup === true) return { kind: "ignored", rawEvent, skipReason: "group" };
 
   const message = asRecord(data.Message);
   const content = extractMessageText(message);
-  if (!content) return null;
+  if (!content) return { kind: "ignored", rawEvent, skipReason: "no_text_content" };
 
   const senderJid = (info.Sender ?? info.Chat) as string | undefined;
   const senderPhone = phoneFromWhatsAppJid(senderJid);
-  if (!senderPhone) return null;
+  if (!senderPhone) return { kind: "ignored", rawEvent, skipReason: "no_sender_phone" };
 
   return {
     kind: "message",
@@ -115,32 +121,39 @@ function parseMessageFromInfoFormat(
     senderName: typeof info.PushName === "string" ? info.PushName : undefined,
     content,
     externalMessageId: typeof info.ID === "string" ? info.ID : undefined,
-    rawEvent: "Message",
+    rawEvent,
   };
 }
 
-/** Evolution GO — { event, instanceId, instance, data } */
+/** Evolution GO — { event, instance, instanceId, data } */
 export function parseEvolutionGoWebhook(body: unknown): EvolutionGoWebhookEvent {
   const root = asRecord(body);
-  if (!root) return { kind: "ignored" };
+  if (!root) return { kind: "ignored", skipReason: "invalid_body" };
 
   const event = String(root.event ?? "");
   const eventNorm = normalizeEventName(event);
-  const instanceId = typeof root.instanceId === "string" ? root.instanceId : undefined;
+  const data = asRecord(root.data);
+
+  const instanceId =
+    (typeof root.instanceId === "string" ? root.instanceId : undefined) ??
+    (typeof data?.instanceId === "string" ? data.instanceId : undefined);
+
   const instanceToken =
     typeof root.instanceToken === "string" ? root.instanceToken : undefined;
+
   const instanceName =
     typeof root.instance === "string"
       ? root.instance
       : typeof root.instanceName === "string"
         ? root.instanceName
         : undefined;
-  const data = asRecord(root.data);
+
   const ctx = { instanceId, instanceToken };
 
-  if (eventNorm === "QRCODE" && data) {
+  if (eventNorm === "QRCODE" || eventNorm === "QRCODE_UPDATED") {
+    if (!data) return { kind: "ignored", rawEvent: event, skipReason: "no_data" };
     const qrCodeBase64 = nativeGoQrPngToDataUrl(data as GoQrRow);
-    if (!qrCodeBase64) return { kind: "ignored", rawEvent: event };
+    if (!qrCodeBase64) return { kind: "ignored", rawEvent: event, skipReason: "no_qr_image" };
     return {
       kind: "qrcode",
       instanceId,
@@ -154,7 +167,8 @@ export function parseEvolutionGoWebhook(body: unknown): EvolutionGoWebhookEvent 
   if (
     eventNorm === "CONNECTED" ||
     eventNorm === "PAIRSUCCESS" ||
-    eventNorm === "CONNECTION"
+    eventNorm === "CONNECTION" ||
+    eventNorm === "CONNECTION_UPDATE"
   ) {
     const jidCandidates = [
       data?.jid,
@@ -164,6 +178,7 @@ export function parseEvolutionGoWebhook(body: unknown): EvolutionGoWebhookEvent 
       data?.myJid,
       data?.MyJid,
       data?.remoteJid,
+      root.sender,
     ];
     let phoneNumber: string | undefined;
     for (const c of jidCandidates) {
@@ -181,43 +196,20 @@ export function parseEvolutionGoWebhook(body: unknown): EvolutionGoWebhookEvent 
     };
   }
 
-  if (eventNorm === "MESSAGE" && data) {
-    const fromKey = parseMessageFromKeyFormat(data, ctx);
-    if (fromKey && fromKey.kind === "message") {
+  if (isInboundMessageEvent(event, eventNorm) && data) {
+    const fromKey = parseMessageFromKeyFormat(data, root, ctx, event);
+    if (fromKey?.kind === "message") {
       return { ...fromKey, instanceName };
     }
-    if (fromKey?.kind === "ignored") return fromKey;
+    if (fromKey?.kind === "ignored") return { ...fromKey, instanceName };
 
-    const fromInfo = parseMessageFromInfoFormat(data, ctx);
-    if (fromInfo && fromInfo.kind === "message") {
+    const fromInfo = parseMessageFromInfoFormat(data, ctx, event);
+    if (fromInfo?.kind === "message") {
       return { ...fromInfo, instanceName };
     }
-    if (fromInfo?.kind === "ignored") return fromInfo;
+    if (fromInfo?.kind === "ignored") return { ...fromInfo, instanceName };
 
-    return { kind: "ignored", rawEvent: event };
-  }
-
-  // Legado Evolution API v2 (Baileys)
-  if (
-    (event.includes("MESSAGES") || event.includes("messages")) &&
-    data &&
-    typeof root.instance === "string"
-  ) {
-    const key = asRecord(data.key);
-    const msg = asRecord(data.message);
-    const from = key?.remoteJid ? phoneFromWhatsAppJid(String(key.remoteJid)) : undefined;
-    const text = extractMessageText(msg);
-    if (from && text) {
-      return {
-        kind: "message",
-        instanceId: root.instance,
-        instanceName: root.instance,
-        senderPhone: from,
-        content: text,
-        externalMessageId: typeof key?.id === "string" ? key.id : undefined,
-        rawEvent: event,
-      };
-    }
+    return { kind: "ignored", rawEvent: event, skipReason: "unparsed_message_shape" };
   }
 
   return { kind: "ignored", instanceId, instanceName, rawEvent: event || undefined };
