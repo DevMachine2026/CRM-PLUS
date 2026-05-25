@@ -94,6 +94,7 @@ export async function POST(req: NextRequest) {
         content: parsed.content!,
         externalMessageId: parsed.externalMessageId,
         groupJid: parsed.groupJid,
+        fromMe: parsed.fromMe,
         timestamp: new Date(),
       }),
   });

@@ -27,6 +27,8 @@ export interface InboundPayload {
   timestamp?:         Date;
   /** Grupo WhatsApp (@g.us) — uma conversa por groupJid no inbox */
   groupJid?:          string;
+  /** Mensagem enviada pelo aparelho conectado (1:1) */
+  fromMe?:            boolean;
 }
 
 export interface InboundResult {
@@ -179,13 +181,14 @@ export async function processInboundMessage(
   }
 
   // ── 4. Save message ─────────────────────────────────────────────────────────
+  const isOutbound = payload.fromMe === true;
   const message = await prisma.message.create({
     data: {
       tenantId,
       conversationId: conversation.id,
-      direction:      "inbound",
-      senderType:     "contact",
-      senderId:       contact.id,
+      direction:      isOutbound ? "outbound" : "inbound",
+      senderType:     isOutbound ? "user" : "contact",
+      senderId:       isOutbound ? null : contact.id,
       content,
       sentAt,
       externalId:     payload.externalMessageId ?? null,

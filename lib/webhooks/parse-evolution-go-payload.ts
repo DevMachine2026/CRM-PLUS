@@ -4,6 +4,10 @@
  */
 
 import {
+  isIgnoredWhatsAppChatJid,
+  isWhatsAppGroupIngestEnabled,
+} from "@/lib/integrations/whatsapp-ingest-policy";
+import {
   isWhatsAppGroupJid,
   phoneFromWhatsAppJid,
   resolveInboundSenderPhone,
@@ -20,6 +24,7 @@ export type EvolutionGoWebhookEvent = {
   senderName?: string;
   isGroup?: boolean;
   groupJid?: string;
+  fromMe?: boolean;
   content?: string;
   externalMessageId?: string;
   qrCodeBase64?: string;
@@ -73,29 +78,54 @@ function parseInboundMessage(
   const message = asRecord(data.message) ?? asRecord(data.Message);
   if (!message) return null;
 
-  const fromMe =
-    info?.IsFromMe === true || key?.fromMe === true || key?.FromMe === true;
-  if (fromMe) return { kind: "ignored", rawEvent, skipReason: "fromMe" };
-
   const chatJid = (info?.Chat ?? info?.chat ?? key?.remoteJid ?? key?.RemoteJid) as
     | string
     | undefined;
+
+  if (isIgnoredWhatsAppChatJid(chatJid)) {
+    return { kind: "ignored", rawEvent, skipReason: "broadcast" };
+  }
+
   const isGroup = info?.IsGroup === true || isWhatsAppGroupJid(chatJid);
+  if (isGroup && !isWhatsAppGroupIngestEnabled()) {
+    return { kind: "ignored", rawEvent, skipReason: "group_disabled" };
+  }
 
-  const senderPhone = resolveInboundSenderPhone({ key, data, root, info });
+  const fromMe =
+    info?.IsFromMe === true || key?.fromMe === true || key?.FromMe === true;
+
   const content = extractMessageText(message);
-  if (!senderPhone) return { kind: "ignored", rawEvent, skipReason: "no_sender_phone" };
   if (!content) return { kind: "ignored", rawEvent, skipReason: "no_text_content" };
-
-  const senderName =
-    (typeof info?.PushName === "string" ? info.PushName : undefined) ??
-    (typeof data.pushName === "string" ? data.pushName : undefined) ??
-    (typeof data.PushName === "string" ? data.PushName : undefined);
 
   const externalMessageId =
     (typeof info?.ID === "string" ? info.ID : undefined) ??
     (typeof key?.id === "string" ? key.id : undefined) ??
     (typeof key?.ID === "string" ? key.ID : undefined);
+
+  if (fromMe) {
+    if (isGroup) return { kind: "ignored", rawEvent, skipReason: "fromMe_group" };
+    const peerPhone = phoneFromWhatsAppJid(chatJid);
+    if (!peerPhone) return { kind: "ignored", rawEvent, skipReason: "no_peer_phone" };
+    return {
+      kind: "message",
+      instanceId: ctx.instanceId,
+      instanceToken: ctx.instanceToken,
+      senderPhone: peerPhone,
+      fromMe: true,
+      isGroup: false,
+      content,
+      externalMessageId,
+      rawEvent,
+    };
+  }
+
+  const senderPhone = resolveInboundSenderPhone({ key, data, root, info });
+  if (!senderPhone) return { kind: "ignored", rawEvent, skipReason: "no_sender_phone" };
+
+  const senderName =
+    (typeof info?.PushName === "string" ? info.PushName : undefined) ??
+    (typeof data.pushName === "string" ? data.pushName : undefined) ??
+    (typeof data.PushName === "string" ? data.PushName : undefined);
 
   return {
     kind: "message",
@@ -105,6 +135,7 @@ function parseInboundMessage(
     senderName,
     isGroup,
     groupJid: isGroup && chatJid ? chatJid : undefined,
+    fromMe: false,
     content,
     externalMessageId,
     rawEvent,
