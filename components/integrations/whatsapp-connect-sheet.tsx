@@ -33,9 +33,16 @@ type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConnected: () => void;
+  /** Hub em "Aguardando leitura" — retoma polling sem novo POST */
+  resumePolling?: boolean;
 };
 
-export function WhatsAppConnectSheet({ open, onOpenChange, onConnected }: Props) {
+export function WhatsAppConnectSheet({
+  open,
+  onOpenChange,
+  onConnected,
+  resumePolling = false,
+}: Props) {
   const [loading, setLoading] = useState(false);
   const [session, setSession] = useState<SessionData | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -103,13 +110,15 @@ export function WhatsAppConnectSheet({ open, onOpenChange, onConnected }: Props)
       return () => stopPoll();
     }
 
+    if (!resumePolling) return () => stopPoll();
+
     void pollStatus().catch((e) => setError(e instanceof Error ? e.message : "Erro."));
     pollRef.current = setInterval(() => {
       void pollStatus().catch((e) => setError(e instanceof Error ? e.message : "Erro."));
     }, 2500);
 
     return () => stopPoll();
-  }, [open, pollStatus, stopPoll]);
+  }, [open, resumePolling, pollStatus, stopPoll]);
 
   const state = session?.state ?? "disconnected";
   const activeMethod = session?.method ?? method;

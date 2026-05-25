@@ -98,6 +98,8 @@ type QrData = {
   qrcode?: string;
   Code?: string;
   code?: string;
+  pairingCode?: string;
+  PairingCode?: string;
 };
 
 type StatusData = {
@@ -107,12 +109,21 @@ type StatusData = {
   myJid?: string;
 };
 
-/** WhatsApp autenticado: pareamento concluído (não só socket aberto aguardando QR). */
+/** WhatsApp autenticado (sessão no aparelho), não só socket aguardando QR. */
 export function isGoWhatsAppSessionOpen(row: StatusData | undefined): boolean {
   const status = normalizeGoStatusRow(row);
   const phone = phoneFromWhatsAppJid(status.myJid);
   if (!phone) return false;
-  return status.LoggedIn === true || status.Connected === true;
+  return status.LoggedIn === true;
+}
+
+function normalizeQrImageBase64(raw: string | undefined): string | undefined {
+  if (!raw?.trim()) return undefined;
+  const s = raw.trim();
+  if (s.startsWith("data:")) return s;
+  // String de pareamento WhatsApp (ex.: 2@xxx) — não é imagem
+  if (s.includes("@") && s.length < 120) return undefined;
+  return `data:image/png;base64,${s}`;
 }
 
 type GoInstanceListRow = GoInstanceRow & {
@@ -147,8 +158,8 @@ export async function resolveGoLiveConnection(
     if (instanceId) {
       const listRow = await fetchGoInstanceListRow(instanceId);
       const phone = phoneFromWhatsAppJid(listRow?.jid ?? listRow?.Jid);
-      const up = listRow?.connected === true || listRow?.Connected === true;
-      if (phone && up) {
+      const loggedIn = listRow?.loggedIn === true || listRow?.LoggedIn === true;
+      if (phone && loggedIn) {
         return { instanceName: "", instanceId, state: "open", phoneNumber: phone };
       }
     }
@@ -166,12 +177,8 @@ export async function resolveGoLiveConnection(
   if (instanceId) {
     const listRow = await fetchGoInstanceListRow(instanceId);
     phoneNumber = phoneFromWhatsAppJid(listRow?.jid ?? listRow?.Jid);
-    const up =
-      listRow?.loggedIn === true ||
-      listRow?.LoggedIn === true ||
-      listRow?.connected === true ||
-      listRow?.Connected === true;
-    if (phoneNumber && up) {
+    const loggedIn = listRow?.loggedIn === true || listRow?.LoggedIn === true;
+    if (phoneNumber && loggedIn) {
       return { instanceName: "", instanceId, state: "open", phoneNumber };
     }
   }
@@ -283,12 +290,37 @@ export async function fetchGoQrCode(instanceToken: string): Promise<{
 
   const json = await parseJson<QrData>(res);
   const row = json.data;
-  const raw = row?.Qrcode ?? row?.qrcode;
-  const qrCodeBase64 =
-    raw?.startsWith("data:") ? raw : raw ? `data:image/png;base64,${raw}` : undefined;
-  const pairingCode = row?.Code ?? row?.code;
+  // Evolution GO: campo "code" = PNG base64; "qrcode" = string de pareamento (não é imagem)
+  const qrCodeBase64 = normalizeQrImageBase64(
+    row?.code ?? row?.Code ?? row?.Qrcode ?? row?.qrcode,
+  );
+  const rawPair = row?.pairingCode ?? row?.PairingCode;
+  const pairingCode =
+    typeof rawPair === "string" && rawPair.length <= 12
+      ? rawPair.replace(/\D/g, "").slice(0, 8)
+      : undefined;
 
   return { qrCodeBase64, pairingCode };
+}
+
+/** QR demora alguns segundos após POST /instance/connect. */
+export async function waitForGoQrCode(
+  instanceToken: string,
+  options: { attempts?: number; delayMs?: number } = {},
+): Promise<{ qrCodeBase64?: string; pairingCode?: string }> {
+  const attempts = options.attempts ?? 10;
+  const delayMs = options.delayMs ?? 1500;
+
+  for (let i = 0; i < attempts; i++) {
+    const qr = await fetchGoQrCode(instanceToken);
+    if (qr.qrCodeBase64) return qr;
+    if (i < attempts - 1) await sleep(delayMs);
+  }
+  return {};
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((r) => setTimeout(r, ms));
 }
 
 /** Código de 8 dígitos — WhatsApp → Aparelhos conectados → Conectar com número. */

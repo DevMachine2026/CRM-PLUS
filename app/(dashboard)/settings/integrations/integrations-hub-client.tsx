@@ -224,6 +224,7 @@ export function IntegrationsHubClient({
         open={waOpen}
         onOpenChange={setWaOpen}
         onConnected={refresh}
+        resumePolling={whatsappPending}
       />
       <InstagramConnectSheet
         open={igOpen}
