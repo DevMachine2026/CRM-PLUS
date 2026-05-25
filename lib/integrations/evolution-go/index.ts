@@ -4,5 +4,9 @@ export {
   formatPhoneDisplay,
   phoneFromWhatsAppJid,
 } from "./phone";
-export { isValidQrDataUrl } from "./qr-image";
+export {
+  extractNativeGoQrPng,
+  isValidQrDataUrl,
+  nativeGoQrPngToDataUrl,
+} from "./qr-image";
 export { startWhatsAppConnectSession } from "./session";

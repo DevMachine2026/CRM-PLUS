@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiFetch } from "@/lib/api/client-fetch";
 import { formatPhoneDisplay } from "@/lib/integrations/evolution-go/phone";
-import { isValidQrDataUrl } from "@/lib/integrations/evolution-go/qr-image";
+
+const WHATSAPP_QR_IMAGE_PATH = "/api/integrations/whatsapp/qr";
 import { Loader2, RefreshCw, Smartphone, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,7 +24,8 @@ type ConnectMethod = "qr" | "pairing";
 type SessionData = {
   state: ChannelConnectionState;
   method?: ConnectMethod;
-  qrCodeBase64?: string | null;
+  qrUrl?: string | null;
+  qrReady?: boolean;
   pairingCode?: string | null;
   targetPhone?: string | null;
   phoneNumber?: string;
@@ -50,7 +52,14 @@ export function WhatsAppConnectSheet({
   const [method, setMethod] = useState<ConnectMethod>("qr");
   const [phone, setPhone] = useState("");
   const [resetInstance, setResetInstance] = useState(true);
+  const [qrKey, setQrKey] = useState(0);
+  const [qrLoaded, setQrLoaded] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  function bumpQrImage() {
+    setQrLoaded(false);
+    setQrKey((k) => k + 1);
+  }
 
   const stopPoll = useCallback(() => {
     if (pollRef.current) {
@@ -91,6 +100,7 @@ export function WhatsAppConnectSheet({
       if (!res.ok) throw new Error(json.error ?? "Não foi possível iniciar a conexão.");
       const data = json.data as SessionData;
       setSession(data);
+      if (chosenMethod === "qr") bumpQrImage();
       stopPoll();
       pollRef.current = setInterval(() => {
         void pollStatus().catch((e) => setError(e instanceof Error ? e.message : "Erro."));
@@ -251,28 +261,40 @@ export function WhatsAppConnectSheet({
             <div className="space-y-4 text-center">
               <p className="text-sm font-medium">Escaneie o QR Code no celular da empresa</p>
               <p className="text-xs text-muted-foreground">
-                WhatsApp → Aparelhos conectados → Conectar dispositivo → <strong>Escanear QR</strong>
-                . Aumente o brilho da tela e aproxime o celular.
+                WhatsApp → Aparelhos conectados → Conectar dispositivo →{" "}
+                <strong>Escanear QR</strong>
               </p>
-              <p className="text-xs text-amber-800 bg-amber-50 rounded-lg px-3 py-2">
-                O QR expira em ~60 segundos. Se não ler, toque em <strong>Atualizar QR</strong>.
+              <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-900">
+                QR oficial do WhatsApp (Evolution). Expira em ~60s — use <strong>Atualizar QR</strong>{" "}
+                se não ler.
               </p>
-              <div className="mx-auto w-full max-w-[300px] rounded-xl border-2 border-green-600/30 bg-white p-4 shadow-sm">
-                {isValidQrDataUrl(session?.qrCodeBase64) ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={session!.qrCodeBase64!}
-                    alt="QR Code WhatsApp"
-                    width={512}
-                    height={512}
-                    className="mx-auto block w-full max-w-[272px] h-auto [image-rendering:pixelated]"
-                  />
-                ) : (
-                  <div className="space-y-2 py-16 text-center">
-                    <Loader2 className="mx-auto h-10 w-10 animate-spin text-muted-foreground" />
-                    <p className="text-xs text-muted-foreground">Gerando QR Code…</p>
+              <div className="mx-auto inline-block rounded-2xl border-[3px] border-neutral-900 bg-white p-5 shadow-md">
+                {!qrLoaded && (
+                  <div className="flex size-[280px] flex-col items-center justify-center gap-2">
+                    <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">Carregando QR…</p>
                   </div>
                 )}
+                {/* PNG nativo do Evolution — 280×280px, quiet zone branca, sem recompressão */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  key={qrKey}
+                  src={`${session?.qrUrl ?? WHATSAPP_QR_IMAGE_PATH}?r=${qrKey}`}
+                  alt="QR Code WhatsApp"
+                  width={280}
+                  height={280}
+                  className={`block size-[280px] [image-rendering:pixelated]${qrLoaded ? "" : " sr-only"}`}
+                  onLoad={() => {
+                    setQrLoaded(true);
+                    setError(null);
+                  }}
+                  onError={() => {
+                    setQrLoaded(false);
+                    setError(
+                      "QR ainda não disponível. Aguarde 3 segundos e toque em Atualizar QR.",
+                    );
+                  }}
+                />
               </div>
               <div className="flex flex-col gap-2">
                 <Button
@@ -281,7 +303,10 @@ export function WhatsAppConnectSheet({
                   size="sm"
                   className="gap-2"
                   disabled={loading}
-                  onClick={() => void pollStatus()}
+                  onClick={() => {
+                    bumpQrImage();
+                    void pollStatus();
+                  }}
                 >
                   <RefreshCw className="h-4 w-4" />
                   Atualizar QR
@@ -292,6 +317,7 @@ export function WhatsAppConnectSheet({
                   onClick={() => {
                     setMethod("pairing");
                     setSession(null);
+                    setQrLoaded(false);
                     stopPoll();
                   }}
                 >

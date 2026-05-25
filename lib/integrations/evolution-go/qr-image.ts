@@ -1,51 +1,7 @@
 /**
- * Converte resposta do Evolution GO /instance/qr em data URL exibível no <img>.
- * Prioridade: PNG nativo do Evolution (campo code). Fallback: gerar QR do texto qrcode.
+ * QR WhatsApp — somente PNG nativo do Evolution GO (campo `code`).
+ * Nunca recriar QR a partir do texto `qrcode` (ilegível / não reconhecido pelo WhatsApp).
  */
-
-import QRCode from "qrcode";
-
-/** Imagem (PNG/JPEG) em base64 válida para <img> */
-export function imageBase64ToDataUrl(raw: string | undefined): string | undefined {
-  if (!raw?.trim()) return undefined;
-  const s = raw.trim();
-  if (s.startsWith("data:image/")) return isValidQrDataUrl(s) ? s : undefined;
-
-  if (s.includes("@")) return undefined;
-
-  const b64 = s.replace(/\s/g, "");
-  if (!/^[A-Za-z0-9+/]+=*$/.test(b64) || b64.length < 80) return undefined;
-  // PNG ou JPEG do Evolution
-  if (!b64.startsWith("iVBOR") && !b64.startsWith("/9j/")) return undefined;
-
-  const mime = b64.startsWith("/9j/") ? "image/jpeg" : "image/png";
-  return `data:${mime};base64,${b64}`;
-}
-
-export function isValidQrDataUrl(src: string | null | undefined): boolean {
-  if (!src || typeof src !== "string") return false;
-  if (!src.startsWith("data:image/")) return false;
-  if (src.includes("@")) return false;
-  if (src.length < 200) return false;
-  return true;
-}
-
-/** QR de alta resolução a partir do payload WhatsApp (campo qrcode). */
-export async function pairingStringToQrDataUrl(text: string): Promise<string | undefined> {
-  const payload = text.trim();
-  if (!payload) return undefined;
-
-  try {
-    return await QRCode.toDataURL(payload, {
-      errorCorrectionLevel: "L",
-      margin: 2,
-      width: 512,
-      color: { dark: "#000000", light: "#ffffff" },
-    });
-  } catch {
-    return undefined;
-  }
-}
 
 export type GoQrRow = {
   code?: string;
@@ -54,24 +10,51 @@ export type GoQrRow = {
   Qrcode?: string;
 };
 
-export async function resolveQrDisplayFromGoRow(
-  row: GoQrRow | undefined,
-): Promise<{ qrCodeBase64?: string; pairingPayload?: string }> {
-  if (!row) return {};
+const MIN_PNG_BYTES = 400;
 
-  const codeRaw = row.code ?? row.Code;
-  const fromNative = imageBase64ToDataUrl(codeRaw);
-  if (fromNative && isValidQrDataUrl(fromNative)) {
-    return { qrCodeBase64: fromNative };
+function decodeBase64Payload(raw: string): Buffer | null {
+  const trimmed = raw.trim();
+  let b64 = trimmed;
+
+  if (trimmed.startsWith("data:")) {
+    const comma = trimmed.indexOf(",");
+    if (comma < 0) return null;
+    b64 = trimmed.slice(comma + 1);
   }
 
-  const pairingPayload = (row.qrcode ?? row.Qrcode ?? codeRaw)?.trim();
-  if (!pairingPayload) return {};
+  b64 = b64.replace(/\s/g, "");
+  if (!/^[A-Za-z0-9+/]+=*$/.test(b64)) return null;
+  if (!b64.startsWith("iVBOR")) return null;
 
-  const generated = await pairingStringToQrDataUrl(pairingPayload);
-  if (generated && isValidQrDataUrl(generated)) {
-    return { qrCodeBase64: generated, pairingPayload };
+  try {
+    const buf = Buffer.from(b64, "base64");
+    return buf.length >= MIN_PNG_BYTES ? buf : null;
+  } catch {
+    return null;
   }
+}
 
-  return {};
+/** Extrai PNG binário oficial do Evolution (única fonte válida para escanear no WhatsApp). */
+export function extractNativeGoQrPng(row: GoQrRow | undefined): Buffer | null {
+  if (!row) return null;
+  const raw = row.code ?? row.Code;
+  if (!raw || typeof raw !== "string") return null;
+  return decodeBase64Payload(raw);
+}
+
+export function nativeGoQrPngToDataUrl(row: GoQrRow | undefined): string | undefined {
+  const buf = extractNativeGoQrPng(row);
+  if (!buf) return undefined;
+  return `data:image/png;base64,${buf.toString("base64")}`;
+}
+
+/** @deprecated Use extractNativeGoQrPng — validação de data URL legada */
+export function isValidQrDataUrl(src: string | null | undefined): boolean {
+  if (!src || typeof src !== "string") return false;
+  if (!src.startsWith("data:image/png")) return false;
+  if (src.includes("@")) return false;
+  const comma = src.indexOf(",");
+  if (comma < 0) return false;
+  const buf = decodeBase64Payload(src);
+  return !!buf;
 }

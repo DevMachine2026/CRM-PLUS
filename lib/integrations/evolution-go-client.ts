@@ -8,7 +8,10 @@
 import { randomUUID } from "node:crypto";
 import { webhookPathForChannel } from "@/lib/integrations/provision-integration";
 import { phoneFromWhatsAppJid } from "@/lib/integrations/evolution-go/phone";
-import { isValidQrDataUrl, resolveQrDisplayFromGoRow } from "@/lib/integrations/evolution-go/qr-image";
+import {
+  extractNativeGoQrPng,
+  nativeGoQrPngToDataUrl,
+} from "@/lib/integrations/evolution-go/qr-image";
 
 const BASE = process.env.EVOLUTION_API_URL?.replace(/\/$/, "");
 const API_KEY = process.env.EVOLUTION_API_KEY ?? "";
@@ -281,10 +284,7 @@ export async function fetchGoQrCode(instanceToken: string): Promise<{
   if (!res.ok) return {};
 
   const json = await parseJson<QrData>(res);
-  const resolved = await resolveQrDisplayFromGoRow(json.data);
-  const qrCodeBase64 = isValidQrDataUrl(resolved.qrCodeBase64)
-    ? resolved.qrCodeBase64
-    : undefined;
+  const qrCodeBase64 = nativeGoQrPngToDataUrl(json.data);
 
   return { qrCodeBase64, pairingCode: undefined };
 }
@@ -303,6 +303,19 @@ export async function waitForGoQrCode(
     if (i < attempts - 1) await sleep(delayMs);
   }
   return {};
+}
+
+/** PNG bruto do Evolution — para rota /api/integrations/whatsapp/qr */
+export async function fetchNativeGoQrPng(instanceToken: string): Promise<Buffer | null> {
+  if (!BASE) return null;
+  const res = await fetch(`${BASE}/instance/qr`, {
+    method: "GET",
+    headers: instanceHeaders(instanceToken),
+    cache: "no-store",
+  });
+  if (!res.ok) return null;
+  const json = await parseJson<QrData>(res);
+  return extractNativeGoQrPng(json.data);
 }
 
 function sleep(ms: number): Promise<void> {

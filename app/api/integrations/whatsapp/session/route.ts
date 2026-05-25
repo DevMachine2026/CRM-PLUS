@@ -11,8 +11,9 @@ import {
   evolutionInstanceName,
   getGoConnectionState,
   isEvolutionGoSimulated,
-  refreshGoQrCode,
 } from "@/lib/integrations/evolution-go-client";
+
+const WHATSAPP_QR_IMAGE_PATH = "/api/integrations/whatsapp/qr";
 import { startWhatsAppConnectSession } from "@/lib/integrations/evolution-go/session";
 import type { GoConnectRequest } from "@/lib/integrations/evolution-go/types";
 import { provisionIntegration } from "@/lib/integrations/provision-integration";
@@ -88,7 +89,8 @@ export async function POST(req: Request) {
         instanceId: evo.instanceId,
         state: awaitingState,
         method: evo.method,
-        qrCodeBase64: evo.qrCodeBase64 ?? null,
+        qrUrl: evo.method === "qr" ? WHATSAPP_QR_IMAGE_PATH : null,
+        qrReady: evo.method === "qr" ? !!evo.qrCodeBase64 : undefined,
         pairingCode: evo.pairingCode ?? null,
         targetPhone: evo.targetPhone ?? null,
         simulated: SIMULATED,
@@ -190,16 +192,6 @@ export async function GET() {
       });
     }
 
-    let qrCodeBase64: string | null = null;
-    if (creds.connectMethod === "qr") {
-      const fresh = await refreshGoQrCode(creds.instanceToken);
-      qrCodeBase64 = isValidQrDataUrl(fresh)
-        ? fresh
-        : isValidQrDataUrl(creds.lastQrCodeBase64)
-          ? creds.lastQrCodeBase64!
-          : null;
-    }
-
     const pendingState =
       creds.connectionState === "awaiting_pairing"
         ? "awaiting_pairing"
@@ -210,7 +202,8 @@ export async function GET() {
     return NextResponse.json({
       data: {
         state: pendingState,
-        qrCodeBase64,
+        qrUrl: creds.connectMethod === "qr" ? WHATSAPP_QR_IMAGE_PATH : null,
+        qrReady: creds.connectMethod === "qr" ? isValidQrDataUrl(creds.lastQrCodeBase64) : undefined,
         pairingCode: creds.lastPairingCode ?? null,
         targetPhone: creds.targetPhone ?? null,
         method: creds.connectMethod ?? "qr",
@@ -224,7 +217,7 @@ export async function GET() {
   return NextResponse.json({
     data: {
       state: creds.connectionState === "generating_qr" ? "generating_qr" : "awaiting_scan",
-      qrCodeBase64: isValidQrDataUrl(creds.lastQrCodeBase64) ? creds.lastQrCodeBase64! : null,
+      qrUrl: "/api/integrations/whatsapp/qr",
       pairingCode: creds.lastPairingCode ?? null,
       instanceName,
       instanceId,
