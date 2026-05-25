@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { apiFetch } from "@/lib/api/client-fetch";
 import {
   ArrowLeft,
   Camera,
@@ -92,7 +93,7 @@ function ChannelCard({
         {connected && canEdit && onDisconnect && (
           <Button type="button" variant="outline" size="sm" className="gap-1.5" onClick={onDisconnect}>
             <Unplug className="h-4 w-4" />
-            Desconectar
+            Trocar número
           </Button>
         )}
       </div>
@@ -112,6 +113,20 @@ export function IntegrationsHubClient({
 
   function refresh() {
     router.refresh();
+  }
+
+  async function replaceWhatsApp() {
+    const res = await apiFetch("/api/integrations", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ channelType: "whatsapp", name: "Principal" }),
+    });
+    if (!res.ok) {
+      const json = await res.json().catch(() => ({}));
+      throw new Error((json as { error?: string }).error ?? "Não foi possível trocar o número.");
+    }
+    await refresh();
+    setWaOpen(true);
   }
 
   return (
@@ -140,6 +155,11 @@ export function IntegrationsHubClient({
           connectLabel="Conectar WhatsApp"
           canEdit={canEdit}
           onConnect={() => setWaOpen(true)}
+          onDisconnect={() => {
+            void replaceWhatsApp().catch((e) =>
+              alert(e instanceof Error ? e.message : "Erro ao trocar número."),
+            );
+          }}
         />
         <ChannelCard
           title="Instagram"
