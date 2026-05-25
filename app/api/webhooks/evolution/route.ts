@@ -6,7 +6,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { processInboundMessage } from "@/lib/webhooks/process-inbound";
 import { ingestWebhook } from "@/lib/webhooks/ingest";
-import { checkRateLimit, WEBHOOK_LIMIT } from "@/lib/rate-limit";
 import { parseEvolutionGoWebhook } from "@/lib/webhooks/parse-evolution-go-payload";
 import {
   findTenantByEvolutionInstance,
@@ -18,8 +17,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const limited = checkRateLimit(req, WEBHOOK_LIMIT);
-  if (limited) return limited;
+  // Sem rate limit: Evolution dispara centenas de eventos no sync (60/min bloqueava DMs reais).
 
   const rawBody = await req.text();
   let body: unknown;

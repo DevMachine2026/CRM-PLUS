@@ -86,7 +86,9 @@ function parseInboundMessage(
     return { kind: "ignored", rawEvent, skipReason: "broadcast" };
   }
 
-  const isGroup = info?.IsGroup === true || isWhatsAppGroupJid(chatJid);
+  const keyRemote = (key?.remoteJid ?? key?.RemoteJid) as string | undefined;
+  const isGroup =
+    info?.IsGroup === true || isWhatsAppGroupJid(chatJid) || isWhatsAppGroupJid(keyRemote);
   if (isGroup && !isWhatsAppGroupIngestEnabled()) {
     return { kind: "ignored", rawEvent, skipReason: "group_disabled" };
   }
@@ -104,7 +106,10 @@ function parseInboundMessage(
 
   if (fromMe) {
     if (isGroup) return { kind: "ignored", rawEvent, skipReason: "fromMe_group" };
-    const peerPhone = phoneFromWhatsAppJid(chatJid);
+    const peerPhone =
+      phoneFromWhatsAppJid(chatJid) ??
+      phoneFromWhatsAppJid(key?.remoteJidAlt as string | undefined) ??
+      phoneFromWhatsAppJid(key?.RemoteJidAlt as string | undefined);
     if (!peerPhone) return { kind: "ignored", rawEvent, skipReason: "no_peer_phone" };
     return {
       kind: "message",
@@ -119,7 +124,11 @@ function parseInboundMessage(
     };
   }
 
-  const senderPhone = resolveInboundSenderPhone({ key, data, root, info });
+  let senderPhone = resolveInboundSenderPhone({ key, data, root, info });
+  // 1:1: o remoteJid do chat é o número do contato (padrão Baileys / messages.upsert)
+  if (!senderPhone && !isGroup) {
+    senderPhone = phoneFromWhatsAppJid(chatJid) ?? phoneFromWhatsAppJid(keyRemote);
+  }
   if (!senderPhone) return { kind: "ignored", rawEvent, skipReason: "no_sender_phone" };
 
   const senderName =

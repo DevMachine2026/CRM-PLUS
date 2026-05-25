@@ -23,6 +23,8 @@ export function resolveInboundSenderPhone(
     key?.Participant as string | undefined,
     info?.SenderAlt as string | undefined,
     info?.senderAlt as string | undefined,
+    info?.Sender_pn as string | undefined,
+    info?.sender_pn as string | undefined,
     info?.Sender as string | undefined,
     info?.sender as string | undefined,
     info?.Participant as string | undefined,
