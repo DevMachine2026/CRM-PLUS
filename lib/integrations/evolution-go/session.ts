@@ -79,7 +79,7 @@ export async function startWhatsAppConnectSession(
     };
   }
 
-  const qr = await waitForGoQrCode(instanceToken);
+  const qr = await waitForGoQrCode(instanceToken, { attempts: 16, delayMs: 2000 });
   if (!qr.qrCodeBase64) {
     throw new Error(
       "O Evolution GO ainda não liberou o QR Code. Aguarde alguns segundos e clique em Gerar QR Code novamente.",

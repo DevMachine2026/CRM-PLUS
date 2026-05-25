@@ -128,7 +128,7 @@ export function WhatsAppConnectSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="max-w-md">
+      <SheetContent className="max-w-md sm:max-w-lg">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <Smartphone className="h-5 w-5 text-green-600" />
@@ -251,35 +251,53 @@ export function WhatsAppConnectSheet({
             <div className="space-y-4 text-center">
               <p className="text-sm font-medium">Escaneie o QR Code no celular da empresa</p>
               <p className="text-xs text-muted-foreground">
-                WhatsApp → Aparelhos conectados → Conectar dispositivo → Escanear QR. O CRM usa o
-                número desse aparelho automaticamente.
+                WhatsApp → Aparelhos conectados → Conectar dispositivo → <strong>Escanear QR</strong>
+                . Aumente o brilho da tela e aproxime o celular.
               </p>
-              <div className="mx-auto flex h-56 w-56 items-center justify-center rounded-xl border bg-white p-3 shadow-sm">
+              <p className="text-xs text-amber-800 bg-amber-50 rounded-lg px-3 py-2">
+                O QR expira em ~60 segundos. Se não ler, toque em <strong>Atualizar QR</strong>.
+              </p>
+              <div className="mx-auto w-full max-w-[300px] rounded-xl border-2 border-green-600/30 bg-white p-4 shadow-sm">
                 {isValidQrDataUrl(session?.qrCodeBase64) ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={session!.qrCodeBase64!}
                     alt="QR Code WhatsApp"
-                    className="h-full w-full object-contain"
+                    width={512}
+                    height={512}
+                    className="mx-auto block w-full max-w-[272px] h-auto [image-rendering:pixelated]"
                   />
                 ) : (
-                  <div className="space-y-2 text-center">
+                  <div className="space-y-2 py-16 text-center">
                     <Loader2 className="mx-auto h-10 w-10 animate-spin text-muted-foreground" />
                     <p className="text-xs text-muted-foreground">Gerando QR Code…</p>
                   </div>
                 )}
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="gap-2"
-                disabled={loading}
-                onClick={() => void pollStatus()}
-              >
-                <RefreshCw className="h-4 w-4" />
-                Atualizar QR
-              </Button>
+              <div className="flex flex-col gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                  disabled={loading}
+                  onClick={() => void pollStatus()}
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Atualizar QR
+                </Button>
+                <button
+                  type="button"
+                  className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
+                  onClick={() => {
+                    setMethod("pairing");
+                    setSession(null);
+                    stopPoll();
+                  }}
+                >
+                  Não consegue ler? Usar código de 8 dígitos no celular
+                </button>
+              </div>
             </div>
           )}
 
