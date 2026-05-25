@@ -85,10 +85,9 @@ export default async function IntegrationsPage({ searchParams }: PageProps) {
       aiSettings={parseTenantAiSettings(tenant?.settings)}
       whatsapp={{
         state: waState,
-        subtitle: waCreds.phoneNumber
-          ? `+${waCreds.phoneNumber}`
-          : waCreds.phoneNumberId
-            ? `ID ${waCreds.phoneNumberId}`
+        subtitle:
+          waState === "connected" && waCreds.phoneNumber
+            ? `+${waCreds.phoneNumber.replace(/\D/g, "")}`
             : undefined,
         webhookUrl: waRow?.webhookUrl,
       }}

@@ -51,6 +51,8 @@ export async function POST(req: Request) {
         evolutionInstanceName: instanceName,
         connectionState: "generating_qr",
         connectMethod: body.method ?? "qr",
+        phoneNumber: "",
+        phoneNumberId: "",
         ...(body.phone ? { targetPhone: body.phone.replace(/\D/g, "") } : {}),
       },
       isActive: true,
@@ -111,11 +113,12 @@ export async function GET() {
   const instanceName = creds.evolutionInstanceName ?? evolutionInstanceName(session.tenantId);
   const instanceId = creds.evolutionInstanceId;
 
-  if (creds.connectionState === "connected" && creds.phoneNumber) {
+  const storedPhone = creds.phoneNumber?.replace(/\D/g, "") ?? "";
+  if (creds.connectionState === "connected" && storedPhone.length >= 10) {
     return NextResponse.json({
       data: {
         state: "connected",
-        phoneNumber: creds.phoneNumber,
+        phoneNumber: storedPhone,
         instanceName,
         instanceId,
       },
@@ -159,8 +162,8 @@ export async function GET() {
   if (!SIMULATED && instanceId && creds.instanceToken) {
     const evo = await getGoConnectionState(creds.instanceToken, instanceId);
 
-    if (evo.state === "open") {
-      const phone = evo.phoneNumber ?? creds.phoneNumber ?? creds.targetPhone ?? "";
+    if (evo.state === "open" && evo.phoneNumber) {
+      const phone = evo.phoneNumber.replace(/\D/g, "");
       await provisionIntegration({
         tenantId: session.tenantId,
         channelType: "whatsapp",
@@ -172,7 +175,6 @@ export async function GET() {
           evolutionInstanceId: instanceId,
           connectionState: "connected",
           phoneNumber: phone,
-          phoneNumberId: instanceId,
           instanceToken: creds.instanceToken ?? "",
         },
         isActive: true,

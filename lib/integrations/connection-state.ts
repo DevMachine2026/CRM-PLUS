@@ -47,8 +47,13 @@ export function parseInstagramCredentials(raw: unknown): InstagramCredentials {
   return raw as InstagramCredentials;
 }
 
+function hasEvolutionPhone(creds: WhatsAppCredentials): boolean {
+  const digits = creds.phoneNumber?.replace(/\D/g, "") ?? "";
+  return digits.length >= 10;
+}
+
 export function whatsappUiState(creds: WhatsAppCredentials): ChannelConnectionState {
-  if (creds.connectionState === "connected" || (creds.provider === "evolution" && creds.phoneNumber)) {
+  if (creds.connectionState === "connected" && hasEvolutionPhone(creds)) {
     return "connected";
   }
   if (

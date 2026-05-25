@@ -81,7 +81,16 @@ type StatusData = {
   Connected?: boolean;
   LoggedIn?: boolean;
   Name?: string;
+  myJid?: string;
 };
+
+/** WhatsApp autenticado: pareamento concluído (não só socket aberto aguardando QR). */
+export function isGoWhatsAppSessionOpen(row: StatusData | undefined): boolean {
+  if (!row?.LoggedIn) return false;
+  const jid = row.myJid ?? row.Name;
+  const phone = jidToPhone(typeof jid === "string" ? jid : undefined);
+  return !!phone && phone.length >= 10;
+}
 
 async function parseJson<T>(res: Response): Promise<GoEnvelope<T>> {
   return (await res.json()) as GoEnvelope<T>;
@@ -238,13 +247,14 @@ export async function getGoConnectionState(
 
   const json = await parseJson<StatusData>(res);
   const row = json.data;
-  const open = row?.Connected === true || row?.LoggedIn === true;
+  const open = isGoWhatsAppSessionOpen(row);
+  const jid = row?.myJid ?? row?.Name;
 
   return {
     instanceName: "",
     instanceId,
     state: open ? "open" : "connecting",
-    phoneNumber: row?.Name ? jidToPhone(row.Name) : undefined,
+    phoneNumber: jidToPhone(typeof jid === "string" ? jid : undefined),
   };
 }
 

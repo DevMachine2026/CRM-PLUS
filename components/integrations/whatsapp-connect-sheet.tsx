@@ -57,7 +57,8 @@ export function WhatsAppConnectSheet({ open, onOpenChange, onConnected }: Props)
     if (!res.ok) throw new Error(json.error ?? "Erro ao consultar status.");
     const data = json.data as SessionData;
     setSession(data);
-    if (data.state === "connected") {
+    const phone = data.phoneNumber?.replace(/\D/g, "") ?? "";
+    if (data.state === "connected" && phone.length >= 10) {
       stopPoll();
       onConnected();
     }

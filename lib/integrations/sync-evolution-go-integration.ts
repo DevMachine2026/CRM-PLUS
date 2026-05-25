@@ -29,6 +29,9 @@ export async function syncIntegrationFromGoEvent(
   }
 
   if (event.kind === "connected") {
+    const phone = event.phoneNumber?.replace(/\D/g, "") ?? "";
+    if (phone.length < 10) return;
+
     await provisionIntegration({
       tenantId,
       channelType: "whatsapp",
@@ -38,8 +41,7 @@ export async function syncIntegrationFromGoEvent(
         evolutionApiVersion: "go",
         evolutionInstanceId: event.instanceId ?? "",
         connectionState: "connected",
-        phoneNumber: event.phoneNumber ?? "",
-        phoneNumberId: event.instanceId ?? "",
+        phoneNumber: phone,
         ...(event.instanceToken ? { instanceToken: event.instanceToken } : {}),
       },
       isActive: true,
