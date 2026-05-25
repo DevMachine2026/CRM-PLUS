@@ -39,7 +39,7 @@ export function WhatsAppConnectSheet({ open, onOpenChange, onConnected }: Props)
   const [loading, setLoading] = useState(false);
   const [session, setSession] = useState<SessionData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [method, setMethod] = useState<ConnectMethod>("pairing");
+  const [method, setMethod] = useState<ConnectMethod>("qr");
   const [phone, setPhone] = useState("");
   const [resetInstance, setResetInstance] = useState(true);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -118,8 +118,8 @@ export function WhatsAppConnectSheet({ open, onOpenChange, onConnected }: Props)
             Conectar WhatsApp
           </SheetTitle>
           <SheetDescription>
-            Escolha o método mais confiável: <strong>código no celular</strong> (recomendado) ou QR
-            Code. Tudo direto no app — sem link externo.
+            Use o <strong>QR Code</strong>: o número conectado é sempre o do celular que escanear —
+            não precisa digitar telefone. Tudo direto no app, sem link externo.
           </SheetDescription>
         </SheetHeader>
         <SheetBody className="space-y-5">
@@ -265,7 +265,14 @@ export function WhatsAppConnectSheet({ open, onOpenChange, onConnected }: Props)
             <div className="rounded-xl border border-green-200 bg-green-50 p-6 text-center">
               <p className="text-lg font-semibold text-green-800">WhatsApp conectado!</p>
               {session?.phoneNumber && (
-                <p className="mt-1 text-sm text-green-700">+{session.phoneNumber}</p>
+                <>
+                  <p className="mt-2 text-xs text-green-800/80">
+                    Número do aparelho que escaneou o QR ou confirmou o código:
+                  </p>
+                  <p className="mt-1 text-sm font-medium text-green-700">
+                    {formatPhoneDisplay(session.phoneNumber)}
+                  </p>
+                </>
               )}
               <Button className="mt-4 w-full" onClick={() => onOpenChange(false)}>
                 Concluir

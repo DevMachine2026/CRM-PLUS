@@ -53,7 +53,7 @@ export async function POST(req: Request) {
         connectMethod: body.method ?? "qr",
         phoneNumber: "",
         phoneNumberId: "",
-        ...(body.phone ? { targetPhone: body.phone.replace(/\D/g, "") } : {}),
+        targetPhone: body.method === "pairing" && body.phone ? body.phone.replace(/\D/g, "") : "",
       },
       isActive: true,
     });
@@ -175,6 +175,7 @@ export async function GET() {
           evolutionInstanceId: instanceId,
           connectionState: "connected",
           phoneNumber: phone,
+          targetPhone: "",
           instanceToken: creds.instanceToken ?? "",
         },
         isActive: true,

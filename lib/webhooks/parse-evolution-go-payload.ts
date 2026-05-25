@@ -3,7 +3,7 @@
  * @see https://docs.evolutionfoundation.com.br/evolution-go/webhooks
  */
 
-import { jidToPhone } from "@/lib/integrations/evolution-go-client";
+import { phoneFromWhatsAppJid } from "@/lib/integrations/evolution-go/phone";
 
 export type EvolutionGoWebhookEvent = {
   kind: "message" | "connected" | "qrcode" | "ignored";
@@ -62,12 +62,26 @@ export function parseEvolutionGoWebhook(body: unknown): EvolutionGoWebhookEvent 
   }
 
   if (event === "Connected" || event === "PairSuccess") {
-    const jid = (data?.jid ?? data?.ID) as string | undefined;
+    const jidCandidates = [
+      data?.myJid,
+      data?.MyJid,
+      data?.jid,
+      data?.Jid,
+      data?.ID,
+      data?.id,
+      data?.remoteJid,
+    ];
+    let phoneNumber: string | undefined;
+    for (const c of jidCandidates) {
+      if (typeof c !== "string") continue;
+      phoneNumber = phoneFromWhatsAppJid(c);
+      if (phoneNumber) break;
+    }
     return {
       kind: "connected",
       instanceId,
       instanceToken,
-      phoneNumber: jidToPhone(jid),
+      phoneNumber,
       rawEvent: event,
     };
   }
@@ -82,7 +96,7 @@ export function parseEvolutionGoWebhook(body: unknown): EvolutionGoWebhookEvent 
     if (!content) return { kind: "ignored", rawEvent: event };
 
     const senderJid = (info?.Sender ?? info?.Chat) as string | undefined;
-    const senderPhone = jidToPhone(senderJid);
+    const senderPhone = phoneFromWhatsAppJid(senderJid);
     if (!senderPhone) return { kind: "ignored", rawEvent: event };
 
     return {
@@ -105,7 +119,7 @@ export function parseEvolutionGoWebhook(body: unknown): EvolutionGoWebhookEvent 
   ) {
     const key = asRecord(data.key);
     const msg = asRecord(data.message);
-    const from = key?.remoteJid ? jidToPhone(String(key.remoteJid)) : undefined;
+    const from = key?.remoteJid ? phoneFromWhatsAppJid(String(key.remoteJid)) : undefined;
     const text = extractMessageText(msg);
     if (from && text) {
       return {

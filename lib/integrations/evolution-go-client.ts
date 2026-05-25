@@ -7,6 +7,7 @@
 
 import { randomUUID } from "node:crypto";
 import { webhookPathForChannel } from "@/lib/integrations/provision-integration";
+import { phoneFromWhatsAppJid } from "@/lib/integrations/evolution-go/phone";
 
 const BASE = process.env.EVOLUTION_API_URL?.replace(/\/$/, "");
 const API_KEY = process.env.EVOLUTION_API_KEY ?? "";
@@ -51,9 +52,31 @@ export function resolveCrmWebhookUrl(): string | null {
 }
 
 function jidToPhone(jid: string | undefined): string | undefined {
-  if (!jid) return undefined;
-  const digits = jid.replace(/@.*/, "").replace(/\D/g, "");
-  return digits || undefined;
+  return phoneFromWhatsAppJid(jid);
+}
+
+type StatusDataRaw = {
+  Connected?: boolean;
+  LoggedIn?: boolean;
+  connected?: boolean;
+  loggedIn?: boolean;
+  Name?: string;
+  name?: string;
+  myJid?: string;
+  MyJid?: string;
+  jid?: string;
+  Jid?: string;
+};
+
+function normalizeGoStatusRow(raw: StatusData | undefined): StatusData {
+  if (!raw) return {};
+  const r = raw as StatusDataRaw;
+  return {
+    Connected: r.Connected ?? r.connected,
+    LoggedIn: r.LoggedIn ?? r.loggedIn,
+    Name: r.Name ?? r.name,
+    myJid: r.myJid ?? r.MyJid ?? r.jid ?? r.Jid,
+  };
 }
 
 type GoEnvelope<T> = {
@@ -86,10 +109,9 @@ type StatusData = {
 
 /** WhatsApp autenticado: pareamento concluído (não só socket aberto aguardando QR). */
 export function isGoWhatsAppSessionOpen(row: StatusData | undefined): boolean {
-  if (!row?.LoggedIn) return false;
-  const jid = row.myJid ?? row.Name;
-  const phone = jidToPhone(typeof jid === "string" ? jid : undefined);
-  return !!phone && phone.length >= 10;
+  const status = normalizeGoStatusRow(row);
+  if (!status.LoggedIn) return false;
+  return !!phoneFromWhatsAppJid(status.myJid);
 }
 
 async function parseJson<T>(res: Response): Promise<GoEnvelope<T>> {
@@ -98,7 +120,7 @@ async function parseJson<T>(res: Response): Promise<GoEnvelope<T>> {
 
 type GoInstanceRow = { id?: string; name?: string; token?: string };
 
-async function resolveGoInstanceByName(
+export async function resolveGoInstanceByName(
   instanceName: string,
 ): Promise<{ instanceId: string; instanceToken: string } | null> {
   const res = await fetch(`${BASE}/instance/all`, { headers: adminHeaders() });
@@ -246,15 +268,15 @@ export async function getGoConnectionState(
   }
 
   const json = await parseJson<StatusData>(res);
-  const row = json.data;
+  const row = normalizeGoStatusRow(json.data);
   const open = isGoWhatsAppSessionOpen(row);
-  const jid = row?.myJid ?? row?.Name;
+  const phoneNumber = phoneFromWhatsAppJid(row.myJid);
 
   return {
     instanceName: "",
     instanceId,
     state: open ? "open" : "connecting",
-    phoneNumber: jidToPhone(typeof jid === "string" ? jid : undefined),
+    phoneNumber,
   };
 }
 
