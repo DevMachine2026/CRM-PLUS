@@ -28,6 +28,23 @@ export async function syncIntegrationFromGoEvent(
     return;
   }
 
+  if (event.kind === "disconnected") {
+    await provisionIntegration({
+      tenantId,
+      channelType: "whatsapp",
+      provider: "evolution",
+      credentials: {
+        provider: "evolution",
+        evolutionApiVersion: "go",
+        evolutionInstanceId: event.instanceId ?? "",
+        connectionState: "disconnected",
+        ...(event.instanceToken ? { instanceToken: event.instanceToken } : {}),
+      },
+      isActive: true,
+    });
+    return;
+  }
+
   if (event.kind === "connected") {
     const phone = event.phoneNumber?.replace(/\D/g, "") ?? "";
     if (phone.length < 10) return;

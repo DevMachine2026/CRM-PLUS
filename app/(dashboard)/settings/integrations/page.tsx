@@ -8,6 +8,8 @@ import {
   whatsappUiState,
   instagramUiState,
 } from "@/lib/integrations/connection-state";
+import { checkTenantWhatsAppHealth } from "@/lib/integrations/evolution-health";
+import { isEvolutionConfigured } from "@/lib/integrations/evolution-config";
 import { IntegrationsHubClient } from "./integrations-hub-client";
 import { IntegrationsClient, type IntegrationData } from "./integrations-client";
 
@@ -76,7 +78,11 @@ export default async function IntegrationsPage({ searchParams }: PageProps) {
   const waCreds = parseWhatsAppCredentials(waRow?.credentials);
   const igCreds = parseInstagramCredentials(igRow?.credentials);
 
-  const waState = whatsappUiState(waCreds);
+  let waState = whatsappUiState(waCreds);
+  if (isEvolutionConfigured() && waCreds.provider === "evolution") {
+    const live = await checkTenantWhatsAppHealth(tenantId);
+    if (live?.uiState) waState = live.uiState;
+  }
   const igState = instagramUiState(igCreds);
 
   return (

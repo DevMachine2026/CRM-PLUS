@@ -6,7 +6,13 @@
  */
 
 import { randomUUID } from "node:crypto";
-import { webhookPathForChannel } from "@/lib/integrations/provision-integration";
+import {
+  buildEvolutionWebhookUrl,
+  getEvolutionApiKey,
+  getEvolutionApiUrl,
+} from "@/lib/integrations/evolution-config";
+import { fetchEvolutionGo } from "@/lib/integrations/http-resilience";
+import { evolutionLog } from "@/lib/integrations/evolution-logger";
 import { phoneFromWhatsAppJid } from "@/lib/integrations/evolution-go/phone";
 import {
   extractNativeGoQrPng,
@@ -15,8 +21,8 @@ import {
 } from "@/lib/integrations/evolution-go/qr-image";
 import { renderWhatsAppQrPngFromRow } from "@/lib/integrations/evolution-go/qr-render";
 
-const BASE = process.env.EVOLUTION_API_URL?.replace(/\/$/, "");
-const API_KEY = process.env.EVOLUTION_API_KEY ?? "";
+const BASE = getEvolutionApiUrl();
+const API_KEY = getEvolutionApiKey();
 
 export type EvolutionGoSession = {
   instanceName: string;
@@ -51,10 +57,11 @@ export function evolutionInstanceName(tenantId: string): string {
 }
 
 export function resolveCrmWebhookUrl(): string | null {
-  const base =
-    process.env.NEXTAUTH_URL?.replace(/\/$/, "") ??
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null);
-  return base ? `${base}${webhookPathForChannel("whatsapp", "evolution")}` : null;
+  return buildEvolutionWebhookUrl();
+}
+
+async function goFetch(url: string, init: RequestInit, label: string): Promise<Response> {
+  return fetchEvolutionGo(url, init, { label, attempts: 3, timeoutMs: 25_000 });
 }
 
 function jidToPhone(jid: string | undefined): string | undefined {
@@ -134,7 +141,7 @@ type GoInstanceListRow = GoInstanceRow & {
 
 async function fetchGoInstanceListRow(instanceId: string): Promise<GoInstanceListRow | null> {
   if (!BASE) return null;
-  const res = await fetch(`${BASE}/instance/all`, { headers: adminHeaders() });
+  const res = await goFetch(`${BASE}/instance/all`, { headers: adminHeaders() }, "instance/all");
   if (!res.ok) return null;
   const json = await parseJson<GoInstanceListRow[]>(res);
   const rows = Array.isArray(json.data) ? json.data : [];
@@ -146,10 +153,11 @@ export async function resolveGoLiveConnection(
   instanceToken: string,
   instanceId?: string,
 ): Promise<EvolutionGoSession> {
-  const res = await fetch(`${BASE}/instance/status`, {
-    method: "GET",
-    headers: instanceHeaders(instanceToken),
-  });
+  const res = await goFetch(
+    `${BASE}/instance/status`,
+    { method: "GET", headers: instanceHeaders(instanceToken) },
+    "instance/status",
+  );
 
   if (!res.ok) {
     if (instanceId) {
@@ -192,7 +200,7 @@ type GoInstanceRow = { id?: string; name?: string; token?: string };
 export async function resolveGoInstanceByName(
   instanceName: string,
 ): Promise<{ instanceId: string; instanceToken: string } | null> {
-  const res = await fetch(`${BASE}/instance/all`, { headers: adminHeaders() });
+  const res = await goFetch(`${BASE}/instance/all`, { headers: adminHeaders() }, "instance/all");
   if (!res.ok) return null;
 
   const json = await parseJson<GoInstanceRow[]>(res);
@@ -207,14 +215,15 @@ export async function createGoInstance(
   instanceName: string,
 ): Promise<{ instanceId: string; instanceToken: string }> {
   const instanceToken = randomUUID();
-  const res = await fetch(`${BASE}/instance/create`, {
-    method: "POST",
-    headers: adminHeaders(),
-    body: JSON.stringify({
-      name: instanceName,
-      token: instanceToken,
-    }),
-  });
+  const res = await goFetch(
+    `${BASE}/instance/create`,
+    {
+      method: "POST",
+      headers: adminHeaders(),
+      body: JSON.stringify({ name: instanceName, token: instanceToken }),
+    },
+    "instance/create",
+  );
 
   if (!res.ok) {
     const err = await res.text();
@@ -239,10 +248,11 @@ export async function deleteGoInstanceByName(instanceName: string): Promise<void
   const row = await resolveGoInstanceByName(instanceName);
   if (!row) return;
 
-  const res = await fetch(`${BASE}/instance/delete/${row.instanceId}`, {
-    method: "DELETE",
-    headers: adminHeaders(),
-  });
+  const res = await goFetch(
+    `${BASE}/instance/delete/${row.instanceId}`,
+    { method: "DELETE", headers: adminHeaders() },
+    "instance/delete",
+  );
   if (!res.ok && res.status !== 404) {
     const err = await res.text();
     throw new Error(`Evolution GO delete failed: ${err}`);
@@ -269,26 +279,35 @@ export async function connectGoInstance(
   if (webhookUrl) body.webhookUrl = webhookUrl;
   if (phone) body.phone = phone;
 
-  const res = await fetch(`${BASE}/instance/connect`, {
-    method: "POST",
-    headers: instanceHeaders(instanceToken),
-    body: JSON.stringify(body),
-  });
+  const res = await goFetch(
+    `${BASE}/instance/connect`,
+    {
+      method: "POST",
+      headers: instanceHeaders(instanceToken),
+      body: JSON.stringify(body),
+    },
+    "instance/connect",
+  );
 
   if (!res.ok) {
     const err = await res.text();
+    evolutionLog.error("connect", "falha ao registrar webhook", { status: res.status });
     throw new Error(`Evolution GO connect failed: ${err}`);
   }
+  evolutionLog.info("connect", "webhook registrado", {
+    hasWebhook: Boolean(webhookUrl),
+  });
 }
 
 export async function fetchGoQrCode(instanceToken: string): Promise<{
   qrCodeBase64?: string;
   pairingCode?: string;
 }> {
-  const res = await fetch(`${BASE}/instance/qr`, {
-    method: "GET",
-    headers: instanceHeaders(instanceToken),
-  });
+  const res = await goFetch(
+    `${BASE}/instance/qr`,
+    { method: "GET", headers: instanceHeaders(instanceToken) },
+    "instance/qr",
+  );
 
   if (!res.ok) return {};
 
@@ -318,11 +337,11 @@ export async function waitForGoQrCode(
 /** PNG/JPEG bruto do Evolution — para rota /api/integrations/whatsapp/qr */
 export async function fetchNativeGoQrPng(instanceToken: string): Promise<Buffer | null> {
   if (!BASE) return null;
-  const res = await fetch(`${BASE}/instance/qr`, {
-    method: "GET",
-    headers: instanceHeaders(instanceToken),
-    cache: "no-store",
-  });
+  const res = await goFetch(
+    `${BASE}/instance/qr`,
+    { method: "GET", headers: instanceHeaders(instanceToken), cache: "no-store" },
+    "instance/qr-png",
+  );
   if (!res.ok) return null;
 
   const contentType = res.headers.get("content-type") ?? "";
@@ -367,21 +386,25 @@ export async function requestGoPairingCode(
   instanceToken: string,
   phone: string,
 ): Promise<string> {
-  const res = await fetch(`${BASE}/instance/pair`, {
-    method: "POST",
-    headers: instanceHeaders(instanceToken),
-    body: JSON.stringify({
-      phone,
-      subscribe: [
-      "MESSAGE",
-      "messages.upsert",
-      "MESSAGES_UPSERT",
-      "QRCODE",
-      "CONNECTION",
-      "connection.update",
-    ],
-    }),
-  });
+  const res = await goFetch(
+    `${BASE}/instance/pair`,
+    {
+      method: "POST",
+      headers: instanceHeaders(instanceToken),
+      body: JSON.stringify({
+        phone,
+        subscribe: [
+          "MESSAGE",
+          "messages.upsert",
+          "MESSAGES_UPSERT",
+          "QRCODE",
+          "CONNECTION",
+          "connection.update",
+        ],
+      }),
+    },
+    "instance/pair",
+  );
 
   if (!res.ok) {
     const err = await res.text();

@@ -42,8 +42,14 @@ AI_PROVIDER=gemini
 GOOGLE_AI_API_KEY=
 CRON_SECRET=               # openssl rand -base64 32 — Vercel Cron usa automaticamente
 EVOLUTION_API_URL=         # https://evolution-go.onrender.com
-EVOLUTION_API_KEY=         # = GLOBAL_API_KEY no Evolution GO
+EVOLUTION_API_KEY=         # = GLOBAL_API_KEY no Evolution GO (Render)
+EVOLUTION_WEBHOOK_SECRET=  # opcional; anexado em ?token= na URL do webhook
+CRON_SECRET=               # já usado; também em GET /api/cron/evolution-health
 ```
+
+**Render (Evolution GO):** `GLOBAL_API_KEY` deve ser **igual** a `EVOLUTION_API_KEY` no Vercel.
+
+**Validar chave:** `GET /api/integrations/whatsapp/health` (logado) → `apiKeyAligned: true`.
 
 ### Build
 
@@ -57,6 +63,7 @@ Definidos em `vercel.json` (compatível com **Vercel Hobby** — só 1x/dia por 
 
 - `GET /api/ai/follow-up` — diário 09:00 UTC
 - `GET /api/ai/stalled` — diário 08:00 UTC
+- `GET /api/cron/evolution-health` — diário 06:00 UTC (estado WhatsApp + ping GO)
 
 **Hobby não permite** `0 * * * *` (a cada hora). Para follow-up **horário**, use Vercel **Pro** ou cron externo (`curl` + `CRON_SECRET`) apontando para a URL da Vercel.
 

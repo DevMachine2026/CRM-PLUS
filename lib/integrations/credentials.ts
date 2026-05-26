@@ -31,7 +31,7 @@ function hasAllKeys(
 
 export type WhatsAppSendRoute =
   | { kind: "meta"; accessToken: string; phoneNumberId: string }
-  | { kind: "evolution-go"; instanceToken: string }
+  | { kind: "evolution-go"; instanceToken: string; integrationId?: string }
   | { kind: "simulated" }
   | { kind: "unavailable"; reason: string };
 
@@ -44,7 +44,7 @@ export async function resolveWhatsAppSendRoute(
   const row = await prisma.integration.findFirst({
     where: { tenantId, channelType: "whatsapp", isActive: true },
     orderBy: { updatedAt: "desc" },
-    select: { credentials: true },
+    select: { id: true, credentials: true },
   });
 
   if (row) {
@@ -63,7 +63,7 @@ export async function resolveWhatsAppSendRoute(
       if (isEvolutionGoSimulated() || !token || token.startsWith("sim-")) {
         return { kind: "simulated" };
       }
-      return { kind: "evolution-go", instanceToken: token };
+      return { kind: "evolution-go", instanceToken: token, integrationId: row.id };
     }
 
     const required = getChannelFieldKeys("whatsapp").filter((k) => k !== "verifyToken");

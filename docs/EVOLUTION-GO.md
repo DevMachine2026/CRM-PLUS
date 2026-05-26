@@ -83,8 +83,12 @@ Se o deploy falhar com **Exited with status 1**, abra **Logs** (runtime, não bu
 Registrado automaticamente em `POST /instance/connect`:
 
 ```
-{NEXTAUTH_URL}/api/webhooks/evolution
+{NEXTAUTH_URL}/api/webhooks/evolution[?token=<EVOLUTION_WEBHOOK_SECRET>]
 ```
+
+Autenticação (produção): header `apikey` = `EVOLUTION_API_KEY`, ou `?token=` / `x-evolution-webhook-token`, ou `instanceToken` no payload = token da instância no CRM.
+
+Idempotência: `externalMessageId` duplicado por tenant é ignorado. Falha de processamento retorna **500** para o GO reentregar.
 
 Eventos tratados:
 

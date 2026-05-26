@@ -15,7 +15,7 @@ import {
 import { nativeGoQrPngToDataUrl, type GoQrRow } from "@/lib/integrations/evolution-go/qr-image";
 
 export type EvolutionGoWebhookEvent = {
-  kind: "message" | "connected" | "qrcode" | "ignored";
+  kind: "message" | "connected" | "disconnected" | "qrcode" | "ignored";
   instanceId?: string;
   instanceName?: string;
   instanceToken?: string;
@@ -186,6 +186,21 @@ export function parseEvolutionGoWebhook(body: unknown): EvolutionGoWebhookEvent 
       instanceName,
       instanceToken,
       qrCodeBase64,
+      rawEvent: event,
+    };
+  }
+
+  if (
+    eventNorm === "DISCONNECTED" ||
+    eventNorm === "LOGOUT" ||
+    eventNorm === "CONNECTION_CLOSE" ||
+    eventNorm === "CLOSE"
+  ) {
+    return {
+      kind: "disconnected",
+      instanceId,
+      instanceName,
+      instanceToken,
       rawEvent: event,
     };
   }

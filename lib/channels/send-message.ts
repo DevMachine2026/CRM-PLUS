@@ -51,6 +51,7 @@ export async function sendChannelMessage(
         payload.recipientPhone,
         content,
         route.instanceToken,
+        { tenantId, integrationId: route.integrationId },
       );
     }
     if (route.kind === "simulated") {

@@ -23,21 +23,33 @@ export async function ingestWebhook<T>(params: {
     },
   });
 
-  try {
-    const result = await params.process();
-    await prisma.webhookLog.update({
-      where: { id: log.id },
-      data: { status: "processed", processedAt: new Date() },
-    });
-    return result;
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "processing error";
-    await prisma.webhookLog.update({
-      where: { id: log.id },
-      data: { status: "failed", error: message, processedAt: new Date() },
-    });
-    throw err;
+  const maxAttempts = 2;
+  let lastErr: unknown;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const result = await params.process();
+      await prisma.webhookLog.update({
+        where: { id: log.id },
+        data: { status: "processed", processedAt: new Date() },
+      });
+      return result;
+    } catch (err) {
+      lastErr = err;
+      const message = err instanceof Error ? err.message : "processing error";
+      if (attempt < maxAttempts) {
+        console.warn("[webhook-ingest] retry", { attempt, message });
+        continue;
+      }
+      await prisma.webhookLog.update({
+        where: { id: log.id },
+        data: { status: "failed", error: message, processedAt: new Date() },
+      });
+      throw err;
+    }
   }
+
+  throw lastErr instanceof Error ? lastErr : new Error("ingest failed");
 }
 
 /** Enfileira processamento sem bloquear a resposta HTTP (best-effort). */
