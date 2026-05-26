@@ -118,10 +118,6 @@ export default async function OpportunitiesPage({
         ...p,
         unitPrice: p.unitPrice != null ? Number(p.unitPrice) : null,
         totalPrice: p.totalPrice != null ? Number(p.totalPrice) : null,
-        product: {
-          ...p.product,
-          price: p.product.price != null ? Number(p.product.price) : null,
-        },
       })),
     }),
   );
