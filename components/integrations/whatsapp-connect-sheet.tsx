@@ -71,13 +71,16 @@ export function WhatsAppConnectSheet({
   }, []);
 
   const pollStatus = useCallback(async () => {
+    if (document.hidden) return;
     const res = await apiFetch("/api/integrations/whatsapp/session");
     const json = await res.json();
     if (!res.ok) throw new Error(json.error ?? "Erro ao consultar status.");
-    const data = json.data as SessionData;
+    const data = json.data as SessionData | undefined;
+    if (!data?.state) return;
     setSession(data);
     const phone = data.phoneNumber?.replace(/\D/g, "") ?? "";
-    if (data.state === "connected" && phone.length >= 10) {
+    const demoConnected = data.simulated && data.state === "connected";
+    if (demoConnected || (data.state === "connected" && phone.length >= 10)) {
       stopPoll();
       onConnected();
     }
@@ -100,13 +103,17 @@ export function WhatsAppConnectSheet({
       const text = await res.text();
       const json = text ? (JSON.parse(text) as { error?: string; data?: SessionData }) : {};
       if (!res.ok) throw new Error(json.error ?? "Não foi possível iniciar a conexão.");
-      const data = json.data as SessionData;
-      setSession(data);
+      const data = json.data as SessionData | undefined;
+      if (data) setSession(data);
       if (chosenMethod === "qr") bumpQrImage();
       stopPoll();
-      pollRef.current = setInterval(() => {
+      const pollMs = data?.simulated ? 2000 : 2500;
+      const runPoll = () => {
+        if (document.hidden) return;
         void pollStatus().catch((e) => setError(e instanceof Error ? e.message : "Erro."));
-      }, 2500);
+      };
+      runPoll();
+      pollRef.current = setInterval(runPoll, pollMs);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Erro.");
       setSession({ state: "error" });
@@ -125,12 +132,31 @@ export function WhatsAppConnectSheet({
 
     if (!resumePolling) return () => stopPoll();
 
-    void pollStatus().catch((e) => setError(e instanceof Error ? e.message : "Erro."));
-    pollRef.current = setInterval(() => {
-      void pollStatus().catch((e) => setError(e instanceof Error ? e.message : "Erro."));
-    }, 2500);
+    const pollMs = 30_000;
 
-    return () => stopPoll();
+    const runPoll = () => {
+      if (document.hidden) return;
+      void pollStatus().catch((e) => setError(e instanceof Error ? e.message : "Erro."));
+    };
+
+    const startPoll = () => {
+      stopPoll();
+      runPoll();
+      pollRef.current = setInterval(runPoll, pollMs);
+    };
+
+    const onVisibility = () => {
+      if (document.hidden) stopPoll();
+      else startPoll();
+    };
+
+    if (!document.hidden) startPoll();
+    document.addEventListener("visibilitychange", onVisibility);
+
+    return () => {
+      stopPoll();
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
   }, [open, resumePolling, pollStatus, stopPoll]);
 
   const state = session?.state ?? "disconnected";
@@ -164,7 +190,7 @@ export function WhatsAppConnectSheet({
             <ConnectionStatusPill state={state} />
             {session?.simulated && (
               <span className="text-[10px] text-muted-foreground uppercase tracking-wide">
-                Modo demo
+                Modo demonstração
               </span>
             )}
           </div>

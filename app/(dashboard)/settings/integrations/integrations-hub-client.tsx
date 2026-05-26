@@ -10,6 +10,7 @@ import {
   Camera,
   ChevronRight,
   Smartphone,
+  Sparkles,
   Zap,
   Unplug,
 } from "lucide-react";
@@ -30,6 +31,8 @@ export type ChannelSnapshot = {
   state: ChannelConnectionState;
   subtitle?: string;
   webhookUrl?: string | null;
+  /** Exibe badge “Conectado (demo)” no card do canal. */
+  isDemo?: boolean;
 };
 
 type InstagramOAuthNotice =
@@ -83,7 +86,7 @@ function ChannelCard({
             )}
           </div>
         </div>
-        <ConnectionStatusPill state={snapshot.state} />
+        <ConnectionStatusPill state={snapshot.state} demo={snapshot.isDemo && connected} />
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -227,6 +230,22 @@ export function IntegrationsHubClient({
         <p className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
           {igOAuthBanner}
         </p>
+      )}
+
+      {(metaReadiness.mode === "demo" || whatsapp.isDemo || instagram.isDemo) && (
+        <div
+          role="status"
+          className="flex gap-3 rounded-xl border border-amber-200/90 bg-amber-50/80 px-4 py-3 text-sm text-amber-950"
+        >
+          <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" aria-hidden />
+          <div>
+            <p className="font-semibold">Modo demonstração</p>
+            <p className="mt-1 text-xs leading-relaxed text-amber-900/90">
+              WhatsApp usa QR simulado e conecta em cerca de 5 segundos. Instagram lista páginas
+              de exemplo. Credenciais Meta reais e número oficial entram na próxima fase do projeto.
+            </p>
+          </div>
+        </div>
       )}
 
       <MetaInstagramReadinessPanel readiness={metaReadiness} />

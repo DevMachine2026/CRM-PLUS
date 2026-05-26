@@ -10,6 +10,7 @@ import {
 } from "@/lib/integrations/connection-state";
 import { checkTenantWhatsAppHealth } from "@/lib/integrations/evolution-health";
 import { isEvolutionConfigured } from "@/lib/integrations/evolution-config";
+import { isEvolutionGoSimulated } from "@/lib/integrations/evolution-go-client";
 import { getMetaInstagramReadiness } from "@/lib/integrations/meta-instagram-readiness";
 import { IntegrationsHubClient } from "./integrations-hub-client";
 import { IntegrationsClient, type IntegrationData } from "./integrations-client";
@@ -86,6 +87,8 @@ export default async function IntegrationsPage({ searchParams }: PageProps) {
   }
   const igState = instagramUiState(igCreds);
   const metaReadiness = getMetaInstagramReadiness(baseUrl);
+  const whatsappDemo = isEvolutionGoSimulated();
+  const instagramDemo = metaReadiness.mode === "demo";
 
   return (
     <IntegrationsHubClient
@@ -101,6 +104,7 @@ export default async function IntegrationsPage({ searchParams }: PageProps) {
       }
       whatsapp={{
         state: waState,
+        isDemo: whatsappDemo,
         subtitle:
           waState === "connected" && waCreds.phoneNumber
             ? `+${waCreds.phoneNumber.replace(/\D/g, "")}`
@@ -109,6 +113,7 @@ export default async function IntegrationsPage({ searchParams }: PageProps) {
       }}
       instagram={{
         state: igState,
+        isDemo: instagramDemo,
         subtitle: igCreds.pageName ?? (igCreds.pageId ? `Página ${igCreds.pageId}` : undefined),
         webhookUrl: igRow?.webhookUrl,
       }}
