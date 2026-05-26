@@ -11,7 +11,8 @@
     "start": "next start",
     "lint": "eslint",
     "db:seed": "tsx prisma/seed.ts",
-    "db:reset": "npx prisma db push --force-reset && tsx prisma/seed.ts"
+    "db:reset": "npx prisma db push --force-reset && tsx prisma/seed.ts",
+    "check:meta": "tsx scripts/check-meta-env.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.93.0",

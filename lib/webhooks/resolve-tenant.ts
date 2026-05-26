@@ -10,13 +10,15 @@
 
 import { prisma } from "@/lib/db/client";
 
-const UUID_RE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+/** Aceita qualquer UUID em dev (seed usa `...0001`, fora do RFC variant). */
+const DEV_UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function devTenantOverride(queryTenantId: string | null): string | null {
   if (process.env.NODE_ENV === "production") return null;
-  if (!queryTenantId || !UUID_RE.test(queryTenantId)) return null;
-  return queryTenantId;
+  if (!queryTenantId) return null;
+  if (DEV_UUID_RE.test(queryTenantId)) return queryTenantId;
+  return null;
 }
 
 async function matchIntegration(
@@ -56,7 +58,8 @@ export async function resolveInstagramTenant(
 ): Promise<string | null> {
   if (recipientId) {
     const tenantId = await matchIntegration("instagram", (creds) =>
-      creds.pageId === recipientId
+      creds.pageId === recipientId ||
+      creds.instagramAccountId === recipientId
     );
     if (tenantId) return tenantId;
   }

@@ -111,7 +111,25 @@ export default async function OpportunitiesPage({
     }),
   ]);
 
-  const kanbanOpportunities = opportunities.map(mapOpportunityForKanban);
+  const kanbanOpportunities = opportunities.map((o) =>
+    mapOpportunityForKanban({
+      ...o,
+      products: o.products.map((p) => ({
+        ...p,
+        unitPrice: p.unitPrice != null ? Number(p.unitPrice) : null,
+        totalPrice: p.totalPrice != null ? Number(p.totalPrice) : null,
+        product: {
+          ...p.product,
+          price: p.product.price != null ? Number(p.product.price) : null,
+        },
+      })),
+    }),
+  );
+
+  const catalogProducts = allProducts.map((p) => ({
+    ...p,
+    price: p.price != null ? Number(p.price) : null,
+  }));
 
   return (
     <OpportunitiesClient
@@ -125,7 +143,7 @@ export default async function OpportunitiesPage({
       contacts={contacts}
       companies={companies}
       users={users}
-      allProducts={allProducts}
+      allProducts={catalogProducts}
       canCreate={can(session.role, "create", "opportunities")}
       canEdit={can(session.role, "update", "opportunities")}
       canDelete={can(session.role, "delete", "opportunities")}

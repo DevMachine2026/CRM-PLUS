@@ -33,6 +33,8 @@ export type InstagramCredentials = {
   connectionState?: ChannelConnectionState;
   pageId?: string;
   pageName?: string;
+  /** ID da conta Instagram Business (webhook recipient.id). */
+  instagramAccountId?: string;
   accessToken?: string;
   verifyToken?: string;
 };

@@ -23,6 +23,8 @@ import { WhatsAppConnectSheet } from "@/components/integrations/whatsapp-connect
 import { InstagramConnectSheet } from "@/components/integrations/instagram-connect-sheet";
 import { AiAgentIntegrationSection } from "@/components/integrations/ai-agent-integration-section";
 import type { TenantAiSettings } from "@/lib/ai/tenant-settings";
+import type { MetaInstagramReadiness } from "@/lib/integrations/meta-instagram-readiness";
+import { MetaInstagramReadinessPanel } from "@/components/integrations/meta-instagram-readiness-panel";
 
 export type ChannelSnapshot = {
   state: ChannelConnectionState;
@@ -30,11 +32,17 @@ export type ChannelSnapshot = {
   webhookUrl?: string | null;
 };
 
+type InstagramOAuthNotice =
+  | { status: "success" }
+  | { status: "error"; message: string };
+
 type Props = {
   canEdit: boolean;
   aiSettings: TenantAiSettings;
   whatsapp: ChannelSnapshot;
   instagram: ChannelSnapshot;
+  instagramOAuth?: InstagramOAuthNotice;
+  metaReadiness: MetaInstagramReadiness;
 };
 
 function ChannelCard({
@@ -106,10 +114,13 @@ export function IntegrationsHubClient({
   aiSettings,
   whatsapp,
   instagram,
+  instagramOAuth,
+  metaReadiness,
 }: Props) {
   const router = useRouter();
   const [waOpen, setWaOpen] = useState(false);
   const [igOpen, setIgOpen] = useState(false);
+  const [igOAuthBanner, setIgOAuthBanner] = useState<string | null>(null);
 
   const refresh = useCallback(() => {
     router.refresh();
@@ -124,8 +135,11 @@ export function IntegrationsHubClient({
     if (!whatsappPending || waOpen) return;
 
     let cancelled = false;
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+    const POLL_MS = 30_000;
 
     async function tick() {
+      if (document.hidden) return;
       const res = await apiFetch("/api/integrations/whatsapp/session");
       const json = await res.json().catch(() => ({}));
       if (cancelled || !res.ok) return;
@@ -133,11 +147,31 @@ export function IntegrationsHubClient({
       if (data?.state === "connected") refresh();
     }
 
-    void tick();
-    const id = setInterval(() => void tick(), 3000);
+    function stopPolling() {
+      if (intervalId !== null) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+    }
+
+    function startPolling() {
+      stopPolling();
+      void tick();
+      intervalId = setInterval(() => void tick(), POLL_MS);
+    }
+
+    function onVisibilityChange() {
+      if (document.hidden) stopPolling();
+      else startPolling();
+    }
+
+    if (!document.hidden) startPolling();
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
     return () => {
       cancelled = true;
-      clearInterval(id);
+      stopPolling();
+      document.removeEventListener("visibilitychange", onVisibilityChange);
     };
   }, [whatsappPending, waOpen, refresh]);
 
@@ -145,6 +179,19 @@ export function IntegrationsHubClient({
     if (whatsapp.state !== "connected") return;
     void apiFetch("/api/integrations/whatsapp/sync-webhook", { method: "POST" }).catch(() => {});
   }, [whatsapp.state]);
+
+  useEffect(() => {
+    if (!instagramOAuth) return;
+    if (instagramOAuth.status === "success") {
+      setIgOAuthBanner(null);
+      setIgOpen(true);
+      router.replace("/settings/integrations", { scroll: false });
+      return;
+    }
+    setIgOAuthBanner(instagramOAuth.message);
+    setIgOpen(true);
+    router.replace("/settings/integrations", { scroll: false });
+  }, [instagramOAuth, router]);
 
   async function replaceWhatsApp() {
     const res = await apiFetch("/api/integrations", {
@@ -175,6 +222,14 @@ export function IntegrationsHubClient({
           </Link>
         }
       />
+
+      {igOAuthBanner && (
+        <p className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+          {igOAuthBanner}
+        </p>
+      )}
+
+      <MetaInstagramReadinessPanel readiness={metaReadiness} />
 
       <div className="grid gap-4 md:grid-cols-2">
         <ChannelCard

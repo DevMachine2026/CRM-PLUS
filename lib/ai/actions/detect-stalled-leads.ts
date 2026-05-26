@@ -160,7 +160,7 @@ export async function detectStalledLeads(
     const { recommendedAction, urgency } = await aiAnalyzeStalled(
       opp.title,
       stalledDays,
-      `Oportunidade na etapa "${opp.stage.name}", valor R$${opp.value?.toString() ?? "0"}`
+      `Oportunidade na etapa "${opp.stage?.name ?? "—"}", valor R$${opp.value?.toString() ?? "0"}`
     );
 
     let taskId:     string | null = null;
@@ -193,7 +193,7 @@ export async function detectStalledLeads(
       id:                opp.id,
       name:              opp.title,
       stalledDays,
-      reason:            `Oportunidade na etapa "${opp.stage.name}" sem movimentação há ${stalledDays} dias`,
+      reason:            `Oportunidade na etapa "${opp.stage?.name ?? "—"}" sem movimentação há ${stalledDays} dias`,
       recommendedAction,
       urgency,
       taskCreated,

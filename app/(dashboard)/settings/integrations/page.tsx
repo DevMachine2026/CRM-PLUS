@@ -10,20 +10,21 @@ import {
 } from "@/lib/integrations/connection-state";
 import { checkTenantWhatsAppHealth } from "@/lib/integrations/evolution-health";
 import { isEvolutionConfigured } from "@/lib/integrations/evolution-config";
+import { getMetaInstagramReadiness } from "@/lib/integrations/meta-instagram-readiness";
 import { IntegrationsHubClient } from "./integrations-hub-client";
 import { IntegrationsClient, type IntegrationData } from "./integrations-client";
 
 export const metadata = { title: "Integrações — CRM PLUS" };
 
 type PageProps = {
-  searchParams: Promise<{ mode?: string }>;
+  searchParams: Promise<{ mode?: string; ig_oauth?: string; ig_error?: string }>;
 };
 
 export default async function IntegrationsPage({ searchParams }: PageProps) {
   const session = await requirePageSession();
   requirePagePermission(session, "read", "integrations", "/settings?reason=forbidden");
 
-  const { mode } = await searchParams;
+  const { mode, ig_oauth, ig_error } = await searchParams;
   const tenantId = session.tenantId;
   const canEdit = can(session.role, "update", "integrations");
 
@@ -84,11 +85,20 @@ export default async function IntegrationsPage({ searchParams }: PageProps) {
     if (live?.uiState) waState = live.uiState;
   }
   const igState = instagramUiState(igCreds);
+  const metaReadiness = getMetaInstagramReadiness(baseUrl);
 
   return (
     <IntegrationsHubClient
+      metaReadiness={metaReadiness}
       canEdit={canEdit}
       aiSettings={parseTenantAiSettings(tenant?.settings)}
+      instagramOAuth={
+        ig_oauth === "1"
+          ? { status: "success" as const }
+          : ig_error
+            ? { status: "error" as const, message: ig_error }
+            : undefined
+      }
       whatsapp={{
         state: waState,
         subtitle:

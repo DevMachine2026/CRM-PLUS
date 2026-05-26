@@ -20,7 +20,11 @@ export function getWebhookSecret(channel: WebhookChannel): string | undefined {
   if (channel === "whatsapp") {
     return process.env.WHATSAPP_WEBHOOK_SECRET ?? process.env.WEBHOOK_SECRET;
   }
-  return process.env.INSTAGRAM_WEBHOOK_SECRET ?? process.env.WEBHOOK_SECRET;
+  return (
+    process.env.INSTAGRAM_WEBHOOK_SECRET ??
+    process.env.META_APP_SECRET ??
+    process.env.WEBHOOK_SECRET
+  );
 }
 
 export function verifySignature(

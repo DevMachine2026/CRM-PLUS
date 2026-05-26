@@ -38,19 +38,43 @@ function mapContact(contact: RawContact): KanbanOpportunity["contact"] {
   };
 }
 
+function toIso(d: Date | string | null | undefined): string | null {
+  if (d == null) return null;
+  return d instanceof Date ? d.toISOString() : d;
+}
+
+/** Prisma `Decimal` e similares → número serializável no client. */
+function toNumber(v: unknown): number | null {
+  if (v == null) return null;
+  if (typeof v === "number") return v;
+  if (typeof v === "object" && v !== null && "toNumber" in v && typeof (v as { toNumber: () => number }).toNumber === "function") {
+    return (v as { toNumber: () => number }).toNumber();
+  }
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+/** Serializa `Date` para string — obrigatório ao passar props para Client Components. */
 export function mapOpportunityForKanban<TProducts = KanbanOpportunity["products"]>(
   o: RawOpp & { products: TProducts },
 ): Omit<KanbanOpportunity, "products"> & { products: TProducts } {
+  const contact = mapContact(o.contact);
   return {
     id: o.id,
     title: o.title,
-    value: o.value,
+    value: toNumber(o.value),
     status: o.status,
-    expectedCloseAt: o.expectedCloseAt,
-    closedAt: o.closedAt,
-    createdAt: o.createdAt,
-    updatedAt: o.updatedAt,
-    contact: mapContact(o.contact),
+    expectedCloseAt: toIso(o.expectedCloseAt),
+    closedAt: toIso(o.closedAt),
+    createdAt: toIso(o.createdAt)!,
+    updatedAt: toIso(o.updatedAt)!,
+    contact: contact
+      ? {
+          ...contact,
+          updatedAt: toIso(contact.updatedAt)!,
+          lastConversationAt: toIso(contact.lastConversationAt),
+        }
+      : null,
     company: o.company,
     stage: o.stage,
     assignedUser: o.assignedUser,
