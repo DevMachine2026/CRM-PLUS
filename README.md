@@ -162,12 +162,18 @@ Use esta ordem ou repriorize conforme o contratante.
 
 ---
 
+## Entrega ao contratante (Fase 1)
+
+- **[Pacote ETAPA 5](docs/ETAPA-5-PACOTE-ENTREGA.md)** — URL, credenciais (canal seguro), roteiro 15–20 min, FAQ
+- **[Go/No-Go ETAPA 6](docs/ETAPA-6-GO-NO-GO.md)** — checklist 30 min antes da entrega
+- **[Folha para o cliente](docs/ENTREGA-CONTRATANTE.md)** — versão curta (sem senhas no arquivo)
+
 ## Documentação — por onde começar
 
 | Você é… | Leia primeiro |
 |---------|----------------|
 | **Plano de ação / status do projeto** | **Este README** (seções acima) + [docs/ESTADO-DO-PROJETO-E-PLANO.md](./docs/ESTADO-DO-PROJETO-E-PLANO.md) |
-| **Gestor / demo ao contratante** | [VISAO-GERAL.md](./VISAO-GERAL.md) |
+| **Gestor / demo ao contratante** | [ETAPA-5-PACOTE-ENTREGA.md](./docs/ETAPA-5-PACOTE-ENTREGA.md) · [ENTREGA-CONTRATANTE.md](./docs/ENTREGA-CONTRATANTE.md) · [VISAO-GERAL.md](./VISAO-GERAL.md) |
 | **WhatsApp produção (Evolution GO)** | [docs/EVOLUTION-GO.md](./docs/EVOLUTION-GO.md) · [docs/EVOLUTION-GO-CONNECT.md](./docs/EVOLUTION-GO-CONNECT.md) |
 | **Validar sem servidor Evolution** | [docs/ENTREGA-SEM-EVOLUTION.md](./docs/ENTREGA-SEM-EVOLUTION.md) |
 | **Auditoria técnica / gaps** | [docs/AUDITORIA-ARQUITETURA-MVP.md](./docs/AUDITORIA-ARQUITETURA-MVP.md) |

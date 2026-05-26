@@ -1,27 +1,24 @@
-import { Resend } from "resend";
-
-const resend = process.env.RESEND_API_KEY
-  ? new Resend(process.env.RESEND_API_KEY)
-  : null;
-
-const FROM = process.env.RESEND_FROM_EMAIL ?? "CRM PLUS <noreply@resend.dev>";
-
-export interface EmailPayload {
+export interface PasswordResetEmailParams {
   to: string;
-  subject: string;
-  html: string;
+  resetUrl: string;
+  name: string;
 }
 
-export async function sendEmail(payload: EmailPayload): Promise<void> {
-  if (!resend) {
-    console.warn("[email] RESEND_API_KEY not set — skipping send:", payload.subject, "→", payload.to);
+/**
+ * Password-reset notification. No transactional provider is configured.
+ * Development: logs the reset URL to the server console for manual testing.
+ * Production: no-op (API still returns a generic success message).
+ */
+export async function sendPasswordResetEmail(
+  params: PasswordResetEmailParams,
+): Promise<void> {
+  if (process.env.NODE_ENV !== "development") {
     return;
   }
-  const { error } = await resend.emails.send({
-    from:    FROM,
-    to:      payload.to,
-    subject: payload.subject,
-    html:    payload.html,
-  });
-  if (error) throw new Error(`[email] Resend error: ${error.message}`);
+
+  console.info(
+    "[email] password reset (development only — not sent):",
+    params.to,
+    params.resetUrl,
+  );
 }

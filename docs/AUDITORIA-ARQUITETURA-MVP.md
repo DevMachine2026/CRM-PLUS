@@ -17,7 +17,7 @@
 | **ORM / DB** | Prisma 7 + `@prisma/adapter-pg` + PostgreSQL | Modelagem, queries, migrations |
 | **Auth** | Auth.js (NextAuth v5 beta), bcryptjs, sessões em DB | Login, registro, multi-tenant via `session.tenantId` |
 | **IA** | `lib/ai/provider.ts` — Gemini (`@google/generative-ai`), Claude (`@anthropic-ai/sdk`), mock | Completions JSON/texto; tier fast/quality |
-| **E-mail** | Resend (`lib/email/send.ts`) | Reset de senha (opcional se `RESEND_API_KEY` vazio) |
+| **E-mail** | Stub dev (`lib/email/send.ts`) | Reset de senha: log do link só em `NODE_ENV=development` |
 | **WhatsApp inbound (prod.)** | Evolution API client (`lib/integrations/evolution-client.ts`) | QR, instância, webhook Evolution |
 | **WhatsApp outbound** | Meta Graph API v21 (`lib/channels/whatsapp.ts`) | Envio Cloud API — **não Evolution** |
 | **Instagram** | Meta Graph (`lib/channels/instagram.ts`) | Outbound; inbound via webhook Meta |
@@ -32,7 +32,7 @@ DATABASE_URL, NEXTAUTH_URL, NEXTAUTH_SECRET, AUTH_SECRET
 AI_PROVIDER, GOOGLE_AI_API_KEY, ANTHROPIC_API_KEY
 EVOLUTION_API_URL, EVOLUTION_API_KEY          # opcional — demo se ausente
 WHATSAPP_*, INSTAGRAM_*                         # Meta Cloud (modo avançado / outbound)
-CRON_SECRET, RESEND_API_KEY
+CRON_SECRET
 ```
 
 ---

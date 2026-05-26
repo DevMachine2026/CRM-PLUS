@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { z } from "zod";
 import { prisma } from "@/lib/db/client";
-import { sendEmail } from "@/lib/email/send";
+import { sendPasswordResetEmail } from "@/lib/email/send";
 import { checkRateLimit } from "@/lib/rate-limit";
 
 const FORGOT_LIMIT = { prefix: "forgot", windowMs: 300_000, max: 3 };
@@ -53,20 +53,10 @@ export async function POST(req: NextRequest) {
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;");
 
-      await sendEmail({
-        to:      email,
-        subject: "Redefinição de senha — CRM PLUS",
-        html: `
-          <p>Olá, ${safeName}!</p>
-          <p>Recebemos uma solicitação para redefinir a senha da sua conta no <strong>CRM PLUS</strong>.</p>
-          <p>
-            <a href="${resetUrl}" style="display:inline-block;padding:10px 20px;background:#3b82f6;color:#fff;text-decoration:none;border-radius:6px;">
-              Redefinir minha senha
-            </a>
-          </p>
-          <p style="color:#6b7280;font-size:12px;">O link expira em 1 hora. Se você não solicitou isso, ignore este e-mail.</p>
-          <p style="color:#6b7280;font-size:12px;">Ou copie o link: ${resetUrl}</p>
-        `,
+      await sendPasswordResetEmail({
+        to:       email,
+        resetUrl,
+        name:     safeName,
       });
     }
   } catch (err) {
