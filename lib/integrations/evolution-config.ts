@@ -6,6 +6,15 @@ export function getEvolutionApiUrl(): string | undefined {
   return process.env.EVOLUTION_API_URL?.replace(/\/$/, "");
 }
 
+/**
+ * Flag de segurança operacional:
+ * - true: Evolution habilitado
+ * - false/ausente: Evolution desativado (modo seguro, sem chamadas externas)
+ */
+export function isEvolutionEnabled(): boolean {
+  return process.env.ENABLE_EVOLUTION === "true";
+}
+
 export function getEvolutionApiKey(): string {
   return process.env.EVOLUTION_API_KEY?.trim() ?? "";
 }
@@ -20,7 +29,7 @@ export function getEvolutionWebhookSecret(): string {
 }
 
 export function isEvolutionConfigured(): boolean {
-  return Boolean(getEvolutionApiUrl());
+  return isEvolutionEnabled() && Boolean(getEvolutionApiUrl());
 }
 
 /** Em produção com GO configurado, webhooks devem ser autenticados. */
