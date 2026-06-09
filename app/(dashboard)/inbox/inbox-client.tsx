@@ -422,16 +422,16 @@ export function InboxClient({
           )}
         </div>
 
-        {/* Prioridade (padrão: alta) */}
+        {/* Prioridade (padrão: todas) */}
         <div className="flex gap-1 px-3 py-2 border-b bg-muted/30">
           {[
-            { key: "high" as const, label: "Prioridade Alta" },
             { key: "all"  as const, label: "Todas" },
+            { key: "high" as const, label: "Prioridade Alta" },
           ].map((tab) => (
             <button
               key={tab.key}
               type="button"
-              onClick={() => pushParam("priority", tab.key === "high" ? "" : "all")}
+              onClick={() => pushParam("priority", tab.key === "all" ? "" : "high")}
               className={cn(
                 "flex-1 text-xs px-2 py-1.5 rounded-md transition-colors",
                 priorityFilter === tab.key
@@ -482,11 +482,22 @@ export function InboxClient({
         {/* List */}
         <div className="flex-1 overflow-y-auto">
           {conversations.length === 0 ? (
-            <p className="text-center text-xs text-muted-foreground py-8 px-3">
-              {priorityFilter === "high"
-                ? "Nenhuma conversa com prioridade alta. Veja em Todas."
-                : "Nenhuma conversa."}
-            </p>
+            <div className="text-center text-xs text-muted-foreground py-8 px-3 space-y-2">
+              <p>
+                {priorityFilter === "high"
+                  ? "Nenhuma conversa com prioridade alta."
+                  : "Nenhuma conversa."}
+              </p>
+              {priorityFilter === "high" && (
+                <button
+                  type="button"
+                  className="text-primary underline underline-offset-2"
+                  onClick={() => pushParam("priority", "")}
+                >
+                  Ver todas as conversas
+                </button>
+              )}
+            </div>
           ) : (
             conversations.map((conv) => (
               <ConversationCard

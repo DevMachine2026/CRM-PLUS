@@ -8,9 +8,11 @@ import { getSession, unauthorized, forbidden } from "@/lib/auth/get-session";
 import { can } from "@/lib/auth/permissions";
 import { prisma } from "@/lib/db/client";
 import {
+  connectGoInstance,
   evolutionInstanceName,
   getGoConnectionState,
   isEvolutionGoSimulated,
+  resolveCrmWebhookUrl,
 } from "@/lib/integrations/evolution-go-client";
 
 const WHATSAPP_QR_IMAGE_PATH = "/api/integrations/whatsapp/qr";
@@ -19,8 +21,31 @@ import type { GoConnectRequest } from "@/lib/integrations/evolution-go/types";
 import { provisionIntegration } from "@/lib/integrations/provision-integration";
 import { parseWhatsAppCredentials } from "@/lib/integrations/connection-state";
 import { isValidQrDataUrl } from "@/lib/integrations/evolution-go/qr-image";
+import { isEvolutionEnabled } from "@/lib/integrations/evolution-config";
 
 const SIMULATED = isEvolutionGoSimulated();
+
+/** Registra webhook do CRM na instância GO (mensagens → Inbox). Idempotente. */
+async function ensureEvolutionInboundWebhook(params: {
+  tenantId: string;
+  instanceToken: string;
+  webhookSyncedAt?: string;
+}): Promise<void> {
+  if (SIMULATED || params.webhookSyncedAt) return;
+  const webhookUrl = resolveCrmWebhookUrl();
+  if (!webhookUrl) return;
+  try {
+    await connectGoInstance(params.instanceToken, webhookUrl);
+    await provisionIntegration({
+      tenantId: params.tenantId,
+      channelType: "whatsapp",
+      provider: "evolution",
+      credentials: { webhookSyncedAt: new Date().toISOString() },
+    });
+  } catch (e) {
+    console.error("[whatsapp/session] webhook sync failed:", e);
+  }
+}
 
 function parseConnectBody(raw: unknown): GoConnectRequest {
   if (!raw || typeof raw !== "object") return { method: "qr" };
@@ -36,6 +61,12 @@ export async function POST(req: Request) {
   const session = await getSession();
   if (!session) return unauthorized();
   if (!can(session.role, "update", "integrations")) return forbidden();
+  if (!isEvolutionEnabled()) {
+    return NextResponse.json(
+      { error: "Evolution desativado. Configure WhatsApp via Z-API." },
+      { status: 410 },
+    );
+  }
 
   try {
     const body = parseConnectBody(await req.json().catch(() => ({})));
@@ -91,6 +122,12 @@ export async function GET() {
   const session = await getSession();
   if (!session) return unauthorized();
   if (!can(session.role, "read", "integrations")) return forbidden();
+  if (!isEvolutionEnabled()) {
+    return NextResponse.json(
+      { error: "Evolution desativado. Configure WhatsApp via Z-API." },
+      { status: 410 },
+    );
+  }
 
   const row = await prisma.integration.findFirst({
     where: { tenantId: session.tenantId, channelType: "whatsapp", name: "Principal" },
@@ -158,6 +195,12 @@ export async function GET() {
         isActive: true,
       });
 
+      await ensureEvolutionInboundWebhook({
+        tenantId: session.tenantId,
+        instanceToken: creds.instanceToken,
+        webhookSyncedAt: creds.webhookSyncedAt,
+      });
+
       return NextResponse.json({
         data: { state: "connected", phoneNumber: phone, instanceName, instanceId },
       });
@@ -165,6 +208,12 @@ export async function GET() {
 
     const storedPhone = creds.phoneNumber?.replace(/\D/g, "") ?? "";
     if (creds.connectionState === "connected" && storedPhone.length >= 10) {
+      await ensureEvolutionInboundWebhook({
+        tenantId: session.tenantId,
+        instanceToken: creds.instanceToken!,
+        webhookSyncedAt: creds.webhookSyncedAt,
+      });
+
       return NextResponse.json({
         data: {
           state: "connected",

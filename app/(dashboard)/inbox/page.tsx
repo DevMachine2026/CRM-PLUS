@@ -39,7 +39,7 @@ export default async function InboxPage({
       ? (p.channel as ConversationChannel) : undefined;
 
   const priorityFilter: PriorityFilter =
-    p.priority === "all" ? "all" : "high";
+    p.priority === "high" ? "high" : "all";
 
   const highPriorityWhere = {
     OR: [

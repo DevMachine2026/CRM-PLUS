@@ -13,11 +13,19 @@ import {
   isEvolutionGoSimulated,
   resolveCrmWebhookUrl,
 } from "@/lib/integrations/evolution-go-client";
+import { provisionIntegration } from "@/lib/integrations/provision-integration";
+import { isEvolutionEnabled } from "@/lib/integrations/evolution-config";
 
 export async function POST() {
   const session = await getSession();
   if (!session) return unauthorized();
   if (!can(session.role, "update", "integrations")) return forbidden();
+  if (!isEvolutionEnabled()) {
+    return NextResponse.json(
+      { error: "Evolution desativado. Configure WhatsApp via Z-API." },
+      { status: 410 },
+    );
+  }
 
   if (isEvolutionGoSimulated()) {
     return NextResponse.json({ ok: true, simulated: true });
@@ -43,6 +51,13 @@ export async function POST() {
   }
 
   await connectGoInstance(token, webhookUrl);
+
+  await provisionIntegration({
+    tenantId: session.tenantId,
+    channelType: "whatsapp",
+    provider: "evolution",
+    credentials: { webhookSyncedAt: new Date().toISOString() },
+  });
 
   return NextResponse.json({ ok: true, webhookUrl });
 }

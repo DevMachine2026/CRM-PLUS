@@ -26,6 +26,8 @@ export type WhatsAppCredentials = {
   connectMethod?: "qr" | "pairing";
   targetPhone?: string;
   lastPairingCode?: string;
+  /** ISO — webhook Evolution registrado na instância GO */
+  webhookSyncedAt?: string;
 };
 
 export type InstagramCredentials = {
