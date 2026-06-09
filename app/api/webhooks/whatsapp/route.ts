@@ -111,6 +111,7 @@ async function resolveZapiTenant(params: {
   tenantId: string;
   integrationId?: string;
   zapiWebhookToken?: string;
+  commercialPhone?: string;
 } | null> {
   const { instanceId, queryTenantId } = params;
 
@@ -131,6 +132,7 @@ async function resolveZapiTenant(params: {
           tenantId: row.tenantId,
           integrationId: row.id,
           zapiWebhookToken: creds.zapiWebhookToken ?? creds.clientToken,
+          commercialPhone: creds.phoneNumber,
         };
       }
     }
@@ -226,8 +228,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ processed: results.length, results, provider: "meta" });
   }
 
-  // ── Branch 2: Z-API payload ─────────────────────────────────────────────────
-  const zapi = parseZapiWebhook(body);
+  // ── Branch 2: Z-API / Make (flat ou bundle Message) ─────────────────────────
+  const tenantHint = await resolveZapiTenant({
+    instanceId:
+      typeof body?.instanceId === "string" ? body.instanceId : undefined,
+    queryTenantId,
+  });
+
+  const zapi = parseZapiWebhook(body, {
+    commercialPhone: tenantHint?.commercialPhone,
+  });
   if (zapi.kind !== "message") {
     return NextResponse.json({ ok: true, skipped: true, reason: zapi.reason ?? "ignored" });
   }
@@ -261,7 +271,8 @@ export async function POST(req: NextRequest) {
       processInboundMessage({
         tenantId: resolved.tenantId,
         channel: "whatsapp",
-        senderPhone: zapi.senderPhone!,
+        senderPhone: zapi.senderPhone,
+        senderExternalId: zapi.senderExternalId,
         senderName: zapi.senderName,
         content: zapi.content!,
         externalMessageId: zapi.externalMessageId,

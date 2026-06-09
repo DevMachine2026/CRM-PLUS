@@ -77,24 +77,46 @@ export async function processInboundMessage(
   let contact;
 
   if (channel === "whatsapp") {
-    if (!senderPhone) throw new Error("whatsapp channel requires senderPhone");
-    const normalized = senderPhone.replace(/\D/g, "");
-    const phoneE164  = `+${normalized}`;
+    if (senderExternalId) {
+      contact = await prisma.contact.findFirst({
+        where: { tenantId, externalId: senderExternalId },
+      });
+      if (!contact) {
+        contact = await prisma.contact.create({
+          data: {
+            tenantId,
+            name:       senderName ?? `WA ${senderExternalId.slice(-12)}`,
+            externalId: senderExternalId,
+            status:     "lead",
+          },
+        });
+        contactCreated = true;
+      } else if (senderName && (contact.name.startsWith("WA ") || contact.name === contact.externalId)) {
+        contact = await prisma.contact.update({
+          where: { id: contact.id },
+          data:  { name: senderName },
+        });
+      }
+    } else if (senderPhone) {
+      const normalized = senderPhone.replace(/\D/g, "");
+      const phoneE164  = `+${normalized}`;
 
-    contact = await prisma.contact.findFirst({
-      where: { tenantId, phone: phoneE164 },
-    });
-    if (!contact) {
-      contact = await prisma.contact.create({
-        data: { tenantId, name: senderName ?? `WA ${phoneE164}`, phone: phoneE164, status: "lead" },
+      contact = await prisma.contact.findFirst({
+        where: { tenantId, phone: phoneE164 },
       });
-      contactCreated = true;
-    } else if (senderName && contact.name.startsWith("WA +")) {
-      // Update auto-generated name once we have the real name
-      contact = await prisma.contact.update({
-        where: { id: contact.id },
-        data:  { name: senderName },
-      });
+      if (!contact) {
+        contact = await prisma.contact.create({
+          data: { tenantId, name: senderName ?? `WA ${phoneE164}`, phone: phoneE164, status: "lead" },
+        });
+        contactCreated = true;
+      } else if (senderName && contact.name.startsWith("WA +")) {
+        contact = await prisma.contact.update({
+          where: { id: contact.id },
+          data:  { name: senderName },
+        });
+      }
+    } else {
+      throw new Error("whatsapp channel requires senderPhone or senderExternalId");
     }
   } else {
     if (!senderExternalId) throw new Error("instagram channel requires senderExternalId");
