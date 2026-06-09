@@ -37,7 +37,12 @@ export type EvolutionWebhookAuthResult =
  */
 export function verifyEvolutionWebhookRequest(
   req: NextRequest,
-  options?: { instanceTokenFromPayload?: string; storedInstanceToken?: string },
+  options?: {
+    instanceTokenFromPayload?: string;
+    storedInstanceToken?: string;
+    /** Instância já resolvida no banco (Evolution GO costuma omitir instanceToken no POST). */
+    instanceResolved?: boolean;
+  },
 ): EvolutionWebhookAuthResult {
   const globalKey = getEvolutionApiKey();
   const webhookSecret = getEvolutionWebhookSecret();
@@ -60,6 +65,10 @@ export function verifyEvolutionWebhookRequest(
   const payloadToken = options?.instanceTokenFromPayload?.trim();
   const stored = options?.storedInstanceToken?.trim();
   if (payloadToken && stored && safeEqual(payloadToken, stored)) {
+    return { ok: true, method: "instance_token" };
+  }
+
+  if (options?.instanceResolved && stored) {
     return { ok: true, method: "instance_token" };
   }
 

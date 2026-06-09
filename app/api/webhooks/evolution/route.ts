@@ -15,12 +15,19 @@ import { verifyEvolutionWebhookRequest } from "@/lib/integrations/evolution-webh
 import { evolutionLog } from "@/lib/integrations/evolution-logger";
 import { logIntegrationEvent } from "@/lib/integrations/integration-events";
 import { prisma } from "@/lib/db/client";
+import { isEvolutionEnabled } from "@/lib/integrations/evolution-config";
 
 export async function GET() {
+  if (!isEvolutionEnabled()) {
+    return NextResponse.json({ error: "Evolution integration disabled." }, { status: 410 });
+  }
   return NextResponse.json({ status: "evolution-go-webhook-ready" });
 }
 
 export async function POST(req: NextRequest) {
+  if (!isEvolutionEnabled()) {
+    return NextResponse.json({ error: "Evolution integration disabled." }, { status: 410 });
+  }
   const rawBody = await req.text();
   let body: unknown;
   try {
@@ -58,6 +65,7 @@ export async function POST(req: NextRequest) {
   const auth = verifyEvolutionWebhookRequest(req, {
     instanceTokenFromPayload: parsed.instanceToken,
     storedInstanceToken,
+    instanceResolved: Boolean(resolved && parsed.instanceId && storedInstanceToken),
   });
 
   if (!auth.ok) {
