@@ -54,6 +54,12 @@ export function verifyEvolutionWebhookRequest(
     return { ok: true, method: "apikey" };
   }
 
+  const stored = options?.storedInstanceToken?.trim();
+  // Evolution GO envia apikey = token da instância (não GLOBAL_API_KEY).
+  if (incomingKey && stored && safeEqual(incomingKey, stored)) {
+    return { ok: true, method: "instance_token" };
+  }
+
   if (webhookSecret) {
     const fromQuery = queryToken && safeEqual(queryToken, webhookSecret);
     const fromHeader = headerWebhookToken && safeEqual(headerWebhookToken, webhookSecret);
@@ -63,11 +69,11 @@ export function verifyEvolutionWebhookRequest(
   }
 
   const payloadToken = options?.instanceTokenFromPayload?.trim();
-  const stored = options?.storedInstanceToken?.trim();
   if (payloadToken && stored && safeEqual(payloadToken, stored)) {
     return { ok: true, method: "instance_token" };
   }
 
+  // Instância já mapeada no tenant (Evolution costuma omitir instanceToken no body).
   if (options?.instanceResolved && stored) {
     return { ok: true, method: "instance_token" };
   }

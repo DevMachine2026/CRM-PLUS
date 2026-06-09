@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
   const auth = verifyEvolutionWebhookRequest(req, {
     instanceTokenFromPayload: parsed.instanceToken,
     storedInstanceToken,
-    instanceResolved: Boolean(resolved && parsed.instanceId && storedInstanceToken),
+    instanceResolved: Boolean(resolved && storedInstanceToken),
   });
 
   if (!auth.ok) {
