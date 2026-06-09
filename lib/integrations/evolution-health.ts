@@ -92,12 +92,22 @@ export async function checkEvolutionServiceHealth(): Promise<EvolutionServiceHea
   }
 }
 
+function hasStoredEvolutionPhone(phone?: string): boolean {
+  return (phone?.replace(/\D/g, "").length ?? 0) >= 10;
+}
+
 function mapGoToUi(
   goState: "open" | "connecting" | "disconnected" | "close",
   credsState?: ChannelConnectionState,
+  storedPhone?: string,
 ): ChannelConnectionState {
   if (goState === "open") return "connected";
   if (goState === "connecting") {
+    // Após o QR, o CRM já persiste connected+telefone; /instance/status pode
+    // continuar em "connecting" por alguns segundos — não regredir o card.
+    if (credsState === "connected" && hasStoredEvolutionPhone(storedPhone)) {
+      return "connected";
+    }
     if (credsState === "awaiting_pairing") return "awaiting_pairing";
     if (credsState === "generating_qr") return "generating_qr";
     return "awaiting_scan";
@@ -146,7 +156,7 @@ export async function checkTenantWhatsAppHealth(
   }
 
   const session = await getGoConnectionState(instanceToken, instanceId);
-  const uiState = mapGoToUi(session.state, creds.connectionState);
+  const uiState = mapGoToUi(session.state, creds.connectionState, creds.phoneNumber);
 
   return {
     tenantId,
@@ -187,7 +197,7 @@ export async function runEvolutionHealthCron(): Promise<{
     if (!creds.instanceToken || isEvolutionGoSimulated()) continue;
 
     const session = await getGoConnectionState(creds.instanceToken, creds.evolutionInstanceId);
-    const uiState = mapGoToUi(session.state, creds.connectionState);
+    const uiState = mapGoToUi(session.state, creds.connectionState, creds.phoneNumber);
     let updated = false;
 
     if (session.state === "open" && session.phoneNumber) {
