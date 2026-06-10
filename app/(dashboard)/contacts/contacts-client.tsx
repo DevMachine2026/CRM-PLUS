@@ -5,8 +5,10 @@ import { apiFetch } from "@/lib/api/client-fetch";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Plus, Search, Pencil, Trash2, Loader2, Tag as TagIcon, X } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Loader2, Tag as TagIcon, X, MessageSquare } from "lucide-react";
 import { WhatsAppOpenButton } from "@/components/ui/whatsapp-open-button";
+import { resolveContactWhatsAppPhone } from "@/lib/utils/whatsapp";
+import { formatPhone } from "@/lib/utils/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -48,10 +50,12 @@ interface Contact {
   name: string;
   email: string | null;
   phone: string | null;
+  externalId: string | null;
   status: ContactStatus;
   leadScore: number | null;
   createdAt: Date;
   tags: Tag[];
+  conversations: { id: string }[];
 }
 
 interface Props {
@@ -194,7 +198,11 @@ export function ContactsClient({ contacts, allTags, total, page, search, canCrea
         )}
       </div>
     ) : (
-      contacts.map((c) => (
+      contacts.map((c) => {
+        const waPhone = resolveContactWhatsAppPhone(c);
+        const waConvId = c.conversations[0]?.id;
+
+        return (
         <ListCard key={c.id}>
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 flex-1 space-y-2">
@@ -209,16 +217,24 @@ export function ContactsClient({ contacts, allTags, total, page, search, canCrea
                 <Badge variant={STATUS_VARIANTS[c.status]}>
                   {STATUS_LABELS[c.status]}
                 </Badge>
+                {waConvId && (
+                  <Badge variant="outline" className="text-green-700 border-green-200 bg-green-50">
+                    WhatsApp
+                  </Badge>
+                )}
               </div>
               {c.email && (
                 <p className="text-sm text-muted-foreground">{c.email}</p>
               )}
-              {c.phone && (
-                <p className="flex items-center gap-1 text-sm text-muted-foreground">
-                  <span>{c.phone}</span>
-                  <WhatsAppOpenButton phone={c.phone} variant="icon" />
+              {waPhone ? (
+                <p className="text-sm text-muted-foreground">
+                  {formatPhone(waPhone)}
                 </p>
-              )}
+              ) : waConvId ? (
+                <p className="text-xs text-amber-700">
+                  Telefone não cadastrado — edite o contato ou corrija o webhook Make.
+                </p>
+              ) : null}
               {c.tags.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 pt-1">
                   {c.tags.map((t) => (
@@ -234,6 +250,26 @@ export function ContactsClient({ contacts, allTags, total, page, search, canCrea
               )}
             </div>
             <div className="flex shrink-0 gap-1">
+              {waPhone && (
+                <WhatsAppOpenButton
+                  phone={waPhone}
+                  variant="icon"
+                  className="h-10 w-10 text-green-600"
+                />
+              )}
+              {!waPhone && waConvId && (
+                <Link
+                  href={`/inbox?convId=${waConvId}`}
+                  title="Ver conversa WhatsApp"
+                  aria-label="Ver conversa WhatsApp"
+                  className={cn(
+                    ds.touchTarget,
+                    "inline-flex items-center justify-center rounded-md text-green-600 transition-colors hover:bg-green-50",
+                  )}
+                >
+                  <MessageSquare className="h-4 w-4" />
+                </Link>
+              )}
               {canEdit && (
                 <Button
                   variant="ghost"
@@ -270,7 +306,8 @@ export function ContactsClient({ contacts, allTags, total, page, search, canCrea
             </div>
           </div>
         </ListCard>
-      ))
+        );
+      })
     );
 
   return (

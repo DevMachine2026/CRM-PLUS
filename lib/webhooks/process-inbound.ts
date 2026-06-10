@@ -13,6 +13,77 @@ import {
   emitConversationCreated,
 } from "@/lib/automations/emit";
 import { isAiEnabled } from "@/lib/ai/tenant-settings";
+import { zapiPushExternalId } from "@/lib/webhooks/parse-zapi-payload";
+import type { Contact } from "@/lib/generated/prisma/client";
+
+function toPhoneE164(digits: string): string {
+  return `+${digits.replace(/\D/g, "")}`;
+}
+
+function isPlaceholderContactName(name: string, externalId: string | null): boolean {
+  if (externalId && name === externalId) return true;
+  return name.startsWith("WA ");
+}
+
+/** Localiza ou cria contato WhatsApp, mesclando zapi-push quando o phone chega depois. */
+async function upsertWhatsAppContact(
+  tenantId: string,
+  senderPhone: string | undefined,
+  senderExternalId: string | undefined,
+  senderName: string | undefined,
+): Promise<{ contact: Contact; created: boolean }> {
+  const phoneE164 = senderPhone ? toPhoneE164(senderPhone) : undefined;
+  const pushId = senderName ? zapiPushExternalId(senderName) : undefined;
+
+  let contact =
+    phoneE164
+      ? await prisma.contact.findFirst({ where: { tenantId, phone: phoneE164 } })
+      : null;
+
+  if (!contact && senderExternalId) {
+    contact = await prisma.contact.findFirst({
+      where: { tenantId, externalId: senderExternalId },
+    });
+  }
+
+  if (!contact && pushId && pushId !== senderExternalId) {
+    contact = await prisma.contact.findFirst({
+      where: { tenantId, externalId: pushId },
+    });
+  }
+
+  const displayName = senderName?.trim() || undefined;
+
+  if (contact) {
+    const patch: { phone?: string; name?: string } = {};
+    if (phoneE164 && !contact.phone) patch.phone = phoneE164;
+    if (displayName && isPlaceholderContactName(contact.name, contact.externalId)) {
+      patch.name = displayName;
+    }
+    if (Object.keys(patch).length > 0) {
+      contact = await prisma.contact.update({
+        where: { id: contact.id },
+        data:  patch,
+      });
+    }
+    return { contact, created: false };
+  }
+
+  if (!phoneE164 && !senderExternalId && !pushId) {
+    throw new Error("whatsapp channel requires senderPhone or senderExternalId");
+  }
+
+  contact = await prisma.contact.create({
+    data: {
+      tenantId,
+      name:       displayName ?? (phoneE164 ? `WA ${phoneE164}` : `WA ${(senderExternalId ?? pushId)!.slice(-12)}`),
+      phone:      phoneE164 ?? null,
+      externalId: senderExternalId ?? pushId ?? null,
+      status:     "lead",
+    },
+  });
+  return { contact, created: true };
+}
 
 export interface InboundPayload {
   tenantId:           string;
@@ -77,47 +148,14 @@ export async function processInboundMessage(
   let contact;
 
   if (channel === "whatsapp") {
-    if (senderExternalId) {
-      contact = await prisma.contact.findFirst({
-        where: { tenantId, externalId: senderExternalId },
-      });
-      if (!contact) {
-        contact = await prisma.contact.create({
-          data: {
-            tenantId,
-            name:       senderName ?? `WA ${senderExternalId.slice(-12)}`,
-            externalId: senderExternalId,
-            status:     "lead",
-          },
-        });
-        contactCreated = true;
-      } else if (senderName && (contact.name.startsWith("WA ") || contact.name === contact.externalId)) {
-        contact = await prisma.contact.update({
-          where: { id: contact.id },
-          data:  { name: senderName },
-        });
-      }
-    } else if (senderPhone) {
-      const normalized = senderPhone.replace(/\D/g, "");
-      const phoneE164  = `+${normalized}`;
-
-      contact = await prisma.contact.findFirst({
-        where: { tenantId, phone: phoneE164 },
-      });
-      if (!contact) {
-        contact = await prisma.contact.create({
-          data: { tenantId, name: senderName ?? `WA ${phoneE164}`, phone: phoneE164, status: "lead" },
-        });
-        contactCreated = true;
-      } else if (senderName && contact.name.startsWith("WA +")) {
-        contact = await prisma.contact.update({
-          where: { id: contact.id },
-          data:  { name: senderName },
-        });
-      }
-    } else {
-      throw new Error("whatsapp channel requires senderPhone or senderExternalId");
-    }
+    const upserted = await upsertWhatsAppContact(
+      tenantId,
+      senderPhone,
+      senderExternalId,
+      senderName,
+    );
+    contact = upserted.contact;
+    contactCreated = upserted.created;
   } else {
     if (!senderExternalId) throw new Error("instagram channel requires senderExternalId");
 

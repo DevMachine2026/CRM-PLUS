@@ -131,10 +131,22 @@ function pickFlatSenderPhone(
     body.chatPhone,
     body.senderPhone,
     body.participantPhone,
+    body.participant,
+    body.authorPhone,
+    body.from,
   ];
 
   for (const raw of candidates) {
     const phone = cleanPhone(raw);
+    if (!phone) continue;
+    if (isLikelyBusinessLinePhone(phone, commercial, connected)) continue;
+    return phone;
+  }
+
+  const jidFields = [body.chatId, body.remoteJid, body.chatLid];
+  for (const jid of jidFields) {
+    if (typeof jid !== "string" || !jid.trim()) continue;
+    const phone = phoneFromWhatsAppJid(jid);
     if (!phone) continue;
     if (isLikelyBusinessLinePhone(phone, commercial, connected)) continue;
     return phone;

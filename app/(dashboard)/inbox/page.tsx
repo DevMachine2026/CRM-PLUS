@@ -82,7 +82,7 @@ export default async function InboxPage({
         priorityScore:  true,
         nextBestAction: true,
         contact: {
-          select: { id: true, name: true, email: true, phone: true, leadScore: true },
+          select: { id: true, name: true, email: true, phone: true, externalId: true, leadScore: true },
         },
         assignedUser: { select: { id: true, name: true } },
         messages: {
@@ -120,7 +120,7 @@ export default async function InboxPage({
     lastMessageAt: Date | null; createdAt: Date;
     detectedIntent: string | null; summaryText: string | null;
     priorityScore: number; nextBestAction: string | null;
-    contact: { id: string; name: string; email: string | null; phone: string | null; leadScore: number } | null;
+    contact: { id: string; name: string; email: string | null; phone: string | null; externalId: string | null; leadScore: number } | null;
     assignedUser: { id: string; name: string } | null;
     messages: {
       id: string; content: string; direction: string; senderType: string;
@@ -136,7 +136,7 @@ export default async function InboxPage({
         lastMessageAt: true, createdAt: true,
         detectedIntent: true, summaryText: true,
         priorityScore: true, nextBestAction: true,
-        contact: { select: { id: true, name: true, email: true, phone: true, leadScore: true } },
+        contact: { select: { id: true, name: true, email: true, phone: true, externalId: true, leadScore: true } },
         assignedUser: { select: { id: true, name: true } },
         messages: {
           orderBy: { sentAt: "asc" },
