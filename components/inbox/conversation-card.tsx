@@ -7,6 +7,7 @@ import {
   effectivePriorityScore,
   priorityScoreClasses,
 } from "@/lib/inbox/conversation-priority";
+import { FormattedTime } from "@/components/inbox/formatted-time";
 
 export type ConversationCardData = {
   id: string;
@@ -33,16 +34,6 @@ const STATUS_LABEL: Record<string, string> = {
   pending: "Pendente",
   resolved: "Resolvida",
 };
-
-function fmtTime(iso: string | null) {
-  if (!iso) return "";
-  const d = new Date(iso);
-  const today = new Date();
-  if (d.toDateString() === today.toDateString()) {
-    return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
-  }
-  return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
-}
 
 type Props = {
   conv: ConversationCardData;
@@ -93,9 +84,11 @@ export function ConversationCard({ conv, channelIcon, isActive, onSelect }: Prop
               title="Aguarda resposta"
             />
           )}
-          <span className="text-[10px] text-muted-foreground">
-            {fmtTime(conv.lastMessageAt ?? conv.createdAt)}
-          </span>
+          <FormattedTime
+            iso={conv.lastMessageAt ?? conv.createdAt}
+            mode="conversation"
+            className="text-[10px] text-muted-foreground"
+          />
         </div>
       </div>
 

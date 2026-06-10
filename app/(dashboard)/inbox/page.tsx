@@ -1,6 +1,9 @@
+import { Suspense } from "react";
+import { Loader2 } from "lucide-react";
 import { prisma } from "@/lib/db/client";
 import { requirePageSession, requirePagePermission } from "@/lib/auth/get-session";
 import { can } from "@/lib/auth/permissions";
+import { resolveOutboundAvailability } from "@/lib/channels/send-message";
 import { InboxClient } from "./inbox-client";
 import {
   HIGH_PRIORITY_MIN,
@@ -150,21 +153,31 @@ export default async function InboxPage({
   const sc = Object.fromEntries(statusCounts.map((c) => [c.status, c._count._all])) as Record<string, number>;
   const canCreate = can(session.role, "create", "conversations");
   const canUpdate = can(session.role, "update", "conversations");
+  const outboundAvailability = await resolveOutboundAvailability(tenantId);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const s = (v: unknown) => JSON.parse(JSON.stringify(v)) as any;
 
   return (
-    <InboxClient
-      conversations={s(conversations)}
-      contacts={contacts}
-      statusCounts={sc}
-      hotTodayCount={hotTodayCount}
-      priorityFilter={priorityFilter}
-      activeConversation={activeConversation ? s(activeConversation) : null}
-      currentUserId={session.id}
-      canCreate={canCreate}
-      canUpdate={canUpdate}
-    />
+    <Suspense
+      fallback={
+        <div className="-mx-4 -my-4 flex h-[calc(100dvh-3.5rem)] items-center justify-center md:-mx-6 md:-my-6 md:h-[calc(100dvh-4.5rem)]">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      }
+    >
+      <InboxClient
+        conversations={s(conversations)}
+        contacts={contacts}
+        statusCounts={sc}
+        hotTodayCount={hotTodayCount}
+        priorityFilter={priorityFilter}
+        activeConversation={activeConversation ? s(activeConversation) : null}
+        currentUserId={session.id}
+        canCreate={canCreate}
+        canUpdate={canUpdate}
+        outboundAvailability={outboundAvailability}
+      />
+    </Suspense>
   );
 }

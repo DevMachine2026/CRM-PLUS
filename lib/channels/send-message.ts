@@ -2,9 +2,39 @@ import { sendWhatsAppMessage } from "./whatsapp";
 import { sendInstagramMessage } from "./instagram";
 import { sendEvolutionGoTextMessage } from "./evolution-go-send";
 import {
+  isWhatsAppOutboundAvailable,
   loadInstagramCredentials,
   resolveWhatsAppSendRoute,
 } from "@/lib/integrations/credentials";
+
+export type OutboundAvailability = {
+  whatsapp: boolean;
+  instagram: boolean;
+};
+
+/** Verifica se o tenant tem rota de envio real para canais externos. */
+export async function resolveOutboundAvailability(
+  tenantId: string,
+): Promise<OutboundAvailability> {
+  const [waRoute, igCreds] = await Promise.all([
+    resolveWhatsAppSendRoute(tenantId),
+    loadInstagramCredentials(tenantId),
+  ]);
+  return {
+    whatsapp: isWhatsAppOutboundAvailable(waRoute),
+    instagram: !!igCreds,
+  };
+}
+
+export function canSendOnChannel(
+  channel: string,
+  availability: OutboundAvailability,
+): boolean {
+  if (channel === "manual" || channel === "email") return true;
+  if (channel === "whatsapp") return availability.whatsapp;
+  if (channel === "instagram") return availability.instagram;
+  return true;
+}
 
 export interface OutboundPayload {
   tenantId: string;

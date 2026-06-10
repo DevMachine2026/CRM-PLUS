@@ -10,6 +10,7 @@ import {
   buildEvolutionWebhookUrl,
   getEvolutionApiKey,
   getEvolutionApiUrl,
+  isEvolutionEnabled,
 } from "@/lib/integrations/evolution-config";
 import { fetchEvolutionGo } from "@/lib/integrations/http-resilience";
 import { evolutionLog } from "@/lib/integrations/evolution-logger";
@@ -34,7 +35,7 @@ export type EvolutionGoSession = {
 };
 
 export function isEvolutionGoSimulated(): boolean {
-  return !BASE;
+  return !isEvolutionEnabled() || !BASE;
 }
 
 /** Admin routes (/instance/create) usam GLOBAL_API_KEY; demais usam token da instância. */

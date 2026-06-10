@@ -7,6 +7,7 @@ import {
   whatsappUiState,
 } from "./connection-state";
 import { isEvolutionGoSimulated } from "./evolution-go-client";
+import { isEvolutionEnabled } from "./evolution-config";
 
 function envWhatsApp(): WhatsAppConfig | null {
   const accessToken = process.env.WHATSAPP_ACCESS_TOKEN;
@@ -35,6 +36,12 @@ export type WhatsAppSendRoute =
   | { kind: "simulated" }
   | { kind: "unavailable"; reason: string };
 
+/** True quando o tenant pode enviar WhatsApp outbound (Evolution conectado, Meta ou simulado dev). */
+export function isWhatsAppOutboundAvailable(route: WhatsAppSendRoute | null): boolean {
+  if (!route) return false;
+  return route.kind === "meta" || route.kind === "evolution-go" || route.kind === "simulated";
+}
+
 /**
  * Decide como enviar WhatsApp outbound: Evolution GO, Meta Cloud ou simulado.
  */
@@ -53,6 +60,12 @@ export async function resolveWhatsAppSendRoute(
       creds.provider === "evolution" || creds.evolutionApiVersion === "go";
 
     if (isGo) {
+      if (!isEvolutionEnabled()) {
+        return {
+          kind: "unavailable",
+          reason: "Canal Evolution desativado. Use Z-API ou Meta para WhatsApp.",
+        };
+      }
       if (whatsappUiState(creds) !== "connected") {
         return {
           kind: "unavailable",

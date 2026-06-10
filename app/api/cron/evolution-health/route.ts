@@ -7,8 +7,13 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { runEvolutionHealthCron } from "@/lib/integrations/evolution-health";
 import { evolutionLog } from "@/lib/integrations/evolution-logger";
+import { isEvolutionEnabled } from "@/lib/integrations/evolution-config";
 
 export async function GET(req: NextRequest) {
+  if (!isEvolutionEnabled()) {
+    return NextResponse.json({ ok: true, skipped: true, reason: "evolution_disabled" });
+  }
+
   const authHeader = req.headers.get("authorization") ?? "";
   const cronSecret = process.env.CRON_SECRET;
 

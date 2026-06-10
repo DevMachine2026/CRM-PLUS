@@ -15,6 +15,7 @@ import {
   isEvolutionGoSimulated,
   resolveGoLiveConnection,
 } from "@/lib/integrations/evolution-go-client";
+import { isEvolutionEnabled } from "@/lib/integrations/evolution-config";
 
 const SIMULATED = isEvolutionGoSimulated();
 
@@ -22,6 +23,12 @@ export async function GET(req: Request) {
   const session = await getSession();
   if (!session) return unauthorized();
   if (!can(session.role, "read", "integrations")) return forbidden();
+  if (!isEvolutionEnabled()) {
+    return NextResponse.json(
+      { error: "Evolution desativado. Configure WhatsApp via Z-API." },
+      { status: 410 },
+    );
+  }
 
   const row = await prisma.integration.findFirst({
     where: { tenantId: session.tenantId, channelType: "whatsapp", name: "Principal" },

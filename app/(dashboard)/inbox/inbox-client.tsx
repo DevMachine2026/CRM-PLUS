@@ -27,6 +27,10 @@ import { cn } from "@/lib/utils";
 import { MessageBubble } from "@/components/inbox/message-bubble";
 import { ConversationCard, type ConversationCardData } from "@/components/inbox/conversation-card";
 import { type ConvMessage, normalizeMessage } from "@/lib/inbox/message-types";
+import {
+  canSendOnChannel,
+  type OutboundAvailability,
+} from "@/lib/channels/send-message";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -49,8 +53,9 @@ type Props = {
   priorityFilter:     "high" | "all";
   activeConversation: ActiveConv | null;
   currentUserId:      string;
-  canCreate:          boolean;
-  canUpdate:          boolean;
+  canCreate:              boolean;
+  canUpdate:              boolean;
+  outboundAvailability:   OutboundAvailability;
 };
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -86,19 +91,13 @@ const INTENT_META: Record<string, { label: string; color: string; icon: React.Re
   neutral:         { label: "Neutro",             color: "bg-slate-100 text-slate-500 border-slate-200", icon: <MessageSquare className="w-3 h-3" />  },
 };
 
-function fmtTime(iso: string | null) {
-  if (!iso) return "";
-  const d = new Date(iso), today = new Date();
-  if (d.toDateString() === today.toDateString())
-    return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
-  return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
-}
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function InboxClient({
   conversations: initialConvs, contacts, statusCounts,
   hotTodayCount, priorityFilter,
   activeConversation: initialActive, currentUserId, canCreate, canUpdate,
+  outboundAvailability,
 }: Props) {
   const router = useRouter();
   const sp     = useSearchParams();
@@ -109,6 +108,17 @@ export function InboxClient({
   useEffect(() => {
     setConversations(initialConvs);
   }, [initialConvs]);
+
+  useEffect(() => {
+    if (!initialActive) return;
+    setActive((prev) => {
+      if (prev?.id === initialActive.id) return prev;
+      return {
+        ...initialActive,
+        messages: initialActive.messages.map(normalizeMessage),
+      };
+    });
+  }, [initialActive]);
   const [active, setActive] = useState<ActiveConv | null>(
     initialActive
       ? { ...initialActive, messages: initialActive.messages.map(normalizeMessage) }
@@ -223,9 +233,13 @@ export function InboxClient({
     ));
   }
 
+  const canSendReply = active
+    ? canSendOnChannel(active.channel, outboundAvailability)
+    : false;
+
   function sendMessage(contentOverride?: string) {
     const text = (contentOverride ?? msgContent).trim();
-    if (!active || !text) return;
+    if (!active || !text || !canSendOnChannel(active.channel, outboundAvailability)) return;
 
     const tempId = `pending-${Date.now()}`;
     const optimisticMsg: ConvMessage = {
@@ -242,8 +256,11 @@ export function InboxClient({
     if (!contentOverride) setMsgContent("");
     setIsSending(true);
 
-    startTransition(async () => {
+    startTransition(() => {
       addOptimisticMessage(optimisticMsg);
+    });
+
+    void (async () => {
       try {
         const res = await apiFetch(`/api/conversations/${active.id}/messages`, {
           method: "POST",
@@ -259,7 +276,10 @@ export function InboxClient({
             externalStatus: "failed",
             deliveryError: json.error ?? "Erro ao enviar.",
           };
-          setActive((prev) => prev ? { ...prev, messages: [...prev.messages, failed] } : prev);
+          setActive((prev) => prev ? {
+            ...prev,
+            messages: [...prev.messages.filter((m) => m.id !== tempId), failed],
+          } : prev);
           return;
         }
         const confirmed = normalizeMessage(json.data);
@@ -276,11 +296,14 @@ export function InboxClient({
           externalStatus: "failed",
           deliveryError: "Erro de conexão.",
         };
-        setActive((prev) => prev ? { ...prev, messages: [...prev.messages, failed] } : prev);
+        setActive((prev) => prev ? {
+          ...prev,
+          messages: [...prev.messages.filter((m) => m.id !== tempId), failed],
+        } : prev);
       } finally {
         setIsSending(false);
       }
-    });
+    })();
   }
 
   function retryMessage(msg: ConvMessage) {
@@ -622,7 +645,8 @@ export function InboxClient({
                   <MessageBubble
                     key={msg.id}
                     msg={msg}
-                    onRetry={msg.failed ? retryMessage : undefined}
+                    onRetry={canSendReply && msg.failed ? retryMessage : undefined}
+                    hideFailedIndicator={!canSendReply}
                   />
                 ))}
                 <div ref={messagesEndRef} />
@@ -655,19 +679,32 @@ export function InboxClient({
 
               {/* Message input */}
               <div className="px-4 py-3 border-t bg-background shrink-0">
+                {!canSendReply && active.channel === "whatsapp" && (
+                  <p className="mb-2 text-xs text-muted-foreground leading-relaxed">
+                    Atendimento via bot externo. Respostas são gerenciadas pelo WhatsApp da empresa.
+                  </p>
+                )}
                 <div className="flex gap-2 items-end">
                   <Textarea
                     value={msgContent}
                     onChange={(e) => setMsgContent(e.target.value)}
-                    placeholder="Digite sua mensagem..."
+                    placeholder={canSendReply ? "Digite sua mensagem..." : "Envio indisponível neste canal"}
                     className="flex-1 min-h-[44px] max-h-32 resize-none text-sm"
                     rows={1}
+                    disabled={!canSendReply || isSending}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+                      if (e.key === "Enter" && !e.shiftKey && canSendReply) {
+                        e.preventDefault();
+                        sendMessage();
+                      }
                     }}
                   />
-                  <Button size="icon" disabled={!msgContent.trim() || isSending}
-                    onClick={() => sendMessage()} className="h-11 w-11 shrink-0">
+                  <Button
+                    size="icon"
+                    disabled={!canSendReply || !msgContent.trim() || isSending}
+                    onClick={() => sendMessage()}
+                    className="h-11 w-11 shrink-0"
+                  >
                     {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                   </Button>
                 </div>

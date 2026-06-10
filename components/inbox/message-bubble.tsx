@@ -11,14 +11,12 @@ import {
   mediaKind,
   isRenderableUrl,
 } from "@/lib/inbox/message-types";
+import { FormattedTime } from "@/components/inbox/formatted-time";
 
-function fmtMsgTime(iso: string) {
-  return new Date(iso).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
-}
-
-function DeliveryIndicator({ msg }: { msg: ConvMessage }) {
+function DeliveryIndicator({ msg, hideFailed }: { msg: ConvMessage; hideFailed?: boolean }) {
   if (msg.direction !== "outbound") return null;
   const state = deliveryState(msg);
+  if (hideFailed && state === "failed") return null;
 
   if (state === "sending") {
     return (
@@ -115,13 +113,16 @@ function MessageBody({ msg }: { msg: ConvMessage }) {
 type Props = {
   msg: ConvMessage;
   onRetry?: (msg: ConvMessage) => void;
+  /** Oculta indicador de falha (ex.: tenant Z-API sem rota outbound). */
+  hideFailedIndicator?: boolean;
 };
 
-export function MessageBubble({ msg, onRetry }: Props) {
+export function MessageBubble({ msg, onRetry, hideFailedIndicator }: Props) {
   const isOut   = msg.direction === "outbound";
   const isBot   = msg.senderType === "bot";
-  const pending = msg.pending || deliveryState(msg) === "sending";
-  const failed  = msg.failed || deliveryState(msg) === "failed";
+  const state   = deliveryState(msg);
+  const pending = msg.pending || state === "sending";
+  const failed  = !hideFailedIndicator && (msg.failed || state === "failed");
 
   return (
     <div className={cn("flex gap-2", isOut ? "justify-end" : "justify-start")}>
@@ -163,8 +164,8 @@ export function MessageBubble({ msg, onRetry }: Props) {
               Reenviar
             </button>
           )}
-          <span>{fmtMsgTime(msg.sentAt)}{isBot && " · IA"}</span>
-          <DeliveryIndicator msg={msg} />
+          <FormattedTime iso={msg.sentAt} suffix={isBot ? " · IA" : undefined} />
+          <DeliveryIndicator msg={msg} hideFailed={hideFailedIndicator} />
         </div>
       </div>
     </div>
