@@ -6,6 +6,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Plus, Search, Pencil, Trash2, Loader2, Tag as TagIcon, X } from "lucide-react";
+import { WhatsAppOpenButton } from "@/components/ui/whatsapp-open-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -213,7 +214,10 @@ export function ContactsClient({ contacts, allTags, total, page, search, canCrea
                 <p className="text-sm text-muted-foreground">{c.email}</p>
               )}
               {c.phone && (
-                <p className="text-sm text-muted-foreground">{c.phone}</p>
+                <p className="flex items-center gap-1 text-sm text-muted-foreground">
+                  <span>{c.phone}</span>
+                  <WhatsAppOpenButton phone={c.phone} variant="icon" />
+                </p>
               )}
               {c.tags.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 pt-1">

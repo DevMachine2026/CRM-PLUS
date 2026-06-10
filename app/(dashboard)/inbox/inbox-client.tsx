@@ -24,6 +24,7 @@ import { buildSelectItems, withNoneOption } from "@/lib/ui/select-items";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { WhatsAppOpenButton } from "@/components/ui/whatsapp-open-button";
 import { MessageBubble } from "@/components/inbox/message-bubble";
 import { ConversationCard, type ConversationCardData } from "@/components/inbox/conversation-card";
 import { type ConvMessage, normalizeMessage } from "@/lib/inbox/message-types";
@@ -39,7 +40,7 @@ type ConvSummary = ConversationCardData & {
 };
 
 type ActiveConv = Omit<ConvSummary, "messages"> & { messages: ConvMessage[] };
-type Contact    = { id: string; name: string; email: string | null };
+type Contact    = { id: string; name: string; email: string | null; phone?: string | null };
 
 type AiSummary = { summary: string; keyPoints: string[]; messageCount: number } | null;
 type AiIntent  = { intent: string; confidence: number; details: string; taskCreated: boolean } | null;
@@ -565,10 +566,13 @@ export function InboxClient({
                     <User className="w-4 h-4 text-muted-foreground" />
                   </div>
                   <div className="min-w-0">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-semibold text-sm truncate">
                         {active.contact?.name ?? active.subject ?? "Conversa sem contato"}
                       </span>
+                      {!canSendReply && active.channel === "whatsapp" && (
+                        <WhatsAppOpenButton phone={active.contact?.phone} />
+                      )}
                       <span className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
                         {CHANNEL_ICON[active.channel]}
                         {CHANNEL_LABEL[active.channel]}

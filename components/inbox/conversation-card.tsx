@@ -20,7 +20,7 @@ export type ConversationCardData = {
   summaryText: string | null;
   priorityScore?: number;
   nextBestAction: string | null;
-  contact: { id: string; name: string; email: string | null; leadScore?: number } | null;
+  contact: { id: string; name: string; email: string | null; phone?: string | null; leadScore?: number } | null;
   messages: { content: string; direction: string; sentAt: string }[];
 };
 
