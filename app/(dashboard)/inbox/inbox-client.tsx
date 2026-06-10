@@ -31,7 +31,7 @@ import { type ConvMessage, normalizeMessage } from "@/lib/inbox/message-types";
 import {
   canSendOnChannel,
   type OutboundAvailability,
-} from "@/lib/channels/send-message";
+} from "@/lib/channels/outbound-availability";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

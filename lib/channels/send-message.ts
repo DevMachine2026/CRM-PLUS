@@ -6,11 +6,9 @@ import {
   loadInstagramCredentials,
   resolveWhatsAppSendRoute,
 } from "@/lib/integrations/credentials";
+import type { OutboundAvailability } from "./outbound-availability";
 
-export type OutboundAvailability = {
-  whatsapp: boolean;
-  instagram: boolean;
-};
+export type { OutboundAvailability } from "./outbound-availability";
 
 /** Verifica se o tenant tem rota de envio real para canais externos. */
 export async function resolveOutboundAvailability(
@@ -24,16 +22,6 @@ export async function resolveOutboundAvailability(
     whatsapp: isWhatsAppOutboundAvailable(waRoute),
     instagram: !!igCreds,
   };
-}
-
-export function canSendOnChannel(
-  channel: string,
-  availability: OutboundAvailability,
-): boolean {
-  if (channel === "manual" || channel === "email") return true;
-  if (channel === "whatsapp") return availability.whatsapp;
-  if (channel === "instagram") return availability.instagram;
-  return true;
 }
 
 export interface OutboundPayload {
