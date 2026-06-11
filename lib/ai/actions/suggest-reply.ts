@@ -98,6 +98,7 @@ export async function suggestReply(
   let outputTokens: number;
   let modelProvider = "mock";
   let modelId       = "mock-v2";
+  let fallbackReason: string | null = null;
 
   const orderedMessages = [...messages].reverse(); // chronological for prompt
 
@@ -129,7 +130,9 @@ export async function suggestReply(
     outputTokens  = result.outputTokens;
     modelProvider = result.provider;
     modelId       = result.modelId;
-  } catch {
+  } catch (err) {
+    fallbackReason = err instanceof Error ? err.message : "unknown error";
+    console.error("[ai] suggestReply: fallback para mock —", fallbackReason);
     const mock = mockSuggestReply(orderedMessages, input.contactName);
     suggestion   = mock.suggestion;
     tone         = mock.tone;
@@ -150,7 +153,7 @@ export async function suggestReply(
       promptTokens:     messages.length * 10,
       completionTokens: outputTokens,
       inputSummary:     `messages=${messages.length}, contact="${input.contactName ?? "unknown"}"`,
-      outputSummary:    `tone=${tone}, confidence=${confidence}%`,
+      outputSummary:    `tone=${tone}, confidence=${confidence}%${fallbackReason ? ` | fallback=${fallbackReason}` : ""}`,
     },
   });
 

@@ -188,8 +188,8 @@ export function InboxClient({
     } else {
       setAiSummary(null);
     }
-    // Load inline suggest-reply chips
-    if (active?.id) {
+    // Load inline suggest-reply chips (somente em canais com envio disponível)
+    if (active?.id && canSendOnChannel(active.channel, outboundAvailability)) {
       loadSuggestions(active.id);
     } else {
       setSuggestions(null);
@@ -713,13 +713,13 @@ export function InboxClient({
                     {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                   </Button>
                 </div>
-                {/* AI Suggestions */}
-                {loadingSuggestions && (
+                {/* AI Suggestions — somente quando o canal permite envio */}
+                {canSendReply && loadingSuggestions && (
                   <div className="flex items-center gap-1 text-xs text-purple-500 mt-1">
                     <span className="animate-pulse">●</span> IA gerando sugestão...
                   </div>
                 )}
-                {suggestions && suggestions.length > 0 && (
+                {canSendReply && suggestions && suggestions.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-1">
                     {suggestions.map((s, i) => (
                       <button

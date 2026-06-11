@@ -99,6 +99,7 @@ export async function summarizeConversation(
   let outputTokens: number;
   let modelProvider = "mock";
   let modelId       = "mock-v2";
+  let fallbackReason: string | null = null;
 
   try {
     const system = await getTenantAiSystemPrompt(input.tenantId, SYSTEM_PROMPT);
@@ -121,8 +122,10 @@ export async function summarizeConversation(
     outputTokens  = result.outputTokens;
     modelProvider = result.provider;
     modelId       = result.modelId;
-  } catch {
+  } catch (err) {
     // AI unavailable, disabled, or returned invalid JSON → use mock
+    fallbackReason = err instanceof Error ? err.message : "unknown error";
+    console.error("[ai] summarizeConversation: fallback para mock —", fallbackReason);
     const mock = mockSummarize(messages);
     summary      = mock.summary;
     keyPoints    = mock.keyPoints;
@@ -150,7 +153,7 @@ export async function summarizeConversation(
         promptTokens:     messages.length * 15,  // estimate for billing approximation
         completionTokens: outputTokens,
         inputSummary:  `messages=${messages.length}, inbound=${messages.filter((m) => m.direction === "inbound").length}, outbound=${messages.filter((m) => m.direction === "outbound").length}`,
-        outputSummary: `keyPoints=${keyPoints.length}: ${keyPoints.join(" | ")}`,
+        outputSummary: `keyPoints=${keyPoints.length}: ${keyPoints.join(" | ")}${fallbackReason ? ` | fallback=${fallbackReason}` : ""}`,
       },
     }),
   ]);

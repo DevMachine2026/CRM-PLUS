@@ -370,6 +370,7 @@ export async function classifyLead(input: ClassifyLeadInput): Promise<ClassifyLe
   let modelProvider = "mock";
   let modelId       = "mock-v3-strategic";
   let outputTokens  = 0;
+  let fallbackReason: string | null = null;
 
   const hasOpportunity = input.hasOpportunity ?? await prisma.opportunity.findFirst({
     where: { tenantId: input.tenantId, contactId: input.contactId, status: "open" },
@@ -393,7 +394,9 @@ export async function classifyLead(input: ClassifyLeadInput): Promise<ClassifyLe
     modelProvider = aiResult.provider;
     modelId       = aiResult.modelId;
     outputTokens  = aiResult.outputTokens;
-  } catch {
+  } catch (err) {
+    fallbackReason = err instanceof Error ? err.message : "unknown error";
+    console.error("[ai] classifyLead: fallback para mock —", fallbackReason);
     qualification = mockClassify(enrichedInput);
   }
 
@@ -456,6 +459,7 @@ export async function classifyLead(input: ClassifyLeadInput): Promise<ClassifyLe
           createOpportunity: qualification.createOpportunity,
           suggestedStage: qualification.suggestedStage,
           nextBestAction: qualification.nextBestAction,
+          fallback: fallbackReason ?? undefined,
         }),
       },
     });

@@ -121,6 +121,7 @@ export async function detectIntent(
   let outputTokens: number;
   let modelProvider = "mock";
   let modelId       = "mock-v2";
+  let fallbackReason: string | null = null;
 
   const VALID_INTENTS: IntentType[] = [
     "interest", "doubt", "complaint", "quote_request",
@@ -151,7 +152,9 @@ export async function detectIntent(
     outputTokens  = result.outputTokens;
     modelProvider = result.provider;
     modelId       = result.modelId;
-  } catch {
+  } catch (err) {
+    fallbackReason = err instanceof Error ? err.message : "unknown error";
+    console.error("[ai] detectIntent: fallback para mock —", fallbackReason);
     const mock = mockDetectIntent(messages);
     intent       = mock.intent;
     confidence   = mock.confidence;
@@ -218,7 +221,7 @@ export async function detectIntent(
         promptTokens:     messages.length * 12,
         completionTokens: outputTokens,
         inputSummary:  `messages=${messages.length}, inbound=${messages.filter((m) => m.direction === "inbound").length}`,
-        outputSummary: `intent=${intent}, confidence=${confidence}%, taskCreated=${taskCreated}`,
+        outputSummary: `intent=${intent}, confidence=${confidence}%, taskCreated=${taskCreated}${fallbackReason ? ` | fallback=${fallbackReason}` : ""}`,
       },
     }),
   ]);
