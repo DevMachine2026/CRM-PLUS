@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db/client";
 import { aiComplete, parseAIJson } from "@/lib/ai/provider";
 import { getTenantAiSystemPrompt } from "@/lib/ai/tenant-prompt";
 import { emitOpportunityCreated } from "@/lib/automations/emit";
+import { ensureDefaultPipeline } from "@/lib/db/ensure-default-pipeline";
 
 // ── Strategic qualification schema (webhook + CRM) ───────────────────────────
 
@@ -263,6 +264,10 @@ async function resolvePipelineStage(
   tenantId: string,
   suggested: SuggestedStage
 ): Promise<{ pipelineId: string; stageId: string } | null> {
+  // Garante que o pipeline default "Vendas" exista antes de resolver o estágio —
+  // o webhook pode classificar um lead antes de qualquer visita à tela de Oportunidades.
+  await ensureDefaultPipeline(tenantId);
+
   const pipeline = await prisma.pipeline.findFirst({
     where:   { tenantId, isDefault: true },
     include: { stages: { orderBy: { order: "asc" } } },

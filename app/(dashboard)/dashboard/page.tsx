@@ -97,10 +97,11 @@ export default async function DashboardPage() {
   const todayStart = new Date(now);
   todayStart.setHours(0, 0, 0, 0);
 
-  const canReadTasks   = can(session.role, "read", "tasks");
-  const canReadBilling = can(session.role, "read", "billing");
-  const canReadOpps    = can(session.role, "read", "opportunities");
-  const canReadConvs   = can(session.role, "read", "conversations");
+  const canReadTasks    = can(session.role, "read", "tasks");
+  const canReadBilling  = can(session.role, "read", "billing");
+  const canReadOpps     = can(session.role, "read", "opportunities");
+  const canReadConvs    = can(session.role, "read", "conversations");
+  const canReadContacts = can(session.role, "read", "contacts");
 
   // ── Core counts ──────────────────────────────────────────────────────────────
   const [
@@ -120,16 +121,8 @@ export default async function DashboardPage() {
     prisma.task.count({ where: { tenantId, status: "pending" } }),
     prisma.revenue.count({ where: { tenantId, status: "pending" } }),
     prisma.task.count({ where: { tenantId, status: "pending", dueAt: { lt: now } } }),
-    canReadOpps
-      ? prisma.opportunity.count({
-          where: {
-            tenantId,
-            status: "open",
-            contact: {
-              conversations: { some: { detectedIntent: { in: ["interest", "quote_request", "urgency"] } } },
-            },
-          },
-        })
+    canReadContacts
+      ? prisma.contact.count({ where: { tenantId, leadScore: { gte: 70 } } })
       : 0,
     prisma.aiLog.findMany({
       where:   { tenantId, createdAt: { gte: todayStart } },
@@ -246,8 +239,8 @@ export default async function DashboardPage() {
     },
     {
       title: "Leads quentes", value: hotLeadsCount.toString(),
-      icon: Flame, href: "/opportunities", description: "com intenção de compra detectada",
-      alert: hotLeadsCount > 0, show: canReadOpps,
+      icon: Flame, href: "/contacts?score=hot", description: "com lead score alto (70+)",
+      alert: hotLeadsCount > 0, show: canReadContacts,
     },
   ];
   const kpisBottom = [

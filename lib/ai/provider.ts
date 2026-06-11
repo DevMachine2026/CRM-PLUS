@@ -40,8 +40,10 @@ const MODELS = {
     quality: process.env.AI_MODEL_QUALITY ?? "claude-sonnet-4-6",
   },
   gemini: {
-    fast:    "gemini-2.0-flash",
-    quality: "gemini-2.5-pro-preview-05-06",
+    // gemini-2.0-flash e gemini-2.5-pro retornam 429 (free tier limit: 0) nesta conta;
+    // gemini-2.5-flash tem cota no free tier. Configurável por env para quem habilitar billing.
+    fast:    process.env.AI_MODEL_GEMINI_FAST    ?? "gemini-2.5-flash",
+    quality: process.env.AI_MODEL_GEMINI_QUALITY ?? "gemini-2.5-flash",
   },
 } as const;
 

@@ -8,6 +8,9 @@ import { Mail, Phone, Building2, Tag, Activity } from "lucide-react";
 import { ContactSummaryCard } from "@/components/contact-summary-card";
 import { EntityDetailShell } from "@/components/layout/entity-detail-shell";
 import { ListCard } from "@/components/ui/list-card";
+import { WhatsAppOpenButton } from "@/components/ui/whatsapp-open-button";
+import { resolveContactWhatsAppPhone } from "@/lib/utils/whatsapp";
+import { formatPhone } from "@/lib/utils/format";
 
 export default async function ContactProfilePage({
   params,
@@ -23,12 +26,13 @@ export default async function ContactProfilePage({
     where: { id, tenantId: session.tenantId },
     select: {
       id:        true,
-      name:      true,
-      email:     true,
-      phone:     true,
-      status:    true,
-      leadScore: true,
-      createdAt: true,
+      name:       true,
+      email:      true,
+      phone:      true,
+      externalId: true,
+      status:     true,
+      leadScore:  true,
+      createdAt:  true,
       company:   { select: { id: true, name: true } },
       tags:      { select: { tag: { select: { id: true, name: true, color: true } } } },
       opportunities: {
@@ -73,6 +77,8 @@ export default async function ContactProfilePage({
 
   if (!contact) notFound();
 
+  const waPhone = resolveContactWhatsAppPhone(contact);
+
   const scoreColor =
     contact.leadScore >= 70 ? "text-red-500"
     : contact.leadScore >= 35 ? "text-yellow-500"
@@ -97,7 +103,10 @@ export default async function ContactProfilePage({
           )}
           {contact.phone && (
             <span className="flex items-center gap-1">
-              <Phone className="h-3 w-3" />{contact.phone}
+              <Phone className="h-3 w-3" />{formatPhone(contact.phone)}
+              {waPhone && (
+                <WhatsAppOpenButton phone={waPhone} variant="icon" className="h-6 w-6" />
+              )}
             </span>
           )}
           {contact.company && (

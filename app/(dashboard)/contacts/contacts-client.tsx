@@ -64,6 +64,9 @@ interface Props {
   total: number;
   page: number;
   search: string;
+  statusFilter: string;
+  channelFilter: string;
+  scoreFilter: string;
   canCreate: boolean;
   canEdit: boolean;
   canDelete: boolean;
@@ -84,7 +87,16 @@ const STATUS_VARIANTS: Record<ContactStatus, "default" | "secondary" | "outline"
 const EMPTY_FORM = { name: "", email: "", phone: "", status: "lead" as ContactStatus };
 
 function ScoreBadge({ score }: { score: number }) {
-  if (score === 0) return null;
+  if (!score) {
+    return (
+      <span
+        className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-500"
+        title="Lead ainda não classificado pela IA"
+      >
+        ⚪ Novo
+      </span>
+    );
+  }
   const isHot  = score >= 70;
   const isWarm = score >= 35;
   return (
@@ -100,7 +112,7 @@ function ScoreBadge({ score }: { score: number }) {
   );
 }
 
-export function ContactsClient({ contacts, allTags, total, page, search, canCreate, canEdit, canDelete }: Props) {
+export function ContactsClient({ contacts, allTags, total, page, search, statusFilter, channelFilter, scoreFilter, canCreate, canEdit, canDelete }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [q, setQ] = useState(search);
@@ -112,10 +124,26 @@ export function ContactsClient({ contacts, allTags, total, page, search, canCrea
   const [tagContact, setTagContact] = useState<Contact | null>(null);
   const [tagDialogOpen, setTagDialogOpen] = useState(false);
 
-  function applySearch(value: string) {
+  function pushFilters(overrides: Record<string, string> = {}) {
+    const next = {
+      q,
+      status: statusFilter,
+      channel: channelFilter,
+      score: scoreFilter,
+      page: "",
+      ...overrides,
+    };
     const params = new URLSearchParams();
-    if (value) params.set("q", value);
+    if (next.q) params.set("q", next.q);
+    if (next.status) params.set("status", next.status);
+    if (next.channel) params.set("channel", next.channel);
+    if (next.score) params.set("score", next.score);
+    if (next.page && next.page !== "1") params.set("page", next.page);
     startTransition(() => router.push(`/contacts?${params}`));
+  }
+
+  function applySearch(value: string) {
+    pushFilters({ q: value });
   }
 
   function openCreate() {
@@ -326,16 +354,46 @@ export function ContactsClient({ contacts, allTags, total, page, search, canCrea
       />
       {canCreate && <Fab label="Novo contato" onClick={openCreate} />}
 
-      {/* Search */}
-      <div className="relative w-full max-w-sm">
-        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-        <Input
-          className="pl-8"
-          placeholder="Buscar por nome, e-mail ou telefone..."
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && applySearch(q)}
-        />
+      {/* Search + filtros */}
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="relative w-full max-w-sm">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            className="pl-8"
+            placeholder="Buscar por nome, e-mail ou telefone..."
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && applySearch(q)}
+          />
+        </div>
+        <Select value={statusFilter || "all"} onValueChange={(v) => pushFilters({ status: !v || v === "all" ? "" : v })}>
+          <SelectTrigger className="h-9 w-32 text-sm"><SelectValue placeholder="Status" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos status</SelectItem>
+            <SelectItem value="lead">Lead</SelectItem>
+            <SelectItem value="customer">Cliente</SelectItem>
+            <SelectItem value="inactive">Inativo</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={channelFilter || "all"} onValueChange={(v) => pushFilters({ channel: !v || v === "all" ? "" : v })}>
+          <SelectTrigger className="h-9 w-32 text-sm"><SelectValue placeholder="Canal" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos canais</SelectItem>
+            <SelectItem value="whatsapp">WhatsApp</SelectItem>
+            <SelectItem value="instagram">Instagram</SelectItem>
+            <SelectItem value="email">E-mail</SelectItem>
+            <SelectItem value="manual">Manual</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={scoreFilter || "all"} onValueChange={(v) => pushFilters({ score: !v || v === "all" ? "" : v })}>
+          <SelectTrigger className="h-9 w-32 text-sm"><SelectValue placeholder="Score" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos scores</SelectItem>
+            <SelectItem value="hot">🔴 Quente (70+)</SelectItem>
+            <SelectItem value="warm">🟡 Morno (35–69)</SelectItem>
+            <SelectItem value="cold">🔵 Frio (&lt;35)</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className={ds.listStack}>{listContent}</div>
@@ -346,11 +404,11 @@ export function ContactsClient({ contacts, allTags, total, page, search, canCrea
           <span>Página {page} de {pages}</span>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" disabled={page <= 1 || isPending}
-              onClick={() => { const p = new URLSearchParams(); if (q) p.set("q", q); p.set("page", String(page - 1)); router.push(`/contacts?${p}`); }}>
+              onClick={() => pushFilters({ page: String(page - 1) })}>
               Anterior
             </Button>
             <Button variant="outline" size="sm" disabled={page >= pages || isPending}
-              onClick={() => { const p = new URLSearchParams(); if (q) p.set("q", q); p.set("page", String(page + 1)); router.push(`/contacts?${p}`); }}>
+              onClick={() => pushFilters({ page: String(page + 1) })}>
               Próxima
             </Button>
           </div>
