@@ -64,8 +64,6 @@ export default async function InboxPage({
     prisma.conversation.findMany({
       where,
       orderBy: [
-        { priorityScore: "desc" },
-        { contact: { leadScore: "desc" } },
         { lastMessageAt: "desc" },
         { createdAt: "desc" },
       ],

@@ -229,10 +229,18 @@ export function InboxClient({
 
   function patchConversationPreview(msg: ConvMessage) {
     if (!active) return;
-    setConversations((prev) => prev.map((c) => c.id === active.id
-      ? { ...c, lastMessageAt: msg.sentAt, messages: [{ content: msg.content, direction: msg.direction, sentAt: msg.sentAt }] }
-      : c,
-    ));
+    setConversations((prev) => {
+      const updated = prev.map((c) => c.id === active.id
+        ? { ...c, lastMessageAt: msg.sentAt, messages: [{ content: msg.content, direction: msg.direction, sentAt: msg.sentAt }] }
+        : c,
+      );
+      // Reordena por recência (mesma regra do servidor): conversa mais nova no topo.
+      return [...updated].sort((a, b) => {
+        const ta = new Date(a.lastMessageAt ?? a.createdAt).getTime();
+        const tb = new Date(b.lastMessageAt ?? b.createdAt).getTime();
+        return tb - ta;
+      });
+    });
   }
 
   const canSendReply = active
