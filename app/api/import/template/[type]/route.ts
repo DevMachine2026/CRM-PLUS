@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getSession, unauthorized } from "@/lib/auth/get-session";
 import { CONTACTS_CSV_TEMPLATE } from "@/lib/import/contact-import";
 import { PRODUCTS_CSV_TEMPLATE } from "@/lib/import/product-import";
+import { OPPORTUNITIES_CSV_TEMPLATE } from "@/lib/import/opportunity-import";
 
 export async function GET(
   _req: Request,
@@ -26,6 +27,15 @@ export async function GET(
       headers: {
         "Content-Type": "text/csv; charset=utf-8",
         "Content-Disposition": 'attachment; filename="modelo-produtos.csv"',
+      },
+    });
+  }
+
+  if (type === "opportunities") {
+    return new NextResponse(OPPORTUNITIES_CSV_TEMPLATE, {
+      headers: {
+        "Content-Type": "text/csv; charset=utf-8",
+        "Content-Disposition": 'attachment; filename="modelo-oportunidades.csv"',
       },
     });
   }

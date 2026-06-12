@@ -277,6 +277,7 @@ export const OpportunityScalarFieldEnum = {
   pipelineId: 'pipelineId',
   stageId: 'stageId',
   assignedUserId: 'assignedUserId',
+  externalId: 'externalId',
   title: 'title',
   value: 'value',
   status: 'status',

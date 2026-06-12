@@ -49,6 +49,7 @@ export default async function SettingsPage() {
       canDeleteTeam={can(session.role, "delete", "team")}
       canImportContacts={can(session.role, "create", "contacts")}
       canImportProducts={can(session.role, "create", "products")}
+      canImportOpportunities={can(session.role, "create", "opportunities")}
     />
   );
 }

@@ -8,6 +8,7 @@ import {
   Upload,
   Users,
   Package,
+  TrendingUp,
   CheckCircle2,
   AlertCircle,
   Eye,
@@ -31,6 +32,7 @@ import type { ImportPreview, ImportResult } from "@/lib/import/types";
 type Props = {
   canImportContacts: boolean;
   canImportProducts: boolean;
+  canImportOpportunities: boolean;
 };
 
 function ImportBlock({
@@ -208,7 +210,7 @@ function ImportBlock({
               onCheckedChange={setUpdateExisting}
             />
             <Label className="text-sm font-normal">
-              Atualizar duplicados (e-mail, telefone ou ID externo)
+              Atualizar registros já existentes (em vez de criar duplicados)
             </Label>
           </div>
 
@@ -263,6 +265,7 @@ function ImportBlock({
 export function DataImportSection({
   canImportContacts,
   canImportProducts,
+  canImportOpportunities,
 }: Props) {
   return (
     <Card>
@@ -302,6 +305,16 @@ export function DataImportSection({
           importPath="/api/import/products"
           icon={<Package className="h-5 w-5" />}
           disabled={!canImportProducts}
+        />
+
+        <ImportBlock
+          title="Oportunidades / Negócios"
+          description="Reconhece título, valor, status, estágio do funil, contato (vincula ou cria) e ID do CRM anterior."
+          templatePath="/api/import/template/opportunities"
+          previewPath="/api/import/opportunities/preview"
+          importPath="/api/import/opportunities"
+          icon={<TrendingUp className="h-5 w-5" />}
+          disabled={!canImportOpportunities}
         />
 
         <p className="text-xs text-muted-foreground">

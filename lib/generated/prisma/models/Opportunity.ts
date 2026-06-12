@@ -42,6 +42,7 @@ export type OpportunityMinAggregateOutputType = {
   pipelineId: string | null
   stageId: string | null
   assignedUserId: string | null
+  externalId: string | null
   title: string | null
   value: runtime.Decimal | null
   status: $Enums.OpportunityStatus | null
@@ -60,6 +61,7 @@ export type OpportunityMaxAggregateOutputType = {
   pipelineId: string | null
   stageId: string | null
   assignedUserId: string | null
+  externalId: string | null
   title: string | null
   value: runtime.Decimal | null
   status: $Enums.OpportunityStatus | null
@@ -78,6 +80,7 @@ export type OpportunityCountAggregateOutputType = {
   pipelineId: number
   stageId: number
   assignedUserId: number
+  externalId: number
   title: number
   value: number
   status: number
@@ -106,6 +109,7 @@ export type OpportunityMinAggregateInputType = {
   pipelineId?: true
   stageId?: true
   assignedUserId?: true
+  externalId?: true
   title?: true
   value?: true
   status?: true
@@ -124,6 +128,7 @@ export type OpportunityMaxAggregateInputType = {
   pipelineId?: true
   stageId?: true
   assignedUserId?: true
+  externalId?: true
   title?: true
   value?: true
   status?: true
@@ -142,6 +147,7 @@ export type OpportunityCountAggregateInputType = {
   pipelineId?: true
   stageId?: true
   assignedUserId?: true
+  externalId?: true
   title?: true
   value?: true
   status?: true
@@ -247,6 +253,7 @@ export type OpportunityGroupByOutputType = {
   pipelineId: string
   stageId: string
   assignedUserId: string | null
+  externalId: string | null
   title: string
   value: runtime.Decimal | null
   status: $Enums.OpportunityStatus
@@ -288,6 +295,7 @@ export type OpportunityWhereInput = {
   pipelineId?: Prisma.UuidFilter<"Opportunity"> | string
   stageId?: Prisma.UuidFilter<"Opportunity"> | string
   assignedUserId?: Prisma.UuidNullableFilter<"Opportunity"> | string | null
+  externalId?: Prisma.StringNullableFilter<"Opportunity"> | string | null
   title?: Prisma.StringFilter<"Opportunity"> | string
   value?: Prisma.DecimalNullableFilter<"Opportunity"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: Prisma.EnumOpportunityStatusFilter<"Opportunity"> | $Enums.OpportunityStatus
@@ -318,6 +326,7 @@ export type OpportunityOrderByWithRelationInput = {
   pipelineId?: Prisma.SortOrder
   stageId?: Prisma.SortOrder
   assignedUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  externalId?: Prisma.SortOrderInput | Prisma.SortOrder
   title?: Prisma.SortOrder
   value?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -351,6 +360,7 @@ export type OpportunityWhereUniqueInput = Prisma.AtLeast<{
   pipelineId?: Prisma.UuidFilter<"Opportunity"> | string
   stageId?: Prisma.UuidFilter<"Opportunity"> | string
   assignedUserId?: Prisma.UuidNullableFilter<"Opportunity"> | string | null
+  externalId?: Prisma.StringNullableFilter<"Opportunity"> | string | null
   title?: Prisma.StringFilter<"Opportunity"> | string
   value?: Prisma.DecimalNullableFilter<"Opportunity"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: Prisma.EnumOpportunityStatusFilter<"Opportunity"> | $Enums.OpportunityStatus
@@ -381,6 +391,7 @@ export type OpportunityOrderByWithAggregationInput = {
   pipelineId?: Prisma.SortOrder
   stageId?: Prisma.SortOrder
   assignedUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  externalId?: Prisma.SortOrderInput | Prisma.SortOrder
   title?: Prisma.SortOrder
   value?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -407,6 +418,7 @@ export type OpportunityScalarWhereWithAggregatesInput = {
   pipelineId?: Prisma.UuidWithAggregatesFilter<"Opportunity"> | string
   stageId?: Prisma.UuidWithAggregatesFilter<"Opportunity"> | string
   assignedUserId?: Prisma.UuidNullableWithAggregatesFilter<"Opportunity"> | string | null
+  externalId?: Prisma.StringNullableWithAggregatesFilter<"Opportunity"> | string | null
   title?: Prisma.StringWithAggregatesFilter<"Opportunity"> | string
   value?: Prisma.DecimalNullableWithAggregatesFilter<"Opportunity"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: Prisma.EnumOpportunityStatusWithAggregatesFilter<"Opportunity"> | $Enums.OpportunityStatus
@@ -419,6 +431,7 @@ export type OpportunityScalarWhereWithAggregatesInput = {
 
 export type OpportunityCreateInput = {
   id?: string
+  externalId?: string | null
   title: string
   value?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: $Enums.OpportunityStatus
@@ -449,6 +462,7 @@ export type OpportunityUncheckedCreateInput = {
   pipelineId: string
   stageId: string
   assignedUserId?: string | null
+  externalId?: string | null
   title: string
   value?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: $Enums.OpportunityStatus
@@ -467,6 +481,7 @@ export type OpportunityUncheckedCreateInput = {
 
 export type OpportunityUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: Prisma.EnumOpportunityStatusFieldUpdateOperationsInput | $Enums.OpportunityStatus
@@ -497,6 +512,7 @@ export type OpportunityUncheckedUpdateInput = {
   pipelineId?: Prisma.StringFieldUpdateOperationsInput | string
   stageId?: Prisma.StringFieldUpdateOperationsInput | string
   assignedUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: Prisma.EnumOpportunityStatusFieldUpdateOperationsInput | $Enums.OpportunityStatus
@@ -521,6 +537,7 @@ export type OpportunityCreateManyInput = {
   pipelineId: string
   stageId: string
   assignedUserId?: string | null
+  externalId?: string | null
   title: string
   value?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: $Enums.OpportunityStatus
@@ -533,6 +550,7 @@ export type OpportunityCreateManyInput = {
 
 export type OpportunityUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: Prisma.EnumOpportunityStatusFieldUpdateOperationsInput | $Enums.OpportunityStatus
@@ -551,6 +569,7 @@ export type OpportunityUncheckedUpdateManyInput = {
   pipelineId?: Prisma.StringFieldUpdateOperationsInput | string
   stageId?: Prisma.StringFieldUpdateOperationsInput | string
   assignedUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: Prisma.EnumOpportunityStatusFieldUpdateOperationsInput | $Enums.OpportunityStatus
@@ -579,6 +598,7 @@ export type OpportunityCountOrderByAggregateInput = {
   pipelineId?: Prisma.SortOrder
   stageId?: Prisma.SortOrder
   assignedUserId?: Prisma.SortOrder
+  externalId?: Prisma.SortOrder
   title?: Prisma.SortOrder
   value?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -601,6 +621,7 @@ export type OpportunityMaxOrderByAggregateInput = {
   pipelineId?: Prisma.SortOrder
   stageId?: Prisma.SortOrder
   assignedUserId?: Prisma.SortOrder
+  externalId?: Prisma.SortOrder
   title?: Prisma.SortOrder
   value?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -619,6 +640,7 @@ export type OpportunityMinOrderByAggregateInput = {
   pipelineId?: Prisma.SortOrder
   stageId?: Prisma.SortOrder
   assignedUserId?: Prisma.SortOrder
+  externalId?: Prisma.SortOrder
   title?: Prisma.SortOrder
   value?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -997,6 +1019,7 @@ export type OpportunityUpdateOneRequiredWithoutTagsNestedInput = {
 
 export type OpportunityCreateWithoutTenantInput = {
   id?: string
+  externalId?: string | null
   title: string
   value?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: $Enums.OpportunityStatus
@@ -1025,6 +1048,7 @@ export type OpportunityUncheckedCreateWithoutTenantInput = {
   pipelineId: string
   stageId: string
   assignedUserId?: string | null
+  externalId?: string | null
   title: string
   value?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: $Enums.OpportunityStatus
@@ -1078,6 +1102,7 @@ export type OpportunityScalarWhereInput = {
   pipelineId?: Prisma.UuidFilter<"Opportunity"> | string
   stageId?: Prisma.UuidFilter<"Opportunity"> | string
   assignedUserId?: Prisma.UuidNullableFilter<"Opportunity"> | string | null
+  externalId?: Prisma.StringNullableFilter<"Opportunity"> | string | null
   title?: Prisma.StringFilter<"Opportunity"> | string
   value?: Prisma.DecimalNullableFilter<"Opportunity"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: Prisma.EnumOpportunityStatusFilter<"Opportunity"> | $Enums.OpportunityStatus
@@ -1090,6 +1115,7 @@ export type OpportunityScalarWhereInput = {
 
 export type OpportunityCreateWithoutAssignedUserInput = {
   id?: string
+  externalId?: string | null
   title: string
   value?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: $Enums.OpportunityStatus
@@ -1118,6 +1144,7 @@ export type OpportunityUncheckedCreateWithoutAssignedUserInput = {
   companyId?: string | null
   pipelineId: string
   stageId: string
+  externalId?: string | null
   title: string
   value?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: $Enums.OpportunityStatus
@@ -1162,6 +1189,7 @@ export type OpportunityUpdateManyWithWhereWithoutAssignedUserInput = {
 
 export type OpportunityCreateWithoutCompanyInput = {
   id?: string
+  externalId?: string | null
   title: string
   value?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: $Enums.OpportunityStatus
@@ -1190,6 +1218,7 @@ export type OpportunityUncheckedCreateWithoutCompanyInput = {
   pipelineId: string
   stageId: string
   assignedUserId?: string | null
+  externalId?: string | null
   title: string
   value?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: $Enums.OpportunityStatus
@@ -1234,6 +1263,7 @@ export type OpportunityUpdateManyWithWhereWithoutCompanyInput = {
 
 export type OpportunityCreateWithoutContactInput = {
   id?: string
+  externalId?: string | null
   title: string
   value?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: $Enums.OpportunityStatus
@@ -1262,6 +1292,7 @@ export type OpportunityUncheckedCreateWithoutContactInput = {
   pipelineId: string
   stageId: string
   assignedUserId?: string | null
+  externalId?: string | null
   title: string
   value?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: $Enums.OpportunityStatus
@@ -1306,6 +1337,7 @@ export type OpportunityUpdateManyWithWhereWithoutContactInput = {
 
 export type OpportunityCreateWithoutPipelineInput = {
   id?: string
+  externalId?: string | null
   title: string
   value?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: $Enums.OpportunityStatus
@@ -1334,6 +1366,7 @@ export type OpportunityUncheckedCreateWithoutPipelineInput = {
   companyId?: string | null
   stageId: string
   assignedUserId?: string | null
+  externalId?: string | null
   title: string
   value?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: $Enums.OpportunityStatus
@@ -1378,6 +1411,7 @@ export type OpportunityUpdateManyWithWhereWithoutPipelineInput = {
 
 export type OpportunityCreateWithoutStageInput = {
   id?: string
+  externalId?: string | null
   title: string
   value?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: $Enums.OpportunityStatus
@@ -1406,6 +1440,7 @@ export type OpportunityUncheckedCreateWithoutStageInput = {
   companyId?: string | null
   pipelineId: string
   assignedUserId?: string | null
+  externalId?: string | null
   title: string
   value?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: $Enums.OpportunityStatus
@@ -1450,6 +1485,7 @@ export type OpportunityUpdateManyWithWhereWithoutStageInput = {
 
 export type OpportunityCreateWithoutProductsInput = {
   id?: string
+  externalId?: string | null
   title: string
   value?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: $Enums.OpportunityStatus
@@ -1479,6 +1515,7 @@ export type OpportunityUncheckedCreateWithoutProductsInput = {
   pipelineId: string
   stageId: string
   assignedUserId?: string | null
+  externalId?: string | null
   title: string
   value?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: $Enums.OpportunityStatus
@@ -1512,6 +1549,7 @@ export type OpportunityUpdateToOneWithWhereWithoutProductsInput = {
 
 export type OpportunityUpdateWithoutProductsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: Prisma.EnumOpportunityStatusFieldUpdateOperationsInput | $Enums.OpportunityStatus
@@ -1541,6 +1579,7 @@ export type OpportunityUncheckedUpdateWithoutProductsInput = {
   pipelineId?: Prisma.StringFieldUpdateOperationsInput | string
   stageId?: Prisma.StringFieldUpdateOperationsInput | string
   assignedUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: Prisma.EnumOpportunityStatusFieldUpdateOperationsInput | $Enums.OpportunityStatus
@@ -1558,6 +1597,7 @@ export type OpportunityUncheckedUpdateWithoutProductsInput = {
 
 export type OpportunityCreateWithoutRevenuesInput = {
   id?: string
+  externalId?: string | null
   title: string
   value?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: $Enums.OpportunityStatus
@@ -1587,6 +1627,7 @@ export type OpportunityUncheckedCreateWithoutRevenuesInput = {
   pipelineId: string
   stageId: string
   assignedUserId?: string | null
+  externalId?: string | null
   title: string
   value?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: $Enums.OpportunityStatus
@@ -1620,6 +1661,7 @@ export type OpportunityUpdateToOneWithWhereWithoutRevenuesInput = {
 
 export type OpportunityUpdateWithoutRevenuesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: Prisma.EnumOpportunityStatusFieldUpdateOperationsInput | $Enums.OpportunityStatus
@@ -1649,6 +1691,7 @@ export type OpportunityUncheckedUpdateWithoutRevenuesInput = {
   pipelineId?: Prisma.StringFieldUpdateOperationsInput | string
   stageId?: Prisma.StringFieldUpdateOperationsInput | string
   assignedUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: Prisma.EnumOpportunityStatusFieldUpdateOperationsInput | $Enums.OpportunityStatus
@@ -1666,6 +1709,7 @@ export type OpportunityUncheckedUpdateWithoutRevenuesInput = {
 
 export type OpportunityCreateWithoutTasksInput = {
   id?: string
+  externalId?: string | null
   title: string
   value?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: $Enums.OpportunityStatus
@@ -1695,6 +1739,7 @@ export type OpportunityUncheckedCreateWithoutTasksInput = {
   pipelineId: string
   stageId: string
   assignedUserId?: string | null
+  externalId?: string | null
   title: string
   value?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: $Enums.OpportunityStatus
@@ -1728,6 +1773,7 @@ export type OpportunityUpdateToOneWithWhereWithoutTasksInput = {
 
 export type OpportunityUpdateWithoutTasksInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: Prisma.EnumOpportunityStatusFieldUpdateOperationsInput | $Enums.OpportunityStatus
@@ -1757,6 +1803,7 @@ export type OpportunityUncheckedUpdateWithoutTasksInput = {
   pipelineId?: Prisma.StringFieldUpdateOperationsInput | string
   stageId?: Prisma.StringFieldUpdateOperationsInput | string
   assignedUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: Prisma.EnumOpportunityStatusFieldUpdateOperationsInput | $Enums.OpportunityStatus
@@ -1774,6 +1821,7 @@ export type OpportunityUncheckedUpdateWithoutTasksInput = {
 
 export type OpportunityCreateWithoutActivitiesInput = {
   id?: string
+  externalId?: string | null
   title: string
   value?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: $Enums.OpportunityStatus
@@ -1803,6 +1851,7 @@ export type OpportunityUncheckedCreateWithoutActivitiesInput = {
   pipelineId: string
   stageId: string
   assignedUserId?: string | null
+  externalId?: string | null
   title: string
   value?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: $Enums.OpportunityStatus
@@ -1836,6 +1885,7 @@ export type OpportunityUpdateToOneWithWhereWithoutActivitiesInput = {
 
 export type OpportunityUpdateWithoutActivitiesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: Prisma.EnumOpportunityStatusFieldUpdateOperationsInput | $Enums.OpportunityStatus
@@ -1865,6 +1915,7 @@ export type OpportunityUncheckedUpdateWithoutActivitiesInput = {
   pipelineId?: Prisma.StringFieldUpdateOperationsInput | string
   stageId?: Prisma.StringFieldUpdateOperationsInput | string
   assignedUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: Prisma.EnumOpportunityStatusFieldUpdateOperationsInput | $Enums.OpportunityStatus
@@ -1882,6 +1933,7 @@ export type OpportunityUncheckedUpdateWithoutActivitiesInput = {
 
 export type OpportunityCreateWithoutStageHistoryInput = {
   id?: string
+  externalId?: string | null
   title: string
   value?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: $Enums.OpportunityStatus
@@ -1911,6 +1963,7 @@ export type OpportunityUncheckedCreateWithoutStageHistoryInput = {
   pipelineId: string
   stageId: string
   assignedUserId?: string | null
+  externalId?: string | null
   title: string
   value?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: $Enums.OpportunityStatus
@@ -1944,6 +1997,7 @@ export type OpportunityUpdateToOneWithWhereWithoutStageHistoryInput = {
 
 export type OpportunityUpdateWithoutStageHistoryInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: Prisma.EnumOpportunityStatusFieldUpdateOperationsInput | $Enums.OpportunityStatus
@@ -1973,6 +2027,7 @@ export type OpportunityUncheckedUpdateWithoutStageHistoryInput = {
   pipelineId?: Prisma.StringFieldUpdateOperationsInput | string
   stageId?: Prisma.StringFieldUpdateOperationsInput | string
   assignedUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: Prisma.EnumOpportunityStatusFieldUpdateOperationsInput | $Enums.OpportunityStatus
@@ -1990,6 +2045,7 @@ export type OpportunityUncheckedUpdateWithoutStageHistoryInput = {
 
 export type OpportunityCreateWithoutTagsInput = {
   id?: string
+  externalId?: string | null
   title: string
   value?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: $Enums.OpportunityStatus
@@ -2019,6 +2075,7 @@ export type OpportunityUncheckedCreateWithoutTagsInput = {
   pipelineId: string
   stageId: string
   assignedUserId?: string | null
+  externalId?: string | null
   title: string
   value?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: $Enums.OpportunityStatus
@@ -2052,6 +2109,7 @@ export type OpportunityUpdateToOneWithWhereWithoutTagsInput = {
 
 export type OpportunityUpdateWithoutTagsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: Prisma.EnumOpportunityStatusFieldUpdateOperationsInput | $Enums.OpportunityStatus
@@ -2081,6 +2139,7 @@ export type OpportunityUncheckedUpdateWithoutTagsInput = {
   pipelineId?: Prisma.StringFieldUpdateOperationsInput | string
   stageId?: Prisma.StringFieldUpdateOperationsInput | string
   assignedUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: Prisma.EnumOpportunityStatusFieldUpdateOperationsInput | $Enums.OpportunityStatus
@@ -2103,6 +2162,7 @@ export type OpportunityCreateManyTenantInput = {
   pipelineId: string
   stageId: string
   assignedUserId?: string | null
+  externalId?: string | null
   title: string
   value?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: $Enums.OpportunityStatus
@@ -2115,6 +2175,7 @@ export type OpportunityCreateManyTenantInput = {
 
 export type OpportunityUpdateWithoutTenantInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: Prisma.EnumOpportunityStatusFieldUpdateOperationsInput | $Enums.OpportunityStatus
@@ -2143,6 +2204,7 @@ export type OpportunityUncheckedUpdateWithoutTenantInput = {
   pipelineId?: Prisma.StringFieldUpdateOperationsInput | string
   stageId?: Prisma.StringFieldUpdateOperationsInput | string
   assignedUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: Prisma.EnumOpportunityStatusFieldUpdateOperationsInput | $Enums.OpportunityStatus
@@ -2166,6 +2228,7 @@ export type OpportunityUncheckedUpdateManyWithoutTenantInput = {
   pipelineId?: Prisma.StringFieldUpdateOperationsInput | string
   stageId?: Prisma.StringFieldUpdateOperationsInput | string
   assignedUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: Prisma.EnumOpportunityStatusFieldUpdateOperationsInput | $Enums.OpportunityStatus
@@ -2183,6 +2246,7 @@ export type OpportunityCreateManyAssignedUserInput = {
   companyId?: string | null
   pipelineId: string
   stageId: string
+  externalId?: string | null
   title: string
   value?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: $Enums.OpportunityStatus
@@ -2195,6 +2259,7 @@ export type OpportunityCreateManyAssignedUserInput = {
 
 export type OpportunityUpdateWithoutAssignedUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: Prisma.EnumOpportunityStatusFieldUpdateOperationsInput | $Enums.OpportunityStatus
@@ -2223,6 +2288,7 @@ export type OpportunityUncheckedUpdateWithoutAssignedUserInput = {
   companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   pipelineId?: Prisma.StringFieldUpdateOperationsInput | string
   stageId?: Prisma.StringFieldUpdateOperationsInput | string
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: Prisma.EnumOpportunityStatusFieldUpdateOperationsInput | $Enums.OpportunityStatus
@@ -2246,6 +2312,7 @@ export type OpportunityUncheckedUpdateManyWithoutAssignedUserInput = {
   companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   pipelineId?: Prisma.StringFieldUpdateOperationsInput | string
   stageId?: Prisma.StringFieldUpdateOperationsInput | string
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: Prisma.EnumOpportunityStatusFieldUpdateOperationsInput | $Enums.OpportunityStatus
@@ -2263,6 +2330,7 @@ export type OpportunityCreateManyCompanyInput = {
   pipelineId: string
   stageId: string
   assignedUserId?: string | null
+  externalId?: string | null
   title: string
   value?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: $Enums.OpportunityStatus
@@ -2275,6 +2343,7 @@ export type OpportunityCreateManyCompanyInput = {
 
 export type OpportunityUpdateWithoutCompanyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: Prisma.EnumOpportunityStatusFieldUpdateOperationsInput | $Enums.OpportunityStatus
@@ -2303,6 +2372,7 @@ export type OpportunityUncheckedUpdateWithoutCompanyInput = {
   pipelineId?: Prisma.StringFieldUpdateOperationsInput | string
   stageId?: Prisma.StringFieldUpdateOperationsInput | string
   assignedUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: Prisma.EnumOpportunityStatusFieldUpdateOperationsInput | $Enums.OpportunityStatus
@@ -2326,6 +2396,7 @@ export type OpportunityUncheckedUpdateManyWithoutCompanyInput = {
   pipelineId?: Prisma.StringFieldUpdateOperationsInput | string
   stageId?: Prisma.StringFieldUpdateOperationsInput | string
   assignedUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: Prisma.EnumOpportunityStatusFieldUpdateOperationsInput | $Enums.OpportunityStatus
@@ -2343,6 +2414,7 @@ export type OpportunityCreateManyContactInput = {
   pipelineId: string
   stageId: string
   assignedUserId?: string | null
+  externalId?: string | null
   title: string
   value?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: $Enums.OpportunityStatus
@@ -2355,6 +2427,7 @@ export type OpportunityCreateManyContactInput = {
 
 export type OpportunityUpdateWithoutContactInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: Prisma.EnumOpportunityStatusFieldUpdateOperationsInput | $Enums.OpportunityStatus
@@ -2383,6 +2456,7 @@ export type OpportunityUncheckedUpdateWithoutContactInput = {
   pipelineId?: Prisma.StringFieldUpdateOperationsInput | string
   stageId?: Prisma.StringFieldUpdateOperationsInput | string
   assignedUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: Prisma.EnumOpportunityStatusFieldUpdateOperationsInput | $Enums.OpportunityStatus
@@ -2406,6 +2480,7 @@ export type OpportunityUncheckedUpdateManyWithoutContactInput = {
   pipelineId?: Prisma.StringFieldUpdateOperationsInput | string
   stageId?: Prisma.StringFieldUpdateOperationsInput | string
   assignedUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: Prisma.EnumOpportunityStatusFieldUpdateOperationsInput | $Enums.OpportunityStatus
@@ -2423,6 +2498,7 @@ export type OpportunityCreateManyPipelineInput = {
   companyId?: string | null
   stageId: string
   assignedUserId?: string | null
+  externalId?: string | null
   title: string
   value?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: $Enums.OpportunityStatus
@@ -2435,6 +2511,7 @@ export type OpportunityCreateManyPipelineInput = {
 
 export type OpportunityUpdateWithoutPipelineInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: Prisma.EnumOpportunityStatusFieldUpdateOperationsInput | $Enums.OpportunityStatus
@@ -2463,6 +2540,7 @@ export type OpportunityUncheckedUpdateWithoutPipelineInput = {
   companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stageId?: Prisma.StringFieldUpdateOperationsInput | string
   assignedUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: Prisma.EnumOpportunityStatusFieldUpdateOperationsInput | $Enums.OpportunityStatus
@@ -2486,6 +2564,7 @@ export type OpportunityUncheckedUpdateManyWithoutPipelineInput = {
   companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stageId?: Prisma.StringFieldUpdateOperationsInput | string
   assignedUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: Prisma.EnumOpportunityStatusFieldUpdateOperationsInput | $Enums.OpportunityStatus
@@ -2503,6 +2582,7 @@ export type OpportunityCreateManyStageInput = {
   companyId?: string | null
   pipelineId: string
   assignedUserId?: string | null
+  externalId?: string | null
   title: string
   value?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: $Enums.OpportunityStatus
@@ -2515,6 +2595,7 @@ export type OpportunityCreateManyStageInput = {
 
 export type OpportunityUpdateWithoutStageInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: Prisma.EnumOpportunityStatusFieldUpdateOperationsInput | $Enums.OpportunityStatus
@@ -2543,6 +2624,7 @@ export type OpportunityUncheckedUpdateWithoutStageInput = {
   companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   pipelineId?: Prisma.StringFieldUpdateOperationsInput | string
   assignedUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: Prisma.EnumOpportunityStatusFieldUpdateOperationsInput | $Enums.OpportunityStatus
@@ -2566,6 +2648,7 @@ export type OpportunityUncheckedUpdateManyWithoutStageInput = {
   companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   pipelineId?: Prisma.StringFieldUpdateOperationsInput | string
   assignedUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   status?: Prisma.EnumOpportunityStatusFieldUpdateOperationsInput | $Enums.OpportunityStatus
@@ -2660,6 +2743,7 @@ export type OpportunitySelect<ExtArgs extends runtime.Types.Extensions.InternalA
   pipelineId?: boolean
   stageId?: boolean
   assignedUserId?: boolean
+  externalId?: boolean
   title?: boolean
   value?: boolean
   status?: boolean
@@ -2691,6 +2775,7 @@ export type OpportunitySelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   pipelineId?: boolean
   stageId?: boolean
   assignedUserId?: boolean
+  externalId?: boolean
   title?: boolean
   value?: boolean
   status?: boolean
@@ -2715,6 +2800,7 @@ export type OpportunitySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   pipelineId?: boolean
   stageId?: boolean
   assignedUserId?: boolean
+  externalId?: boolean
   title?: boolean
   value?: boolean
   status?: boolean
@@ -2739,6 +2825,7 @@ export type OpportunitySelectScalar = {
   pipelineId?: boolean
   stageId?: boolean
   assignedUserId?: boolean
+  externalId?: boolean
   title?: boolean
   value?: boolean
   status?: boolean
@@ -2749,7 +2836,7 @@ export type OpportunitySelectScalar = {
   updatedAt?: boolean
 }
 
-export type OpportunityOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tenantId" | "contactId" | "companyId" | "pipelineId" | "stageId" | "assignedUserId" | "title" | "value" | "status" | "expectedCloseAt" | "closedAt" | "notes" | "createdAt" | "updatedAt", ExtArgs["result"]["opportunity"]>
+export type OpportunityOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tenantId" | "contactId" | "companyId" | "pipelineId" | "stageId" | "assignedUserId" | "externalId" | "title" | "value" | "status" | "expectedCloseAt" | "closedAt" | "notes" | "createdAt" | "updatedAt", ExtArgs["result"]["opportunity"]>
 export type OpportunityInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>
   contact?: boolean | Prisma.Opportunity$contactArgs<ExtArgs>
@@ -2806,6 +2893,7 @@ export type $OpportunityPayload<ExtArgs extends runtime.Types.Extensions.Interna
     pipelineId: string
     stageId: string
     assignedUserId: string | null
+    externalId: string | null
     title: string
     value: runtime.Decimal | null
     status: $Enums.OpportunityStatus
@@ -3256,6 +3344,7 @@ export interface OpportunityFieldRefs {
   readonly pipelineId: Prisma.FieldRef<"Opportunity", 'String'>
   readonly stageId: Prisma.FieldRef<"Opportunity", 'String'>
   readonly assignedUserId: Prisma.FieldRef<"Opportunity", 'String'>
+  readonly externalId: Prisma.FieldRef<"Opportunity", 'String'>
   readonly title: Prisma.FieldRef<"Opportunity", 'String'>
   readonly value: Prisma.FieldRef<"Opportunity", 'Decimal'>
   readonly status: Prisma.FieldRef<"Opportunity", 'OpportunityStatus'>

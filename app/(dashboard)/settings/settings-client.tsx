@@ -5,10 +5,9 @@ import { apiFetch } from "@/lib/api/client-fetch";
 import { useState, useTransition } from "react";
 import {
   Building2, Users, Save, Plus, Pencil, Trash2,
-  Loader2, UserCheck, UserX, Shield, Wand2, CheckCircle2, Plug,
+  Loader2, UserCheck, UserX, Shield, Wand2, CheckCircle2,
   Palette, FileSpreadsheet,
 } from "lucide-react";
-import Link from "next/link";
 import { Button }   from "@/components/ui/button";
 import { Input }    from "@/components/ui/input";
 import { Label }    from "@/components/ui/label";
@@ -61,6 +60,7 @@ type Props = {
   canDeleteTeam:      boolean;
   canImportContacts:  boolean;
   canImportProducts:  boolean;
+  canImportOpportunities: boolean;
 };
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -244,7 +244,7 @@ function DeleteDialog({
 export function SettingsClient({
   tenant, aiSettings, brandingSettings, users: initialUsers, currentUserId,
   canUpdateSettings, canReadTeam, canCreateTeam, canUpdateTeam, canDeleteTeam,
-  canImportContacts, canImportProducts,
+  canImportContacts, canImportProducts, canImportOpportunities,
 }: Props) {
   const [tab, setTab] = useState<"empresa" | "marca" | "migrar" | "equipe">("empresa");
 
@@ -483,26 +483,6 @@ export function SettingsClient({
         </Card>
 
         <AiAgentConfig initial={aiSettings} canEdit={canUpdateSettings} />
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <Plug className="h-4 w-4" />
-              Integrações Meta
-            </CardTitle>
-            <CardDescription>
-              WhatsApp e Instagram — tokens, webhook e status de conexão.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Link
-              href="/settings/integrations"
-              className="inline-flex h-8 items-center justify-center rounded-md border border-input bg-background px-3 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
-            >
-              Configurar integrações
-            </Link>
-          </CardContent>
-        </Card>
         </>
       )}
 
@@ -514,6 +494,7 @@ export function SettingsClient({
         <DataImportSection
           canImportContacts={canImportContacts}
           canImportProducts={canImportProducts}
+          canImportOpportunities={canImportOpportunities}
         />
       )}
 
