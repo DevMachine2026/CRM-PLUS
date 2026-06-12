@@ -25,7 +25,6 @@ import { InstagramConnectSheet } from "@/components/integrations/instagram-conne
 import { AiAgentIntegrationSection } from "@/components/integrations/ai-agent-integration-section";
 import type { TenantAiSettings } from "@/lib/ai/tenant-settings";
 import type { MetaInstagramReadiness } from "@/lib/integrations/meta-instagram-readiness";
-import { MetaInstagramReadinessPanel } from "@/components/integrations/meta-instagram-readiness-panel";
 
 export type ChannelSnapshot = {
   state: ChannelConnectionState;
@@ -248,8 +247,6 @@ export function IntegrationsHubClient({
         </div>
       )}
 
-      <MetaInstagramReadinessPanel readiness={metaReadiness} />
-
       <div className="grid gap-4 md:grid-cols-2">
         <ChannelCard
           title="WhatsApp"
@@ -287,16 +284,28 @@ export function IntegrationsHubClient({
         <p className="mt-2 text-muted-foreground">
           Phone Number ID, tokens permanentes e verify tokens para integração direta com a Meta.
         </p>
-        <Link
-          href="/settings/integrations?mode=advanced"
-          className={cn(
-            buttonVariants({ variant: "link" }),
-            "mt-1 inline-flex h-auto items-center gap-1 p-0",
-          )}
-        >
-          Abrir formulário avançado
-          <ChevronRight className="h-4 w-4" />
-        </Link>
+        <div className="mt-1 flex flex-col gap-1">
+          <Link
+            href="/settings/integrations?mode=advanced"
+            className={cn(
+              buttonVariants({ variant: "link" }),
+              "inline-flex h-auto items-center gap-1 p-0",
+            )}
+          >
+            Abrir formulário avançado
+            <ChevronRight className="h-4 w-4" />
+          </Link>
+          <Link
+            href="/settings/integrations/guia-meta"
+            className={cn(
+              buttonVariants({ variant: "link" }),
+              "inline-flex h-auto items-center gap-1 p-0",
+            )}
+          >
+            Guia de configuração Instagram (Meta)
+            <ChevronRight className="h-4 w-4" />
+          </Link>
+        </div>
       </details>
 
       <WhatsAppConnectSheet
