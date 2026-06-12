@@ -3,6 +3,7 @@ import { aiComplete, parseAIJson } from "@/lib/ai/provider";
 import { getTenantAiSystemPrompt } from "@/lib/ai/tenant-prompt";
 import { emitOpportunityCreated } from "@/lib/automations/emit";
 import { ensureDefaultPipeline } from "@/lib/db/ensure-default-pipeline";
+import { detectStageAdvance } from "@/lib/ai/actions/detect-stage-advance";
 
 // ── Strategic qualification schema (webhook + CRM) ───────────────────────────
 
@@ -471,6 +472,28 @@ export async function classifyLead(input: ClassifyLeadInput): Promise<ClassifyLe
   });
 
   await ensureAiTask(input, qualification, opportunityId);
+
+  // Avanço automático de estágio no Kanban: após classificar, a IA reavalia se a
+  // oportunidade aberta deste contato deve avançar de coluna (criada agora ou já existente).
+  try {
+    const openOppId =
+      opportunityId ??
+      (await prisma.opportunity.findFirst({
+        where:  { tenantId: input.tenantId, contactId: input.contactId, status: "open" },
+        select: { id: true },
+      }))?.id ??
+      null;
+
+    if (openOppId) {
+      await detectStageAdvance({
+        opportunityId: openOppId,
+        tenantId:      input.tenantId,
+        userId:        input.userId,
+      });
+    }
+  } catch (err) {
+    console.error("[ai] detectStageAdvance falhou —", err instanceof Error ? err.message : err);
+  }
 
   return result;
 }
