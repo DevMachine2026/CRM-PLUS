@@ -198,14 +198,20 @@ export async function detectStageAdvance(
   }
 
   // ── Move card if appropriate ──────────────────────────────────────────────────
-  let moved = false;
+  let moved     = false;
+  let closedWon = false;
 
   if (shouldAdvance && nextStage && confidence >= 65) {
+    // Avançar para o estágio final do funil marca a oportunidade como ganha.
+    const nextIsFinal = nextStage.order === stages[stages.length - 1].order;
     await prisma.opportunity.update({
       where: { id: input.opportunityId, tenantId: input.tenantId },
-      data:  { stageId: nextStage.id },
+      data:  nextIsFinal
+        ? { stageId: nextStage.id, status: "won", closedAt: new Date() }
+        : { stageId: nextStage.id },
     });
-    moved = true;
+    moved     = true;
+    closedWon = nextIsFinal;
   }
 
   // ── Persist AI log ────────────────────────────────────────────────────────────
@@ -221,7 +227,7 @@ export async function detectStageAdvance(
       promptTokens:     120,
       completionTokens: outputTokens,
       inputSummary:     `opp=${opp.title}, stage=${currentStage.name}, score=${opp.contact?.leadScore ?? 0}`,
-      outputSummary:    `advance=${shouldAdvance}, confidence=${confidence}%, moved=${moved}, target=${nextStage?.name ?? "none"}`,
+      outputSummary:    `advance=${shouldAdvance}, confidence=${confidence}%, moved=${moved}, target=${nextStage?.name ?? "none"}${closedWon ? ", status=won" : ""}`,
     },
   });
 
