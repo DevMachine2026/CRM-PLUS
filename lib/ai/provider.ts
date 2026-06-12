@@ -2,14 +2,15 @@
  * Central AI completion wrapper.
  *
  * Provider resolution (via AI_PROVIDER env var):
+ *   "deepseek" → DeepSeek (produção barata, compatível com OpenAI: platform.deepseek.com)
  *   "gemini"   → Google Gemini (gratuito para dev: aistudio.google.com)
  *   "claude"   → Anthropic Claude (produção)
  *   "mock"     → sempre mock (CI / sem API key)
- *   default    → tenta gemini se GOOGLE_AI_API_KEY existir, senão claude, senão mock
+ *   default    → tenta deepseek, depois gemini, depois claude, senão mock
  *
  * Model tiers (escolhido por cada action via options.tier):
- *   "fast"    → gemini-2.0-flash          / claude-haiku-4-5-20251001
- *   "quality" → gemini-2.5-pro-preview-05-06 / claude-sonnet-4-6
+ *   "fast"    → deepseek-chat / gemini-2.5-flash / claude-haiku-4-5-20251001
+ *   "quality" → deepseek-chat / gemini-2.5-flash / claude-sonnet-4-6
  */
 
 import Anthropic from "@anthropic-ai/sdk";
@@ -45,23 +46,32 @@ const MODELS = {
     fast:    process.env.AI_MODEL_GEMINI_FAST    ?? "gemini-2.5-flash",
     quality: process.env.AI_MODEL_GEMINI_QUALITY ?? "gemini-2.5-flash",
   },
+  deepseek: {
+    // deepseek-chat (V3): barato e ótimo para JSON. deepseek-reasoner (R1) p/ tarefas complexas.
+    fast:    process.env.AI_MODEL_DEEPSEEK_FAST    ?? "deepseek-chat",
+    quality: process.env.AI_MODEL_DEEPSEEK_QUALITY ?? "deepseek-chat",
+  },
 } as const;
+
+const DEEPSEEK_BASE_URL = process.env.DEEPSEEK_BASE_URL ?? "https://api.deepseek.com";
 
 // ── Seleção de provider ───────────────────────────────────────────────────────
 
-type ActiveProvider = "anthropic" | "gemini" | "mock";
+type ActiveProvider = "anthropic" | "gemini" | "deepseek" | "mock";
 
 function resolveProvider(): ActiveProvider {
   const p = (process.env.AI_PROVIDER ?? "").toLowerCase();
-  if (p === "mock")                                     return "mock";
-  if (p === "gemini" && process.env.GOOGLE_AI_API_KEY)  return "gemini";
-  if (p === "claude" && process.env.ANTHROPIC_API_KEY)  return "anthropic";
-  if (p === "gemini" || p === "claude") {
+  if (p === "mock")                                       return "mock";
+  if (p === "deepseek" && process.env.DEEPSEEK_API_KEY)   return "deepseek";
+  if (p === "gemini"   && process.env.GOOGLE_AI_API_KEY)  return "gemini";
+  if (p === "claude"   && process.env.ANTHROPIC_API_KEY)  return "anthropic";
+  if (p === "deepseek" || p === "gemini" || p === "claude") {
     console.warn(`[ai] AI_PROVIDER="${p}" set but matching API key missing — falling back to mock`);
   }
-  // Auto-detect: prefere gemini se disponível, depois claude
-  if (process.env.GOOGLE_AI_API_KEY)                    return "gemini";
-  if (process.env.ANTHROPIC_API_KEY)                    return "anthropic";
+  // Auto-detect: prefere deepseek (pago), depois gemini, depois claude
+  if (process.env.DEEPSEEK_API_KEY)                      return "deepseek";
+  if (process.env.GOOGLE_AI_API_KEY)                     return "gemini";
+  if (process.env.ANTHROPIC_API_KEY)                     return "anthropic";
   return "mock";
 }
 
@@ -138,6 +148,44 @@ async function completeWithGemini(
   };
 }
 
+async function completeWithDeepSeek(
+  options: AICompletionOptions,
+  modelId: string
+): Promise<AICompletionResult> {
+  const res = await fetch(`${DEEPSEEK_BASE_URL}/chat/completions`, {
+    method:  "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization:  `Bearer ${process.env.DEEPSEEK_API_KEY!}`,
+    },
+    body: JSON.stringify({
+      model:      modelId,
+      max_tokens: options.maxTokens ?? 512,
+      messages: [
+        { role: "system", content: options.system },
+        { role: "user",   content: options.user },
+      ],
+    }),
+  });
+
+  if (!res.ok) {
+    const detail = await res.text().catch(() => "");
+    throw new Error(`[DeepSeek Error] ${res.status} ${res.statusText}: ${detail.slice(0, 300)}`);
+  }
+
+  const data  = await res.json();
+  const text  = data.choices?.[0]?.message?.content ?? "";
+  const usage = data.usage ?? {};
+
+  return {
+    text,
+    inputTokens:  usage.prompt_tokens     ?? 0,
+    outputTokens: usage.completion_tokens ?? 0,
+    provider:     "deepseek",
+    modelId,
+  };
+}
+
 // ── Função principal ──────────────────────────────────────────────────────────
 
 /**
@@ -155,6 +203,10 @@ export async function aiComplete(
 
   if (provider === "anthropic") {
     return completeWithClaude(options, MODELS.anthropic[tier]);
+  }
+
+  if (provider === "deepseek") {
+    return completeWithDeepSeek(options, MODELS.deepseek[tier]);
   }
 
   return completeWithGemini(options, MODELS.gemini[tier]);

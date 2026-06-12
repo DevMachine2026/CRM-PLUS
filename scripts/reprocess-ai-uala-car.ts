@@ -72,6 +72,7 @@ async function main() {
     });
 
     if (messages.length === 0) { skippedEmpty++; continue; }
+    if (!conv.contact) { skippedEmpty++; continue; }
 
     const recentMessages = messages.slice(-15).map((m) => ({ direction: m.direction, content: m.content }));
     const lastInbound    = [...messages].reverse().find((m) => m.direction === "inbound");
@@ -113,7 +114,7 @@ async function main() {
       `  [${processed}] ${conv.contact.name.padEnd(22).slice(0, 22)} ` +
       `msgs=${String(messages.length).padStart(2)} ` +
       `intent=${cls.intent.padEnd(13)} lead=${String(cls.leadScore).padStart(3)} prio=${String(cls.priorityScore).padStart(3)} ` +
-      `opp=${cls.opp ? "S" : "N"}  [sum:${sumProv} | cls:${clsProv}]`,
+      `opp=${cls.createOpportunity ? "S" : "N"}  [sum:${sumProv} | cls:${clsProv}]`,
     );
   }
 
@@ -128,11 +129,11 @@ async function main() {
   console.log(`  Conversas processadas: ${processed}  |  vazias ignoradas: ${skippedEmpty}`);
   console.log(`  Provider por ação (logs deste run):`);
   for (const l of runLogs) {
-    console.log(`    ${l.action.padEnd(24)} ${l.modelProvider.padEnd(12)} ${l._count._all}`);
+    console.log(`    ${l.action.padEnd(24)} ${(l.modelProvider ?? "?").padEnd(12)} ${l._count._all}`);
   }
 
   const realCls = rows.filter((r) => !r.clsProv.includes("mock") && !r.clsProv.includes("FALLBACK")).length;
-  console.log(`\n  Classificações com IA real (Gemini): ${realCls}/${rows.length}`);
+  console.log(`\n  Classificações com IA real: ${realCls}/${rows.length}`);
   console.log(`  Oportunidades sugeridas (createOpportunity): ${rows.filter((r) => r.opp).length}`);
   console.log(`  Lead score: min=${Math.min(...rows.map((r) => r.lead))} max=${Math.max(...rows.map((r) => r.lead))}\n`);
 }
