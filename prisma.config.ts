@@ -11,6 +11,8 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    url: process.env["DATABASE_URL"],
+    // O CLI (migrate/db push/studio) usa a conexão DIRETA quando disponível;
+    // o runtime continua no pooler via DATABASE_URL (adapter pg em lib/db/client.ts).
+    url: process.env["DIRECT_URL"] ?? process.env["DATABASE_URL"],
   },
 });
