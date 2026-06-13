@@ -16,15 +16,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/layout/page-header";
 import { ds } from "@/lib/design-system";
-
-const ACTION_LABEL: Record<string, string> = {
-  classify_lead:        "Classificou lead",
-  suggest_next_action:  "Sugeriu próxima ação",
-  detect_stalled_leads: "Detectou leads parados",
-  summarize:            "Resumiu conversa",
-  detect_intent:        "Detectou intenção",
-  suggest_reply:        "Sugeriu resposta",
-};
+import { DASHBOARD_HIDDEN_ACTIONS, formatAiDashboardLog } from "@/lib/ai/format-dashboard-log";
 
 function fmt(n: number) {
   return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
@@ -125,10 +117,21 @@ export default async function DashboardPage() {
       ? prisma.contact.count({ where: { tenantId, leadScore: { gte: 70 } } })
       : 0,
     prisma.aiLog.findMany({
-      where:   { tenantId, createdAt: { gte: todayStart } },
+      where: {
+        tenantId,
+        createdAt: { gte: todayStart },
+        action: { notIn: [...DASHBOARD_HIDDEN_ACTIONS] },
+      },
       orderBy: { createdAt: "desc" },
       take: 8,
-      select: { id: true, action: true, outputSummary: true, createdAt: true, modelProvider: true },
+      select: {
+        id: true,
+        action: true,
+        outputSummary: true,
+        inputSummary: true,
+        createdAt: true,
+        modelProvider: true,
+      },
     }),
     canReadTasks
       ? prisma.task.findMany({
@@ -474,25 +477,33 @@ export default async function DashboardPage() {
               <CardTitle className="text-base">Ações da IA hoje</CardTitle>
             </div>
             <Badge variant="secondary" className="bg-purple-50 text-purple-700 text-xs">
-              {aiLogsToday.length} registro{aiLogsToday.length !== 1 ? "s" : ""}
+              {aiLogsToday.length} ação{aiLogsToday.length !== 1 ? "ões" : ""}
             </Badge>
           </CardHeader>
           <CardContent>
             {aiLogsToday.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-3 text-center">Nenhuma ação de IA registrada hoje.</p>
+              <p className="text-sm text-muted-foreground py-3 text-center">
+                Nenhuma ação da IA registrada hoje. As mensagens recebidas continuam sendo
+                processadas em segundo plano.
+              </p>
             ) : (
               <ul className="space-y-1.5">
-                {aiLogsToday.map((log) => (
-                  <li key={log.id} className="flex items-start justify-between rounded-md bg-muted/50 px-3 py-2 gap-2">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium">{ACTION_LABEL[log.action] ?? log.action}</p>
-                      {log.outputSummary && (
-                        <p className="text-xs text-muted-foreground truncate mt-0.5">{log.outputSummary}</p>
-                      )}
-                    </div>
-                    <span className="text-xs text-muted-foreground shrink-0 mt-0.5">{fmtTime(log.createdAt)}</span>
-                  </li>
-                ))}
+                {aiLogsToday.map((log) => {
+                  const friendly = formatAiDashboardLog(log);
+                  return (
+                    <li key={log.id} className="flex items-start justify-between rounded-md bg-muted/50 px-3 py-2 gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium">{friendly.title}</p>
+                        {friendly.detail && (
+                          <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2 leading-relaxed">
+                            {friendly.detail}
+                          </p>
+                        )}
+                      </div>
+                      <span className="text-xs text-muted-foreground shrink-0 mt-0.5">{fmtTime(log.createdAt)}</span>
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </CardContent>
